@@ -21,7 +21,8 @@
     @apply scroll-smooth;
   }
   body {
-    @apply bg-[var(--color-bg)] text-[var(--color-text)] antialiased font-[var(--font-sans)];
+    @apply bg-[var(--color-bg)] text-[var(--color-text)] antialiased;
+    font-family: var(--font-sans);
   }
 }
 
