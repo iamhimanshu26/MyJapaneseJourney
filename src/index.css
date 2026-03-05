@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0c0f14;
+  --color-bg-card: #141922;
+  --color-bg-elevated: #1a1f2e;
+  --color-accent: #f59e0b;
+  --color-accent-soft: #fbbf24;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-jp: "Noto Sans JP", sans-serif;
+}
+
+@layer base {
+  * {
+    @apply box-border;
+  }
+  html {
+    @apply scroll-smooth;
+  }
+  body {
+    @apply bg-[var(--color-bg)] text-[var(--color-text)] antialiased font-[var(--font-sans)];
+  }
+}
+
+::selection {
+  @apply bg-amber-500/30;
+}
