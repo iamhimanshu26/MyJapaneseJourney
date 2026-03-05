@@ -1,10 +1,16 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 
+function getApiBase() {
+  if (typeof window === 'undefined') return ''
+  return window.location.origin
+}
+
 export function Lookup() {
   const [query, setQuery] = useState('')
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   async function handleSearch(e) {
     e.preventDefault()
@@ -12,17 +18,24 @@ export function Lookup() {
     if (!q) return
     setLoading(true)
     setResult(null)
-    // TODO: Connect to /api/lookup when backend is ready
-    await new Promise((r) => setTimeout(r, 800))
-    setResult({
-      type: 'vocab',
-      word: q,
-      reading: '(search API pending)',
-      meaning: 'API integration coming soon.',
-      level: 'N?',
-      examples: ['Backend will return real data.'],
-    })
-    setLoading(false)
+    setError(null)
+    try {
+      const res = await fetch(`${getApiBase()}/api/lookup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data?.error || 'Lookup failed. Try again.')
+        return
+      }
+      setResult(data)
+    } catch (err) {
+      setError('Could not connect. Check your connection and try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -58,6 +71,9 @@ export function Lookup() {
           </div>
         </form>
 
+        {error && (
+          <p className="mb-6 text-red-600 text-sm">{error}</p>
+        )}
         {result && (
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -68,21 +84,26 @@ export function Lookup() {
               <span className="inline-flex px-3 py-1 rounded-lg bg-amber-100 text-amber-700 text-sm font-medium">
                 {result.level}
               </span>
-              {result.type === 'vocab' && (
+              {(result.type === 'vocab' || result.type === 'grammar') && (
                 <button className="text-sm font-medium text-amber-700 hover:text-amber-800">
                   Save to My Discovered
                 </button>
               )}
             </div>
             <h2 className="text-2xl font-bold text-[var(--color-text)] mb-1" style={{ fontFamily: 'var(--font-jp)' }}>
-              {result.word}
+              {result.type === 'grammar' ? result.name : result.word}
             </h2>
-            <p className="text-[var(--color-text-muted)] mb-4">{result.reading}</p>
+            {result.type === 'vocab' && result.reading && (
+              <p className="text-[var(--color-text-muted)] mb-4">{result.reading}</p>
+            )}
+            {result.type === 'grammar' && result.structure && (
+              <p className="text-[var(--color-text-muted)] mb-4 font-mono text-sm">{result.structure}</p>
+            )}
             <p className="text-[var(--color-text)]">{result.meaning}</p>
             <div className="mt-4 pt-4 border-t border-slate-200">
               <p className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Examples</p>
               <ul className="space-y-2">
-                {result.examples.map((ex, i) => (
+                {(result.examples || []).map((ex, i) => (
                   <li key={i} className="text-[var(--color-text)]" style={{ fontFamily: 'var(--font-jp)' }}>
                     {ex}
                   </li>

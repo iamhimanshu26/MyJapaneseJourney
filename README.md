@@ -36,11 +36,14 @@ src/
 └── App.jsx         # Routes
 ```
 
+## Environment
+
+Add `GEMINI_API_KEY` in Vercel project settings (Settings → Environment Variables). Get a key from [Google AI Studio](https://ai.google.dev/).
+
 ## Next Steps
 
-1. **API** — `/api/lookup` for vocab/grammar search (DB + Gemini)
+1. **Save flow** — Connect "Save to My Discovered" (needs auth + DB)
 2. **Auth** — Supabase or Firebase for multi-user
-3. **Content** — Import JLPT vocab lists, grammar from free resources
-4. **Save flow** — Connect "Save to My Discovered" to backend
+3. **Content** — Import JLPT vocab lists for faster lookups
 
 See `docs/PLAN.md` for the full planning document.
