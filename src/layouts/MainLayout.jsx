@@ -3,10 +3,6 @@ import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const navItems = [
-  { path: '/', label: 'Dashboard' },
-  { path: '/chapters', label: 'Guided Chapters', highlight: true },
-  { path: '/lookup', label: 'Heard New?' },
-  { path: '/learn-from-text', label: 'Learn from text' },
   { path: '/vocab', label: 'Vocabulary' },
   { path: '/grammar', label: 'Grammar' },
   { path: '/discovered', label: 'My Discovered' },
@@ -29,7 +25,7 @@ export function MainLayout() {
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-[var(--color-bg)]/95 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="text-xl font-semibold tracking-tight shrink-0">
-            My Japanese Journey
+            MJJ Dashboard
           </Link>
 
           {/* Desktop nav */}

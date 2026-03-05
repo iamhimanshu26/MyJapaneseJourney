@@ -1,17 +1,34 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { HeardNewVocabCta } from '../components/HeardNewVocabCta'
 import { Flashcard } from '../components/Flashcard'
 import { PageMeta } from '../components/PageMeta'
 import { VOCAB_BY_LEVEL } from '../data/vocab'
+import { getUserVocabByLevel } from '../lib/userVocab'
 
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1']
+
+function mergeVocab(seed, user) {
+  const seen = new Set()
+  const out = []
+  for (const item of [...(seed || []), ...(user || [])]) {
+    const key = `${item.word}|${item.reading || ''}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(item)
+  }
+  return out
+}
 
 export function Vocab() {
   const [selectedLevel, setSelectedLevel] = useState('N5')
   const [mode, setMode] = useState('select') // 'select' | 'flashcards'
 
-  const items = VOCAB_BY_LEVEL[selectedLevel] || []
+  const items = useMemo(() => {
+    const seed = VOCAB_BY_LEVEL[selectedLevel] || []
+    const user = getUserVocabByLevel()[selectedLevel] || []
+    return mergeVocab(seed, user)
+  }, [selectedLevel])
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

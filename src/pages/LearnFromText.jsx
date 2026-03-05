@@ -4,6 +4,8 @@ import { FuriganaText } from '../components/FuriganaText'
 import { PageMeta } from '../components/PageMeta'
 import { useDiscovered } from '../hooks/useDiscovered'
 import { useToast } from '../context/ToastContext'
+import { addVocabBatch } from '../lib/userVocab'
+import { addGrammarBatch } from '../lib/userGrammar'
 
 function getApiBase() {
   if (typeof window === 'undefined') return ''
@@ -72,7 +74,31 @@ export function LearnFromText() {
 
   async function handleSaveAll() {
     if (!result) return
-    let saved = 0
+    let vocabAdded = 0
+    let grammarAdded = 0
+
+    // Save to Vocabulary (for flashcards)
+    vocabAdded = addVocabBatch(
+      (result.vocab || []).map((v) => ({
+        word: v.word,
+        reading: v.reading || '',
+        meaning: v.meaning || '',
+        level: v.level || 'N5',
+      }))
+    )
+
+    // Save to Grammar (for grammar list)
+    grammarAdded = addGrammarBatch(
+      (result.grammar || []).map((g) => ({
+        name: g.name,
+        structure: g.structure || '',
+        meaning: g.meaning || '',
+        level: g.level || 'N5',
+        example: g.example || '',
+      }))
+    )
+
+    // Also save to My Discovered (for quick reference)
     for (const v of result.vocab || []) {
       if (!v?.word) continue
       try {
@@ -83,7 +109,6 @@ export function LearnFromText() {
           meaning: String(v.meaning || ''),
           level: String(v.level || 'N5'),
         })
-        saved++
       } catch (_) {}
     }
     for (const g of result.grammar || []) {
@@ -97,10 +122,10 @@ export function LearnFromText() {
           level: String(g.level || 'N5'),
           examples: g.example ? [{ jp: String(g.example), en: '' }] : [],
         })
-        saved++
       } catch (_) {}
     }
-    toast.success(`Saved ${saved} items to My Discovered`)
+
+    toast.success(`Saved ${vocabAdded} to Vocabulary, ${grammarAdded} to Grammar, and all to My Discovered`)
   }
 
   const hasResult = result && ((result.vocab?.length || 0) + (result.grammar?.length || 0)) > 0
@@ -165,7 +190,7 @@ export function LearnFromText() {
                 onClick={handleSaveAll}
                 className="text-sm font-medium text-amber-700 hover:text-amber-800"
               >
-                Save all to My Discovered
+                Save to Vocabulary, Grammar & My Discovered
               </button>
             </div>
             <div className="space-y-4 max-h-[400px] overflow-y-auto">

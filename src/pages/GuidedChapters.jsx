@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LessonCharacter } from '../components/LessonCharacter'
 import { FuriganaText } from '../components/FuriganaText'
+import { KaiwaVideo } from '../components/KaiwaVideo'
 import { PageMeta } from '../components/PageMeta'
 import { LESSONS, getLesson } from '../data/lessons'
 
@@ -15,8 +16,6 @@ const tabs = [
 export function GuidedChapters() {
   const [selectedLessonId, setSelectedLessonId] = useState(null)
   const [activeTab, setActiveTab] = useState('kaiwa')
-  const [convoIndex, setConvoIndex] = useState(0)
-  const [speaking, setSpeaking] = useState(false)
 
   const lesson = selectedLessonId ? getLesson(selectedLessonId) : null
 
@@ -25,11 +24,9 @@ export function GuidedChapters() {
     window.speechSynthesis.cancel()
     const utterances = text.split(/[、。]/).filter(Boolean)
     if (utterances.length === 0) return
-    setSpeaking(true)
     const u = new SpeechSynthesisUtterance(utterances[0])
     u.lang = 'ja-JP'
     u.rate = 0.8
-    u.onend = () => setSpeaking(false)
     window.speechSynthesis.speak(u)
   }
 
@@ -62,7 +59,6 @@ export function GuidedChapters() {
                 transition={{ delay: i * 0.05 }}
                 onClick={() => {
                   setSelectedLessonId(selectedLessonId === l.id ? null : l.id)
-                  setConvoIndex(0)
                   setActiveTab('kaiwa')
                 }}
                 className={`px-5 py-3 rounded-xl border-2 font-medium transition-all shadow-sm ${
@@ -104,42 +100,11 @@ export function GuidedChapters() {
               </div>
 
               <div className="p-6 min-h-[280px]">
-                {/* Kaiwa Renshuu */}
+                {/* Kaiwa Renshuu - video style with animated characters */}
                 {activeTab === 'kaiwa' && lesson.conversations && (
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-4">
-                      <LessonCharacter size="sm" animate={speaking} />
-                      <p className="text-sm text-[var(--color-text-muted)]">Click a line to hear it</p>
-                    </div>
-                    <div className="space-y-4">
-                      {lesson.conversations.map((c, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.1 }}
-                          onClick={() => speakJapanese(c.text)}
-                          className={`flex gap-4 p-4 rounded-xl cursor-pointer transition-colors ${
-                            convoIndex === i ? 'bg-amber-50 ring-2 ring-amber-200' : 'bg-slate-50 hover:bg-amber-50/50'
-                          }`}
-                          onMouseEnter={() => setConvoIndex(i)}
-                        >
-                          <div className="w-16 shrink-0 flex flex-col items-center">
-                            <span className="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 font-bold text-sm">
-                              {c.speaker.slice(0, 1)}
-                            </span>
-                            <span className="text-xs text-[var(--color-text-muted)] mt-1">{c.name}</span>
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-lg mb-1 examples-with-furigana" style={{ fontFamily: 'var(--font-jp)' }}>
-                              <FuriganaText text={c.text.replace(/\s/g, '')} />
-                            </p>
-                            <p className="text-sm text-[var(--color-text-muted)]">{c.en}</p>
-                          </div>
-                          <span className="text-2xl opacity-50">🔊</span>
-                        </motion.div>
-                      ))}
-                    </div>
+                  <div className="space-y-4">
+                    <KaiwaVideo conversations={lesson.conversations} />
+                    <p className="text-sm text-[var(--color-text-muted)]">Press Play to hear the conversation. Click dialogue to replay. Use prev/next to step through.</p>
                   </div>
                 )}
 

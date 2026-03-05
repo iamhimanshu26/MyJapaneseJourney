@@ -1,16 +1,33 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { HeardNewVocabCta } from '../components/HeardNewVocabCta'
 import { PageMeta } from '../components/PageMeta'
 import { FuriganaText } from '../components/FuriganaText'
 import { GRAMMAR_BY_LEVEL } from '../data/grammar'
+import { getUserGrammarByLevel } from '../lib/userGrammar'
 
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1']
+
+function mergeGrammar(seed, user) {
+  const seen = new Set()
+  const out = []
+  for (const item of [...(seed || []), ...(user || [])]) {
+    const key = `${item.name}|${item.structure || ''}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push(item)
+  }
+  return out
+}
 
 export function Grammar() {
   const [selectedLevel, setSelectedLevel] = useState('N5')
 
-  const items = GRAMMAR_BY_LEVEL[selectedLevel] || []
+  const items = useMemo(() => {
+    const seed = GRAMMAR_BY_LEVEL[selectedLevel] || []
+    const user = getUserGrammarByLevel()[selectedLevel] || []
+    return mergeGrammar(seed, user)
+  }, [selectedLevel])
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
