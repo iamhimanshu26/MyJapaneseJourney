@@ -11,12 +11,23 @@ export const GRAMMAR_N5 = [
 export const GRAMMAR_N4 = [
   { id: 'n4-1', name: '〜ている', structure: 'Verb-て + いる', meaning: 'Expresses ongoing action or resulting state.', level: 'N4', example: '勉強しています。(I am studying.)' },
   { id: 'n4-2', name: '〜たことがある', structure: 'Verb-た + ことがある', meaning: 'Have done / have experienced.', level: 'N4', example: '日本に行ったことがあります。(I have been to Japan.)' },
+  { id: 'n4-3', name: '〜ながら', structure: 'Verb stem + ながら', meaning: 'While doing ~', level: 'N4', example: '音楽を聞きながら歩きます。(I walk while listening to music.)' },
+  { id: 'n4-4', name: '〜ておく', structure: 'Verb-て + おく', meaning: 'Do in advance; leave as is.', level: 'N4', example: '予約しておきました。(I made a reservation in advance.)' },
+  { id: 'n4-5', name: '〜かもしれない', structure: 'Verb/Adj/Noun + かもしれない', meaning: 'Might, may, perhaps.', level: 'N4', example: '明日は雨かもしれません。(It might rain tomorrow.)' },
+]
+
+export const GRAMMAR_N3 = [
+  { id: 'n3-1', name: '〜らしい', structure: 'Noun + らしい', meaning: 'Seems like, typical of.', level: 'N3', example: '彼は本当に日本人らしいです。(He really seems like a typical Japanese person.)' },
+  { id: 'n3-2', name: '〜うちに', structure: 'Verb/Adj + うちに', meaning: 'While, before ~', level: 'N3', example: '若いうちにたくさん勉強したい。(I want to study a lot while I\'m young.)' },
+  { id: 'n3-3', name: '〜ばかり', structure: 'Verb-た + ばかり', meaning: 'Just did ~', level: 'N3', example: '日本に来たばかりです。(I just came to Japan.)' },
+  { id: 'n3-4', name: '〜ことにする', structure: 'Verb dic. + ことにする', meaning: 'Decide to ~', level: 'N3', example: '毎日日本語を勉強することにしました。(I decided to study Japanese every day.)' },
+  { id: 'n3-5', name: '〜に対して', structure: 'Noun + に対して', meaning: 'Toward, regarding.', level: 'N3', example: '生徒に対して厳しい先生です。(He is a strict teacher toward students.)' },
 ]
 
 export const GRAMMAR_BY_LEVEL = {
   N5: GRAMMAR_N5,
   N4: GRAMMAR_N4,
-  N3: [],
+  N3: GRAMMAR_N3,
   N2: [],
   N1: [],
 }

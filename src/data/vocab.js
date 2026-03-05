@@ -31,9 +31,28 @@ export const VOCAB_N5 = [
   { word: '来る', reading: 'くる', meaning: 'to come', level: 'N5' },
 ]
 
+// N4 vocabulary
+export const VOCAB_N4 = [
+  { word: '予約', reading: 'よやく', meaning: 'reservation, booking', level: 'N4' },
+  { word: '確認', reading: 'かくにん', meaning: 'confirmation, to confirm', level: 'N4' },
+  { word: '準備', reading: 'じゅんび', meaning: 'preparation, to prepare', level: 'N4' },
+  { word: '説明', reading: 'せつめい', meaning: 'explanation, to explain', level: 'N4' },
+  { word: '経験', reading: 'けいけん', meaning: 'experience', level: 'N4' },
+  { word: '大切', reading: 'たいせつ', meaning: 'important, precious', level: 'N4' },
+  { word: '便利', reading: 'べんり', meaning: 'convenient', level: 'N4' },
+  { word: '綺麗', reading: 'きれい', meaning: 'pretty, clean', level: 'N4' },
+  { word: '頑張る', reading: 'がんばる', meaning: 'to do one\'s best', level: 'N4' },
+  { word: '伝える', reading: 'つたえる', meaning: 'to convey, tell', level: 'N4' },
+  { word: '届く', reading: 'とどく', meaning: 'to arrive, reach', level: 'N4' },
+  { word: '選ぶ', reading: 'えらぶ', meaning: 'to choose, select', level: 'N4' },
+  { word: '届ける', reading: 'とどける', meaning: 'to deliver, send', level: 'N4' },
+  { word: '相談', reading: 'そうだん', meaning: 'consultation, to consult', level: 'N4' },
+  { word: '参加', reading: 'さんか', meaning: 'participation, to participate', level: 'N4' },
+]
+
 export const VOCAB_BY_LEVEL = {
   N5: VOCAB_N5,
-  N4: [],
+  N4: VOCAB_N4,
   N3: [],
   N2: [],
   N1: [],

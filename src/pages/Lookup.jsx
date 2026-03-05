@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FuriganaText } from '../components/FuriganaText'
-import { saveDiscovered, isSaved as checkSaved } from '../lib/discovered'
+import { PageMeta } from '../components/PageMeta'
+import { useDiscovered } from '../hooks/useDiscovered'
+import { useToast } from '../context/ToastContext'
 
 function getApiBase() {
   if (typeof window === 'undefined') return ''
@@ -13,16 +15,19 @@ export function Lookup() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [saved, setSaved] = useState(false)
+  const { save, checkSaved } = useDiscovered()
+  const toast = useToast()
 
-  useEffect(() => {
-    if (result) setSaved(checkSaved(result))
-  }, [result])
+  const saved = result ? checkSaved(result) : false
 
-  function handleSave() {
+  async function handleSave() {
     if (!result) return
-    saveDiscovered(result)
-    setSaved(true)
+    try {
+      await save(result)
+      toast.success('Saved to My Discovered')
+    } catch {
+      toast.error('Could not save')
+    }
   }
 
   async function handleSearch(e) {
@@ -46,6 +51,7 @@ export function Lookup() {
       setResult(data)
     } catch (err) {
       setError('Could not connect. Check your connection and try again.')
+      toast.error('Connection failed')
     } finally {
       setLoading(false)
     }
@@ -53,6 +59,7 @@ export function Lookup() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
+      <PageMeta title="Heard New Vocab" description="Search any Japanese word or grammar. Get meaning, examples, and JLPT level." />
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -73,6 +80,7 @@ export function Lookup() {
               placeholder="たぶん / tabun /  grammar..."
               className="flex-1 rounded-xl border border-slate-200 bg-[var(--color-bg-card)] px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 shadow-sm"
               disabled={loading}
+              aria-label="Search Japanese word or grammar"
             />
             <button
               type="submit"
@@ -85,7 +93,7 @@ export function Lookup() {
         </form>
 
         {error && (
-          <p className="mb-6 text-red-600 text-sm">{error}</p>
+          <p className="mb-6 text-red-600 text-sm" role="alert">{error}</p>
         )}
         {result && (
           <motion.div

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
+import { PageMeta } from '../components/PageMeta'
 
 export function Login() {
   const [email, setEmail] = useState('')
@@ -9,6 +11,7 @@ export function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { signIn } = useAuth()
+  const toast = useToast()
   const navigate = useNavigate()
 
   async function handleSubmit(e) {
@@ -17,9 +20,11 @@ export function Login() {
     setLoading(true)
     try {
       await signIn(email, password)
+      toast.success('Logged in')
       navigate('/')
     } catch (err) {
       setError(err?.message || 'Login failed')
+      toast.error(err?.message || 'Login failed')
     } finally {
       setLoading(false)
     }
@@ -27,6 +32,7 @@ export function Login() {
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
+      <PageMeta title="Log in" />
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

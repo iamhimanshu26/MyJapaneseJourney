@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { HeardNewVocabCta } from '../components/HeardNewVocabCta'
+import { PageMeta } from '../components/PageMeta'
 import { GRAMMAR_BY_LEVEL } from '../data/grammar'
 
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1']
@@ -12,6 +13,7 @@ export function Grammar() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <PageMeta title="Grammar" description="Learn JLPT grammar patterns and explanations. N5 to N1." />
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

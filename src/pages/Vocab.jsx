@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { HeardNewVocabCta } from '../components/HeardNewVocabCta'
 import { Flashcard } from '../components/Flashcard'
+import { PageMeta } from '../components/PageMeta'
 import { VOCAB_BY_LEVEL } from '../data/vocab'
 
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1']
@@ -14,6 +15,7 @@ export function Vocab() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <PageMeta title="Vocabulary" description="Practice JLPT vocabulary with flashcards. N5 to N1." />
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

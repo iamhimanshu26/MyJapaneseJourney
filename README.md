@@ -1,49 +1,80 @@
-# My Japanese Journey — Japanese Learning Platform
+# My Japanese Journey
 
-Multi-user, AI-enhanced Japanese learning platform (N5 → N1). Vocabulary, grammar, reading, listening — with interactive practice and the **"Heard New Vocab"** lookup feature.
-
-## Quick Start
-
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:5173](http://localhost:5173).
+A company-ready Japanese learning platform (JLPT N5–N1) with vocabulary flashcards, grammar explanations, and AI-powered word lookup.
 
 ## Features
 
-- **Dashboard** — Overview, quick access to modules
-- **Heard New Vocab — Find Here** — Search any word or grammar; get meaning, examples, JLPT level; save to My Discovered
-- **Vocabulary** — Flashcards & quizzes by level (N5–N1)
-- **Grammar** — Patterns & AI explanations
-- **My Discovered** — Words you looked up, grouped by level
+- **Dashboard** – Overview, progress, quick links
+- **Vocabulary** – Flashcards by JLPT level (N5, N4+)
+- **Grammar** – Patterns and explanations (N5–N3)
+- **Heard New Vocab** – AI lookup via Gemini: search any word/grammar, get meaning, examples, furigana
+- **My Discovered** – Save looked-up words; syncs to Supabase when auth is configured
+- **Auth** – Optional Supabase auth (Login, Signup, Onboarding) for team/company use
+- **Responsive** – Mobile hamburger menu, accessible UI
+- **Error handling** – Error boundary, toast notifications
+- **API security** – Rate limiting (30 req/min per IP) on lookup
 
 ## Tech Stack
 
 - React 19 + Vite 7
 - Tailwind CSS v4
-- React Router
 - Framer Motion
+- React Router
+- Supabase (optional – auth + discovered items)
+- Vercel (deployment + serverless API)
+
+## Quick Start
+
+```bash
+git clone https://github.com/iamhimanshu26/MyJapaneseJourney.git
+cd MyJapaneseJourney
+npm install
+cp .env.example .env
+# Edit .env with GEMINI_API_KEY (required) and optionally Supabase
+npm run dev
+```
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GEMINI_API_KEY` | Yes | Google Gemini API key for lookup (get from [AI Studio](https://aistudio.google.com)) |
+| `VITE_SUPABASE_URL` | No | Supabase project URL – enables auth & cloud sync |
+| `VITE_SUPABASE_ANON_KEY` | No | Supabase anon key |
+
+**Without Supabase:** The app works fully. My Discovered uses localStorage.
+
+**With Supabase:** Add URL + anon key. Run the migration (`supabase/migrations/001_initial.sql`) in Supabase SQL Editor. Sign up / log in to sync discovered items across devices.
+
+## Deployment (Vercel)
+
+1. Connect your GitHub repo to Vercel
+2. Add env vars: `GEMINI_API_KEY` (required), optionally `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+3. Deploy – Vercel auto-builds from the repo
+
+Or with CLI:
+
+```bash
+npx vercel --prod
+```
 
 ## Project Structure
 
 ```
-src/
-├── components/     # Reusable UI (HeardNewVocabCta, etc.)
-├── layouts/        # MainLayout with nav
-├── pages/          # Dashboard, Vocab, Grammar, Lookup, MyDiscovered
-└── App.jsx         # Routes
+kotoba/
+├── api/           # Vercel serverless (lookup)
+├── src/
+│   ├── components/
+│   ├── context/   # Auth, Toast
+│   ├── hooks/    # useDiscovered
+│   ├── layouts/
+│   ├── lib/      # supabase, discovered
+│   ├── pages/
+│   └── data/     # vocab, grammar seed
+├── supabase/migrations/
+└── vercel.json
 ```
 
-## Environment
+## License
 
-Add `GEMINI_API_KEY` in Vercel project settings (Settings → Environment Variables). Get a key from [Google AI Studio](https://ai.google.dev/).
-
-## Next Steps
-
-1. **Save flow** — Connect "Save to My Discovered" (needs auth + DB)
-2. **Auth** — Supabase or Firebase for multi-user
-3. **Content** — Import JLPT vocab lists for faster lookups
-
-See `docs/PLAN.md` for the full planning document.
+MIT

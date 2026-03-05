@@ -1,6 +1,26 @@
 const GEMINI_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
 
+// Simple in-memory rate limit: 30 requests per IP per minute
+const RATE_LIMIT_WINDOW_MS = 60_000
+const RATE_LIMIT_MAX = 30
+const requestCounts = new Map()
+
+function checkRateLimit(ip) {
+  const now = Date.now()
+  const record = requestCounts.get(ip) || { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS }
+  if (now >= record.resetAt) {
+    record.count = 0
+    record.resetAt = now + RATE_LIMIT_WINDOW_MS
+  }
+  record.count++
+  requestCounts.set(ip, record)
+  if (record.count > RATE_LIMIT_MAX) {
+    return false
+  }
+  return true
+}
+
 const SYSTEM_PROMPT = `You are a Japanese language expert for a JLPT learning platform. The user will search for a Japanese word or grammar point (they may type in Japanese kana/kanji or romaji).
 
 Your task: Return a JSON object with the following structure. No other text—only valid JSON.
@@ -52,6 +72,11 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') {
     return res.status(204).end()
+  }
+
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.headers['x-real-ip'] || 'unknown'
+  if (!checkRateLimit(clientIp)) {
+    return res.status(429).json({ error: 'Too many requests. Please try again in a minute.' })
   }
 
   if (req.method !== 'POST') {

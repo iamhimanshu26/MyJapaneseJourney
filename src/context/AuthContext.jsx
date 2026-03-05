@@ -85,6 +85,7 @@ export function AuthProvider({ children }) {
     signOut,
     updateProfile,
     isAuthenticated: !!user,
+    hasAuth: !!supabase,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -99,6 +100,7 @@ const defaultAuth = {
   signOut: () => {},
   updateProfile: async () => {},
   isAuthenticated: false,
+  hasAuth: false,
 }
 
 export function useAuth() {

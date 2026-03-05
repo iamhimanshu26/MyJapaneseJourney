@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
+import { PageMeta } from '../components/PageMeta'
 
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1']
 
@@ -9,17 +11,25 @@ export function Onboarding() {
   const [currentLevel, setCurrentLevel] = useState('N5')
   const [targetLevel, setTargetLevel] = useState('N3')
   const [loading, setLoading] = useState(false)
-  const { updateProfile } = useAuth()
+  const { user, hasAuth, loading: authLoading, updateProfile } = useAuth()
+  const toast = useToast()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!authLoading && hasAuth && !user) navigate('/login', { replace: true })
+  }, [hasAuth, user, authLoading, navigate])
+
+  if (authLoading || (hasAuth && !user)) return null
 
   async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
     try {
       await updateProfile({ current_level: currentLevel, target_level: targetLevel })
+      toast.success('Profile updated')
       navigate('/')
     } catch (err) {
-      console.error(err)
+      toast.error(err?.message || 'Could not save')
     } finally {
       setLoading(false)
     }
@@ -27,6 +37,7 @@ export function Onboarding() {
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
+      <PageMeta title="Set your level" />
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
