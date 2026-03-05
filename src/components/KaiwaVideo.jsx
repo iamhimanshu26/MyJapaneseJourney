@@ -2,29 +2,82 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FuriganaText } from './FuriganaText'
 
-/** Manga-style character avatar (simple anime face) */
-function MangaCharacter({ variant = 'amber', isSpeaking }) {
-  const isLeft = variant === 'amber'
+/** Anime-style boy character - short hair, collared shirt */
+function BoyCharacter({ isSpeaking }) {
   return (
     <motion.div
       animate={{ scale: isSpeaking ? 1.05 : 1, y: isSpeaking ? -4 : 0 }}
       transition={{ duration: 0.25 }}
-      className="relative"
+      className="relative w-20 h-24"
     >
-      {/* Body / shoulders */}
-      <div className={`w-24 h-28 rounded-t-[40%] ${isLeft ? 'bg-amber-100' : 'bg-pink-100'} border-4 ${isLeft ? 'border-amber-300' : 'border-pink-300'} shadow-lg`}>
+      <svg viewBox="0 0 80 96" className="w-full h-full drop-shadow-lg">
+        {/* Shoulders / collared shirt */}
+        <path d="M15 75 Q20 85 40 88 Q60 85 65 75 L68 70 Q70 68 72 70 L75 72 Q78 70 80 72 L80 96 L0 96 L0 72 Q2 70 5 72 L8 70 Q10 68 12 70 Z" fill="#94a3b8" stroke="#64748b" strokeWidth="1" />
+        {/* Shirt collar */}
+        <path d="M35 72 L40 78 L45 72 Z" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1" />
+        {/* Neck */}
+        <rect x="34" y="65" width="12" height="10" fill="#fde68a" stroke="#f59e0b" strokeWidth="0.5" rx="1" />
         {/* Face */}
-        <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-white border-2 border-slate-300 shadow-inner flex items-center justify-center overflow-hidden">
-          {/* Eyes */}
-          <div className="flex gap-3 -mt-2">
-            <div className={`w-3 h-3 rounded-full ${isLeft ? 'bg-amber-700' : 'bg-pink-700'}`} />
-            <div className={`w-3 h-3 rounded-full ${isLeft ? 'bg-amber-700' : 'bg-pink-700'}`} />
-          </div>
-          {/* Blush */}
-          <div className={`absolute bottom-3 left-2 w-2 h-1 rounded-full ${isLeft ? 'bg-amber-300/60' : 'bg-pink-300/60'}`} />
-          <div className={`absolute bottom-3 right-2 w-2 h-1 rounded-full ${isLeft ? 'bg-amber-300/60' : 'bg-pink-300/60'}`} />
-        </div>
-      </div>
+        <ellipse cx="40" cy="42" rx="22" ry="24" fill="#fef3c7" stroke="#d97706" strokeWidth="1.5" />
+        {/* Short tousled hair - boy style, on top of head */}
+        <path d="M18 28 Q20 18 28 20 Q32 15 40 14 Q48 15 52 20 Q60 18 62 28 L62 42 Q58 48 40 50 Q22 48 18 42 Z" fill="#78716c" stroke="#57534e" strokeWidth="1" />
+        {/* Bangs - forehead only */}
+        <path d="M22 32 Q28 26 40 25 Q52 26 58 32 L55 36 Q50 34 45 35 L40 36 Q35 35 30 34 Q25 36 22 32 Z" fill="#78716c" stroke="#57534e" strokeWidth="0.5" />
+        {/* Left eye - anime boy style */}
+        <ellipse cx="30" cy="42" rx="5" ry="6" fill="white" stroke="#57534e" strokeWidth="0.8" />
+        <ellipse cx="30" cy="43" rx="3" ry="4" fill="#292524" />
+        <circle cx="31" cy="42" r="1" fill="white" opacity="0.9" />
+        {/* Right eye */}
+        <ellipse cx="50" cy="42" rx="5" ry="6" fill="white" stroke="#57534e" strokeWidth="0.8" />
+        <ellipse cx="50" cy="43" rx="3" ry="4" fill="#292524" />
+        <circle cx="51" cy="42" r="1" fill="white" opacity="0.9" />
+        {/* Eyebrows - subtle */}
+        <path d="M26 36 Q30 35 34 36" stroke="#57534e" strokeWidth="1.2" fill="none" />
+        <path d="M46 36 Q50 35 54 36" stroke="#57534e" strokeWidth="1.2" fill="none" />
+        {/* Mouth */}
+        <path d="M36 52 Q40 54 44 52" stroke="#78716c" strokeWidth="1" fill="none" />
+      </svg>
+    </motion.div>
+  )
+}
+
+/** Anime-style girl character - longer hair, softer features */
+function GirlCharacter({ isSpeaking }) {
+  return (
+    <motion.div
+      animate={{ scale: isSpeaking ? 1.05 : 1, y: isSpeaking ? -4 : 0 }}
+      transition={{ duration: 0.25 }}
+      className="relative w-20 h-24"
+    >
+      <svg viewBox="0 0 80 96" className="w-full h-full drop-shadow-lg">
+        {/* Shoulders / blouse */}
+        <path d="M15 75 Q20 85 40 88 Q60 85 65 75 L68 70 Q70 68 72 70 L75 72 Q78 70 80 72 L80 96 L0 96 L0 72 Q2 70 5 72 L8 70 Q10 68 12 70 Z" fill="#fbcfe8" stroke="#ec4899" strokeWidth="1" />
+        {/* Neck */}
+        <rect x="34" y="65" width="12" height="10" fill="#fce7f3" stroke="#f472b6" strokeWidth="0.5" rx="1" />
+        {/* Long hair - flows down sides */}
+        <path d="M58 25 L62 20 Q65 18 62 35 L60 55 L58 75 L55 96 L50 96 L48 70 L50 50 L52 30 Q50 22 58 25 Z" fill="#a16207" stroke="#854d0e" strokeWidth="1" />
+        <path d="M22 25 L18 20 Q15 18 18 35 L20 55 L22 75 L25 96 L30 96 L32 70 L30 50 L28 30 Q30 22 22 25 Z" fill="#a16207" stroke="#854d0e" strokeWidth="1" />
+        {/* Face */}
+        <ellipse cx="40" cy="42" rx="22" ry="24" fill="#fef3c7" stroke="#f472b6" strokeWidth="1" />
+        {/* Bangs / front hair - forehead only */}
+        <path d="M18 30 Q22 18 40 16 Q58 18 62 30 L60 38 Q55 35 45 36 L40 37 Q35 36 25 35 Q20 38 18 30 Z" fill="#a16207" stroke="#854d0e" strokeWidth="0.5" />
+        {/* Left eye - anime girl style, larger */}
+        <ellipse cx="28" cy="42" rx="6" ry="7" fill="white" stroke="#78716c" strokeWidth="0.8" />
+        <ellipse cx="28" cy="43" rx="4" ry="5" fill="#4f46e5" />
+        <circle cx="29" cy="41" r="1.5" fill="white" opacity="0.95" />
+        {/* Right eye */}
+        <ellipse cx="52" cy="42" rx="6" ry="7" fill="white" stroke="#78716c" strokeWidth="0.8" />
+        <ellipse cx="52" cy="43" rx="4" ry="5" fill="#4f46e5" />
+        <circle cx="53" cy="41" r="1.5" fill="white" opacity="0.95" />
+        {/* Eyebrows - softer, curved */}
+        <path d="M24 36 Q28 34 32 37" stroke="#a16207" strokeWidth="1" fill="none" />
+        <path d="M48 37 Q52 34 56 36" stroke="#a16207" strokeWidth="1" fill="none" />
+        {/* Blush */}
+        <ellipse cx="22" cy="50" rx="4" ry="2" fill="#fda4af" opacity="0.6" />
+        <ellipse cx="58" cy="50" rx="4" ry="2" fill="#fda4af" opacity="0.6" />
+        {/* Mouth - soft smile */}
+        <path d="M34 54 Q40 58 46 54" stroke="#e11d48" strokeWidth="1" fill="none" />
+      </svg>
     </motion.div>
   )
 }
@@ -117,27 +170,27 @@ export function KaiwaVideo({ conversations = [] }) {
           <div className="absolute bottom-0 left-0 right-0 h-px bg-slate-300" />
         </div>
 
-        {/* Left character - manga style */}
+        {/* Left character - boy */}
         <motion.div
           animate={{ scale: leftSpeaker && current ? 1.02 : 1 }}
           transition={{ duration: 0.2 }}
           className={`flex flex-col items-center gap-2 z-10 ${leftSpeaker && current ? 'ring-4 ring-amber-400 ring-offset-2 rounded-2xl' : ''}`}
         >
-          <MangaCharacter variant="amber" isSpeaking={leftSpeaker && current} />
+          <BoyCharacter isSpeaking={leftSpeaker && current} />
           <span className="text-xs font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded">
-            {leftSpeaker ? current?.name : (conversations[index - 1] || {})?.name || conversations[0]?.name || 'A'}
+            {leftSpeaker ? current?.name : (conversations[index - 1] || {})?.name || conversations[0]?.name || 'Boy'}
           </span>
         </motion.div>
 
-        {/* Right character - manga style */}
+        {/* Right character - girl */}
         <motion.div
           animate={{ scale: rightSpeaker && current ? 1.02 : 1 }}
           transition={{ duration: 0.2 }}
           className={`flex flex-col items-center gap-2 z-10 ${rightSpeaker && current ? 'ring-4 ring-pink-400 ring-offset-2 rounded-2xl' : ''}`}
         >
-          <MangaCharacter variant="pink" isSpeaking={rightSpeaker && current} />
+          <GirlCharacter isSpeaking={rightSpeaker && current} />
           <span className="text-xs font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded">
-            {rightSpeaker ? current?.name : (conversations[index - 1] || {})?.name || conversations[1]?.name || 'B'}
+            {rightSpeaker ? current?.name : (conversations[index - 1] || {})?.name || conversations[1]?.name || 'Girl'}
           </span>
         </motion.div>
       </div>
