@@ -44,6 +44,8 @@ export function Dashboard() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
+            { title: 'Guided Chapters', desc: 'Step-by-step lessons with 会話練習', path: '/chapters', icon: '📖', highlight: true },
+            { title: 'Learn from your text', desc: 'Upload text, extract vocab & grammar', path: '/learn-from-text', icon: '📄' },
             { title: 'Vocabulary', desc: 'Flashcards & quizzes', path: '/vocab', icon: '📚' },
             { title: 'Grammar', desc: 'Patterns & explanations', path: '/grammar', icon: '📝' },
             { title: 'My Discovered', desc: 'Words you looked up', path: '/discovered', icon: '✨' },
@@ -56,7 +58,11 @@ export function Dashboard() {
             >
               <Link
                 to={card.path}
-                className="block rounded-2xl border border-slate-200 bg-[var(--color-bg-card)] p-6 transition-colors hover:border-amber-300 hover:bg-amber-50/50 shadow-sm"
+                className={`block rounded-2xl border p-6 transition-colors shadow-sm ${
+                  card.highlight
+                    ? 'border-amber-300 bg-amber-50/50 hover:bg-amber-50 hover:border-amber-400'
+                    : 'border-slate-200 bg-[var(--color-bg-card)] hover:border-amber-300 hover:bg-amber-50/50'
+                }`}
               >
                 <span className="text-2xl mb-3 block" aria-hidden>{card.icon}</span>
                 <h3 className="font-semibold text-[var(--color-text)]">{card.title}</h3>

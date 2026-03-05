@@ -5,6 +5,8 @@ import { Vocab } from './pages/Vocab'
 import { Grammar } from './pages/Grammar'
 import { Lookup } from './pages/Lookup'
 import { MyDiscovered } from './pages/MyDiscovered'
+import { GuidedChapters } from './pages/GuidedChapters'
+import { LearnFromText } from './pages/LearnFromText'
 import { Login } from './pages/Login'
 import { Signup } from './pages/Signup'
 import { Onboarding } from './pages/Onboarding'
@@ -18,6 +20,8 @@ function App() {
         <Route path="grammar" element={<Grammar />} />
         <Route path="lookup" element={<Lookup />} />
         <Route path="discovered" element={<MyDiscovered />} />
+        <Route path="chapters" element={<GuidedChapters />} />
+        <Route path="learn-from-text" element={<LearnFromText />} />
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
         <Route path="onboarding" element={<Onboarding />} />

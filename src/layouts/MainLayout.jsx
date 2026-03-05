@@ -4,7 +4,9 @@ import { useAuth } from '../context/AuthContext'
 
 const navItems = [
   { path: '/', label: 'Dashboard' },
-  { path: '/lookup', label: 'Heard New?', highlight: true },
+  { path: '/chapters', label: 'Guided Chapters', highlight: true },
+  { path: '/lookup', label: 'Heard New?' },
+  { path: '/learn-from-text', label: 'Learn from text' },
   { path: '/vocab', label: 'Vocabulary' },
   { path: '/grammar', label: 'Grammar' },
   { path: '/discovered', label: 'My Discovered' },
