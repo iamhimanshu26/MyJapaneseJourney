@@ -24,7 +24,7 @@ export function Vocab() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 + i * 0.03 }}
-              className="px-5 py-2.5 rounded-xl border border-white/10 bg-[var(--color-bg-card)] font-medium text-[var(--color-text)] hover:border-amber-500/30 hover:bg-amber-500/10 transition-colors"
+              className="px-5 py-2.5 rounded-xl border border-slate-200 bg-[var(--color-bg-card)] font-medium text-[var(--color-text)] hover:border-amber-300 hover:bg-amber-50 transition-colors shadow-sm"
             >
               {level}
             </motion.button>

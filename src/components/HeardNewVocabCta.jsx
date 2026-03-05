@@ -10,11 +10,11 @@ export function HeardNewVocabCta({ compact = false }) {
     >
       <Link
         to="/lookup"
-        className={`group flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-amber-600/5 p-4 transition-all hover:border-amber-500/50 hover:from-amber-500/15 hover:to-amber-600/10 ${
+        className={`group flex items-center gap-3 rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-amber-100/50 p-4 transition-all hover:border-amber-400 hover:from-amber-100 hover:to-amber-100 ${
           compact ? 'inline-flex' : 'block'
         }`}
       >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-200 text-amber-700">
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -27,7 +27,7 @@ export function HeardNewVocabCta({ compact = false }) {
             Search any word or grammar • Get meaning, examples & JLPT level
           </span>
         </div>
-        <svg className="ml-auto h-5 w-5 text-amber-500/60 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="ml-auto h-5 w-5 text-amber-600 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </Link>

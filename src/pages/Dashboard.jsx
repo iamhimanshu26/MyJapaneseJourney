@@ -33,7 +33,7 @@ export function Dashboard() {
             >
               <Link
                 to={card.path}
-                className="block rounded-2xl border border-white/5 bg-[var(--color-bg-card)] p-6 transition-colors hover:border-amber-500/20 hover:bg-[var(--color-bg-elevated)]"
+                className="block rounded-2xl border border-slate-200 bg-[var(--color-bg-card)] p-6 transition-colors hover:border-amber-300 hover:bg-amber-50/50 shadow-sm"
               >
                 <span className="text-2xl mb-3 block">{card.icon}</span>
                 <h3 className="font-semibold text-[var(--color-text)]">{card.title}</h3>

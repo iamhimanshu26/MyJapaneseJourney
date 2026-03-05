@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #0c0f14;
-  --color-bg-card: #141922;
-  --color-bg-elevated: #1a1f2e;
+  --color-bg: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #f1f5f9;
   --color-accent: #f59e0b;
   --color-accent-soft: #fbbf24;
-  --color-text: #f1f5f9;
-  --color-text-muted: #94a3b8;
-  --color-border: rgba(255, 255, 255, 0.08);
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-border: rgba(0, 0, 0, 0.08);
   --font-sans: "DM Sans", system-ui, sans-serif;
   --font-jp: "Noto Sans JP", sans-serif;
 }
@@ -26,5 +26,5 @@
 }
 
 ::selection {
-  @apply bg-amber-500/30;
+  @apply bg-amber-400/40;
 }

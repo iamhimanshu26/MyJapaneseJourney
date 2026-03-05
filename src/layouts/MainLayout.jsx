@@ -14,7 +14,7 @@ export function MainLayout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-[var(--color-bg)]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-[var(--color-bg)]/95 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="text-xl font-semibold tracking-tight">
             My Japanese Journey
@@ -26,10 +26,10 @@ export function MainLayout() {
                 to={item.path}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   location.pathname === item.path
-                    ? 'bg-amber-500/15 text-amber-400'
+                    ? 'bg-amber-100 text-amber-700'
                     : item.highlight
-                      ? 'text-amber-400/90 hover:text-amber-400 hover:bg-amber-500/10'
-                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-white/5'
+                      ? 'text-amber-700 hover:text-amber-800 hover:bg-amber-50'
+                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-slate-100'
                 }`}
               >
                 {item.label}

@@ -20,7 +20,7 @@ export function MyDiscovered() {
               <h2 className="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
                 My {level} words
               </h2>
-              <div className="rounded-xl border border-white/5 bg-[var(--color-bg-card)] p-4">
+              <div className="rounded-xl border border-slate-200 bg-[var(--color-bg-card)] p-4 shadow-sm">
                 <p className="text-sm text-[var(--color-text-muted)]">
                   No words saved yet. Use &quot;Heard New Vocab — Find Here&quot; to look up and save words.
                 </p>
