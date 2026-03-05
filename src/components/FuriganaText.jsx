@@ -1,7 +1,7 @@
 /**
  * Renders Japanese text with furigana stacked ABOVE kanji.
- * Expects format: 漢字(読み) e.g. 地震(じしん)の警報(けいほう)が鳴(な)った
- * Uses flexbox to ensure reading is always above, never beside.
+ * Expects format: 漢字(読み) e.g. 予約(よやく)の確認(かくにん)をお願い(おねがい)します
+ * Kanji stays on baseline; reading is positioned directly above for proper alignment.
  */
 export function FuriganaText({ text, className = '', style = {} }) {
   if (!text || typeof text !== 'string') return null
@@ -35,11 +35,11 @@ export function FuriganaText({ text, className = '', style = {} }) {
           return <span key={i}>{part.text}</span>
         }
         return (
-          <span key={i} className="inline-flex flex-col items-center leading-none">
-            <span className="text-[0.45em] text-[var(--color-text-muted)] whitespace-nowrap">
+          <span key={i} className="furigana-ruby inline-block align-baseline relative text-center">
+            <span className="absolute bottom-full left-0 right-0 text-[0.5em] leading-none text-[var(--color-text-muted)] whitespace-nowrap">
               {part.reading}
             </span>
-            <span className="leading-tight">{part.kanji}</span>
+            <span>{part.kanji}</span>
           </span>
         )
       })}

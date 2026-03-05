@@ -108,7 +108,7 @@ export function Lookup() {
             <p className="text-[var(--color-text)]">{result.meaning}</p>
             <div className="mt-4 pt-4 border-t border-slate-200">
               <p className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Examples</p>
-              <ul className="space-y-2">
+              <ul className="space-y-3 examples-with-furigana">
                 {(result.examples || []).map((ex, i) => (
                   <li key={i} className="text-[var(--color-text)]" style={{ fontFamily: 'var(--font-jp)' }}>
                     {typeof ex === 'object' && ex?.jp ? (

@@ -14,7 +14,7 @@ For VOCABULARY:
   "partOfSpeech": "<e.g. adverb, noun, verb>",
   "level": "<one of: N5, N4, N3, N2, N1>",
   "examples": [
-    { "jp": "<Japanese with furigana: 漢字(読み) for each kanji>", "en": "<English translation>" },
+    { "jp": "<ONE line: full sentence with 漢字(読み) inline>", "en": "<English translation>" },
     ...
   ]
 }
@@ -27,16 +27,16 @@ For GRAMMAR:
   "meaning": "<concise explanation>",
   "level": "<one of: N5, N4, N3, N2, N1>",
   "examples": [
-    { "jp": "<Japanese with furigana: 漢字(読み) for each kanji>", "en": "<English translation>" },
+    { "jp": "<ONE line: full sentence with 漢字(読み) inline>", "en": "<English translation>" },
     ...
   ]
 }
 
-CRITICAL - Furigana by level:
-- N5, N4: Add furigana (読み) for ALL kanji in examples. Format: 漢字(読み) e.g. 地震(じしん)の警報(けいほう)が鳴(な)った
-- N3: Add furigana for most kanji, especially less common ones
-- N2, N1: Add furigana for difficult/rare kanji only
-Use ONLY hiragana inside the parentheses for readings.
+CRITICAL - Example sentence format:
+- "jp" must be ONE single line. Never split into multiple lines. Never list kanji separately.
+- Write the FULL sentence with kanji. For EACH kanji, add (reading) immediately after it. Example: 予約(よやく)の確認(かくにん)をお願い(おねがい)します。
+- ALL kanji in the sentence must have furigana. No exceptions for N5, N4.
+- Hiragana/katakana between kanji stay as-is (の, を, し, etc). Only kanji get (読み).
 
 Rules:
 - Decide if the query is vocab or grammar. Single words/phrases = vocab. Patterns like 〜ている, 〜方がいい = grammar.

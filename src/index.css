@@ -29,18 +29,10 @@
   @apply bg-amber-400/40;
 }
 
-/* Furigana (ruby) - reading ABOVE kanji, not beside */
-ruby {
-  ruby-position: over;
-  ruby-align: center;
+/* Furigana - reading above kanji, kanji on baseline for proper alignment */
+.furigana-ruby {
+  unicode-bidi: isolate;
 }
-ruby rt {
-  font-size: 0.5em;
-  line-height: 1;
-  display: block;
-  text-align: center;
-  white-space: nowrap;
+.examples-with-furigana li {
+  line-height: 2.2;
 }
-/* Force vertical stacking: reading on top, kanji below */
-.rb { display: inline-ruby; }
-.rb rt { ruby-position: over; }
