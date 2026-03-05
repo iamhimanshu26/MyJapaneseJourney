@@ -13,7 +13,10 @@ For VOCABULARY:
   "meaning": "<concise English meaning>",
   "partOfSpeech": "<e.g. adverb, noun, verb>",
   "level": "<one of: N5, N4, N3, N2, N1>",
-  "examples": ["<Japanese sentence with translation in parentheses>", ...]
+  "examples": [
+    { "jp": "<Japanese with furigana: 漢字(読み) for each kanji>", "en": "<English translation>" },
+    ...
+  ]
 }
 
 For GRAMMAR:
@@ -23,12 +26,21 @@ For GRAMMAR:
   "structure": "<pattern e.g. verb-ます form + に行く>",
   "meaning": "<concise explanation>",
   "level": "<one of: N5, N4, N3, N2, N1>",
-  "examples": ["<Japanese example with translation>", ...]
+  "examples": [
+    { "jp": "<Japanese with furigana: 漢字(読み) for each kanji>", "en": "<English translation>" },
+    ...
+  ]
 }
+
+CRITICAL - Furigana by level:
+- N5, N4: Add furigana (読み) for ALL kanji in examples. Format: 漢字(読み) e.g. 地震(じしん)の警報(けいほう)が鳴(な)った
+- N3: Add furigana for most kanji, especially less common ones
+- N2, N1: Add furigana for difficult/rare kanji only
+Use ONLY hiragana inside the parentheses for readings.
 
 Rules:
 - Decide if the query is vocab or grammar. Single words/phrases = vocab. Patterns like 〜ている, 〜方がいい = grammar.
-- Provide 2-3 example sentences. Format: "Japanese text (English translation)"
+- examples must be array of objects with "jp" and "en" keys
 - level must be exactly N5, N4, N3, N2, or N1
 - Be concise. If unsure of level, use the most likely one.
 - Output ONLY the JSON object, no markdown, no extra text.`
@@ -110,21 +122,27 @@ export default async function handler(req, res) {
     }
 
     // Normalize for frontend
+    const normalizeExample = (ex) => {
+      if (typeof ex === 'string') {
+        const match = ex.match(/^(.+?)[。\s]*\(([^)]+)\)\s*$/)
+        return match ? { jp: match[1].trim(), en: match[2].trim() } : { jp: ex, en: '' }
+      }
+      return { jp: ex?.jp || ex?.ja || '', en: ex?.en || ex?.english || '' }
+    }
+    result.examples = (Array.isArray(result.examples) ? result.examples : [])
+      .filter(Boolean)
+      .map(normalizeExample)
+      .filter((e) => e.jp)
+
     if (result.type === 'vocab') {
       result.word = result.word || query
       result.reading = result.reading || ''
       result.meaning = result.meaning || 'Unknown'
       result.level = result.level || 'N?'
-      result.examples = Array.isArray(result.examples)
-        ? result.examples
-        : [result.examples].filter(Boolean)
     } else {
       result.name = result.name || result.structure || query
       result.meaning = result.meaning || 'Unknown'
       result.level = result.level || 'N?'
-      result.examples = Array.isArray(result.examples)
-        ? result.examples
-        : [result.examples].filter(Boolean)
     }
 
     return res.status(200).json(result)

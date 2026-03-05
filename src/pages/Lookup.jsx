@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { FuriganaText } from '../components/FuriganaText'
 
 function getApiBase() {
   if (typeof window === 'undefined') return ''
@@ -91,11 +92,16 @@ export function Lookup() {
               )}
             </div>
             <h2 className="text-2xl font-bold text-[var(--color-text)] mb-1" style={{ fontFamily: 'var(--font-jp)' }}>
-              {result.type === 'grammar' ? result.name : result.word}
+              {result.type === 'vocab' && result.reading ? (
+                <FuriganaText
+                  text={`${result.word}(${result.reading})`}
+                  className="font-bold"
+                  style={{ fontFamily: 'var(--font-jp)' }}
+                />
+              ) : (
+                result.type === 'grammar' ? result.name : result.word
+              )}
             </h2>
-            {result.type === 'vocab' && result.reading && (
-              <p className="text-[var(--color-text-muted)] mb-4">{result.reading}</p>
-            )}
             {result.type === 'grammar' && result.structure && (
               <p className="text-[var(--color-text-muted)] mb-4 font-mono text-sm">{result.structure}</p>
             )}
@@ -105,7 +111,13 @@ export function Lookup() {
               <ul className="space-y-2">
                 {(result.examples || []).map((ex, i) => (
                   <li key={i} className="text-[var(--color-text)]" style={{ fontFamily: 'var(--font-jp)' }}>
-                    {ex}
+                    {typeof ex === 'object' && ex?.jp ? (
+                      <>
+                        <FuriganaText text={ex.jp} />{ex.en ? ` (${ex.en})` : ''}
+                      </>
+                    ) : (
+                      ex
+                    )}
                   </li>
                 ))}
               </ul>
