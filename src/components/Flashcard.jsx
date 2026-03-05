@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { FuriganaText } from './FuriganaText'
 
 export function Flashcard({ items, onKnow, onReview }) {
   const [index, setIndex] = useState(0)
@@ -42,7 +43,11 @@ export function Flashcard({ items, onKnow, onReview }) {
               style={{ backfaceVisibility: 'hidden' }}
             >
               <p className="text-3xl font-bold" style={{ fontFamily: 'var(--font-jp)' }}>
-                {current.word}
+                {current.reading ? (
+                  <FuriganaText text={`${current.word}(${current.reading})`} />
+                ) : (
+                  current.word
+                )}
               </p>
               {!flipped && (
                 <p className="absolute bottom-3 text-sm text-[var(--color-text-muted)]">Click to flip</p>
@@ -55,7 +60,13 @@ export function Flashcard({ items, onKnow, onReview }) {
               className="absolute inset-0 rounded-2xl border border-slate-200 bg-amber-50 shadow-lg flex flex-col items-center justify-center p-6"
               style={{ backfaceVisibility: 'hidden' }}
             >
-              <p className="text-lg text-[var(--color-text-muted)] mb-2">{current.reading}</p>
+              <p className="text-2xl font-bold mb-2" style={{ fontFamily: 'var(--font-jp)' }}>
+                {current.reading ? (
+                  <FuriganaText text={`${current.word}(${current.reading})`} />
+                ) : (
+                  current.word
+                )}
+              </p>
               <p className="text-xl font-semibold text-[var(--color-text)]">{current.meaning}</p>
             </motion.div>
           </div>

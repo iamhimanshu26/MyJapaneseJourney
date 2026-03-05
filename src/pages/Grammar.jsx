@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { HeardNewVocabCta } from '../components/HeardNewVocabCta'
 import { PageMeta } from '../components/PageMeta'
+import { FuriganaText } from '../components/FuriganaText'
 import { GRAMMAR_BY_LEVEL } from '../data/grammar'
 
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1']
@@ -62,7 +63,9 @@ export function Grammar() {
                 </div>
                 <p className="text-sm text-[var(--color-text-muted)] font-mono mb-2">{g.structure}</p>
                 <p className="text-[var(--color-text)] mb-2">{g.meaning}</p>
-                <p className="text-sm" style={{ fontFamily: 'var(--font-jp)' }}>{g.example}</p>
+                <p className="text-sm examples-with-furigana" style={{ fontFamily: 'var(--font-jp)' }}>
+                  <FuriganaText text={g.example} />
+                </p>
               </motion.div>
             ))
           ) : (

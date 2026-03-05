@@ -77,7 +77,7 @@ export function MyDiscovered() {
                           animate={{ opacity: 1 }}
                           className="flex items-center justify-between rounded-xl border border-slate-200 bg-[var(--color-bg-card)] p-4 shadow-sm"
                         >
-                          <div>
+                          <div className="flex-1 min-w-0">
                             <span className="font-bold" style={{ fontFamily: 'var(--font-jp)' }}>
                               {isVocab ? (
                                 d.reading ? (
@@ -90,6 +90,22 @@ export function MyDiscovered() {
                               )}
                             </span>
                             <p className="text-sm text-[var(--color-text-muted)] mt-1">{d.meaning}</p>
+                            {(d.examples || []).length > 0 && (
+                              <ul className="mt-2 space-y-1 examples-with-furigana">
+                                {d.examples.slice(0, 2).map((ex, idx) => (
+                                  <li key={idx} className="text-xs text-[var(--color-text-muted)]" style={{ fontFamily: 'var(--font-jp)' }}>
+                                    {typeof ex === 'object' && ex?.jp ? (
+                                      <>
+                                        <FuriganaText text={ex.jp} />
+                                        {ex.en ? ` (${ex.en})` : ''}
+                                      </>
+                                    ) : (
+                                      ex
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
                           </div>
                           <button
                             onClick={() => handleRemove(item.id)}
