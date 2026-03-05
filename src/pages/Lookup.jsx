@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FuriganaText } from '../components/FuriganaText'
+import { saveDiscovered, isSaved as checkSaved } from '../lib/discovered'
 
 function getApiBase() {
   if (typeof window === 'undefined') return ''
@@ -12,6 +13,17 @@ export function Lookup() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (result) setSaved(checkSaved(result))
+  }, [result])
+
+  function handleSave() {
+    if (!result) return
+    saveDiscovered(result)
+    setSaved(true)
+  }
 
   async function handleSearch(e) {
     e.preventDefault()
@@ -86,8 +98,12 @@ export function Lookup() {
                 {result.level}
               </span>
               {(result.type === 'vocab' || result.type === 'grammar') && (
-                <button className="text-sm font-medium text-amber-700 hover:text-amber-800">
-                  Save to My Discovered
+                <button
+                  onClick={handleSave}
+                  disabled={saved}
+                  className="text-sm font-medium text-amber-700 hover:text-amber-800 disabled:opacity-50"
+                >
+                  {saved ? 'Saved' : 'Save to My Discovered'}
                 </button>
               )}
             </div>

@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { HeardNewVocabCta } from '../components/HeardNewVocabCta'
+import { getDiscovered } from '../lib/discovered'
 
 export function Dashboard() {
+  const discoveredCount = getDiscovered().length
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <motion.div
@@ -10,12 +13,15 @@ export function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h1 className="text-3xl font-bold tracking-tight mb-2">
-          Welcome back
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome</h1>
         <p className="text-[var(--color-text-muted)] mb-8">
           Ready to continue your Japanese journey from N5 to N1.
         </p>
+        {discoveredCount > 0 && (
+          <p className="mb-6 text-sm text-[var(--color-text-muted)]">
+            You&apos;ve saved {discoveredCount} word{discoveredCount !== 1 ? 's' : ''} to My Discovered.
+          </p>
+        )}
 
         <HeardNewVocabCta />
 

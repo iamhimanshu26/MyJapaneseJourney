@@ -1,5 +1,4 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
 
 const navItems = [
   { path: '/', label: 'Dashboard' },
