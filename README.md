@@ -1,4 +1,4 @@
-# Kotoba — Japanese Learning Platform
+# My Japanese Journey — Japanese Learning Platform
 
 Multi-user, AI-enhanced Japanese learning platform (N5 → N1). Vocabulary, grammar, reading, listening — with interactive practice and the **"Heard New Vocab"** lookup feature.
 

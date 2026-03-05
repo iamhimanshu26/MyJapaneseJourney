@@ -17,7 +17,7 @@ export function MainLayout() {
       <header className="sticky top-0 z-50 border-b border-white/5 bg-[var(--color-bg)]/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="text-xl font-semibold tracking-tight">
-            kotoba
+            My Japanese Journey
           </Link>
           <nav className="flex items-center gap-1">
             {navItems.map((item) => (
