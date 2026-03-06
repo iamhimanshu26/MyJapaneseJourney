@@ -6,6 +6,7 @@ import { useDiscovered } from '../hooks/useDiscovered'
 import { useToast } from '../context/ToastContext'
 import { addVocabBatch } from '../lib/userVocab'
 import { addGrammarBatch } from '../lib/userGrammar'
+import { addKanjiBatch } from '../lib/userKanji'
 
 function getApiBase() {
   if (typeof window === 'undefined') return ''
@@ -64,6 +65,10 @@ export function LearnFromText() {
         return
       }
       setResult(data)
+      // Auto-save when extraction succeeds
+      if (data && ((data.vocab?.length || 0) + (data.grammar?.length || 0) + (data.kanji?.length || 0)) > 0) {
+        performSaveAll(data)
+      }
     } catch (err) {
       setError('Could not connect. Check your connection.')
       toast.error('Connection failed')
@@ -72,14 +77,15 @@ export function LearnFromText() {
     }
   }
 
-  async function handleSaveAll() {
-    if (!result) return
+  const performSaveAll = useCallback(async (data) => {
+    if (!data) return
     let vocabAdded = 0
     let grammarAdded = 0
+    let kanjiAdded = 0
 
-    // Save to Vocabulary (for flashcards)
+    // Save to Vocabulary
     vocabAdded = addVocabBatch(
-      (result.vocab || []).map((v) => ({
+      (data.vocab || []).map((v) => ({
         word: v.word,
         reading: v.reading || '',
         meaning: v.meaning || '',
@@ -87,9 +93,9 @@ export function LearnFromText() {
       }))
     )
 
-    // Save to Grammar (for grammar list)
+    // Save to Grammar
     grammarAdded = addGrammarBatch(
-      (result.grammar || []).map((g) => ({
+      (data.grammar || []).map((g) => ({
         name: g.name,
         structure: g.structure || '',
         meaning: g.meaning || '',
@@ -98,39 +104,52 @@ export function LearnFromText() {
       }))
     )
 
-    // Also save to My Discovered (for quick reference)
-    for (const v of result.vocab || []) {
+    // Save to Kanji
+    kanjiAdded = addKanjiBatch(
+      (data.kanji || []).map((k) => ({
+        char: k.char,
+        reading: k.reading || '',
+        meaning: k.meaning || '',
+        level: k.level || 'N5',
+      }))
+    )
+
+    // Save all to My Discovered
+    for (const v of data.vocab || []) {
       if (!v?.word) continue
       try {
-        await save({
-          type: 'vocab',
-          word: String(v.word),
-          reading: String(v.reading || ''),
-          meaning: String(v.meaning || ''),
-          level: String(v.level || 'N5'),
-        })
+        await save({ type: 'vocab', word: String(v.word), reading: String(v.reading || ''), meaning: String(v.meaning || ''), level: String(v.level || 'N5') })
       } catch (_) {}
     }
-    for (const g of result.grammar || []) {
+    for (const g of data.grammar || []) {
       if (!g?.name) continue
       try {
-        await save({
-          type: 'grammar',
-          name: String(g.name),
-          structure: String(g.structure || ''),
-          meaning: String(g.meaning || ''),
-          level: String(g.level || 'N5'),
-          examples: g.example ? [{ jp: String(g.example), en: '' }] : [],
-        })
+        await save({ type: 'grammar', name: String(g.name), structure: String(g.structure || ''), meaning: String(g.meaning || ''), level: String(g.level || 'N5'), examples: g.example ? [{ jp: String(g.example), en: '' }] : [] })
+      } catch (_) {}
+    }
+    for (const k of data.kanji || []) {
+      if (!k?.char) continue
+      try {
+        await save({ type: 'kanji', char: String(k.char), reading: String(k.reading || ''), meaning: String(k.meaning || ''), level: String(k.level || 'N5') })
       } catch (_) {}
     }
 
-    toast.success(`Saved ${vocabAdded} to Vocabulary, ${grammarAdded} to Grammar, and all to My Discovered`)
+    const parts = []
+    if (vocabAdded) parts.push(`${vocabAdded} to Vocabulary`)
+    if (grammarAdded) parts.push(`${grammarAdded} to Grammar`)
+    if (kanjiAdded) parts.push(`${kanjiAdded} to Kanji`)
+    if (parts.length) toast.success(`Saved ${parts.join(', ')} and all to My Discovered`)
+  }, [save, toast])
+
+  async function handleSaveAll() {
+    if (!result) return
+    await performSaveAll(result)
   }
 
-  const hasResult = result && ((result.vocab?.length || 0) + (result.grammar?.length || 0)) > 0
+  const hasResult = result && ((result.vocab?.length || 0) + (result.grammar?.length || 0) + (result.kanji?.length || 0)) > 0
   const vocabCount = result?.vocab?.length || 0
   const grammarCount = result?.grammar?.length || 0
+  const kanjiCount = result?.kanji?.length || 0
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -171,7 +190,7 @@ export function LearnFromText() {
           disabled={loading || !text.trim()}
           className="mt-6 px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors"
         >
-          {loading ? 'Extracting…' : 'Extract vocab & grammar'}
+          {loading ? 'Extracting…' : 'Extract vocab, grammar & kanji'}
         </button>
 
         {error && (
@@ -184,13 +203,13 @@ export function LearnFromText() {
             animate={{ opacity: 1, y: 0 }}
             className="mt-8 rounded-2xl border border-slate-200 bg-[var(--color-bg-card)] p-6"
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Found {vocabCount} words, {grammarCount} grammar</h3>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <h3 className="font-semibold">Found {vocabCount} words, {grammarCount} grammar, {kanjiCount} kanji</h3>
               <button
                 onClick={handleSaveAll}
                 className="text-sm font-medium text-amber-700 hover:text-amber-800"
               >
-                Save to Vocabulary, Grammar & My Discovered
+                Save again to Vocabulary, Grammar, Kanji & My Discovered
               </button>
             </div>
             <div className="space-y-4 max-h-[400px] overflow-y-auto">
@@ -224,6 +243,24 @@ export function LearnFromText() {
                     ))}
                     {grammarCount > 10 && (
                       <li className="text-[var(--color-text-muted)]">+ {grammarCount - 10} more</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+              {kanjiCount > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Kanji</h4>
+                  <ul className="space-y-2">
+                    {(result.kanji || []).slice(0, 15).map((k, i) => (
+                      <li key={i} className="flex gap-2 text-sm">
+                        <span style={{ fontFamily: 'var(--font-jp)' }}>
+                          {k.reading ? <FuriganaText text={`${k.char}(${k.reading})`} /> : k.char}
+                        </span>
+                        <span className="text-[var(--color-text-muted)]">— {k.meaning}</span>
+                      </li>
+                    ))}
+                    {kanjiCount > 15 && (
+                      <li className="text-[var(--color-text-muted)]">+ {kanjiCount - 15} more</li>
                     )}
                   </ul>
                 </div>

@@ -21,20 +21,20 @@ function checkRateLimit(ip) {
   return record.count <= RATE_LIMIT_MAX
 }
 
-const EXTRACT_PROMPT = `You are a Japanese language expert. Extract ALL Japanese vocabulary and grammar points from the user's text.
+const EXTRACT_PROMPT = `You are a Japanese language expert. Extract ALL Japanese vocabulary, grammar, and individual kanji from the user's text.
 
 You MUST respond with ONLY a single valid JSON object. No markdown, no code blocks, no explanation. The response must parse with JSON.parse().
 
 Format:
-{"vocab":[{"word":"日本語","reading":"にほんご","meaning":"Japanese language","level":"N5"}],"grammar":[{"name":"〜です","structure":"Noun + です","meaning":"Polite copula","level":"N5","example":"学生(がくせい)です。"}]}
+{"vocab":[{"word":"日本語","reading":"にほんご","meaning":"Japanese language","level":"N5"}],"grammar":[{"name":"〜です","structure":"Noun + です","meaning":"Polite copula","level":"N5","example":"学生(がくせい)です。"}],"kanji":[{"char":"日","reading":"ひ","meaning":"day","level":"N5"}]}
 
 Rules:
-- vocab: array of {word, reading, meaning, level}. Use "word" for the Japanese, "reading" for hiragana/furigana, "meaning" for English.
-- grammar: array of {name, structure, meaning, level, example}. Example uses 漢字(読み) for furigana.
+- vocab: every word/phrase with {word, reading, meaning, level}. "word"=Japanese, "reading"=hiragana.
+- grammar: every grammar point with {name, structure, meaning, level, example}. Example uses 漢字(読み).
+- kanji: individual kanji characters with {char, reading, meaning, level}. Extract kanji that appear in the text.
 - JLPT level N5–N1 when inferrable, else "N5"
-- Skip purely English words or numbers
-- Empty arrays [] if nothing found
-- No trailing commas. Use double quotes for all strings. Escape any quote inside a string.`
+- Skip purely English or numbers. Empty arrays [] if nothing found.
+- No trailing commas. Double quotes only. Escape quotes in strings.`
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -162,6 +162,18 @@ export default async function handler(req, res) {
         example: String(g.example ?? g.examples?.[0] ?? ''),
       }))
       .filter((g) => g.name)
+
+    // Normalize kanji array
+    result.kanji = Array.isArray(result.kanji) ? result.kanji : []
+    result.kanji = result.kanji
+      .filter((k) => k && typeof k === 'object')
+      .map((k) => ({
+        char: String(k.char ?? k.character ?? k.kanji ?? ''),
+        reading: String(k.reading ?? k.on ?? k.kunyomi ?? ''),
+        meaning: String(k.meaning ?? k.english ?? ''),
+        level: String(k.level ?? 'N5'),
+      }))
+      .filter((k) => k.char)
 
     return res.status(200).json(result)
   } catch (err) {

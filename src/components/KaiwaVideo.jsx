@@ -206,7 +206,7 @@ export function KaiwaVideo({ conversations = [] }) {
               `}
             >
               <p className="text-lg mb-1 examples-with-furigana" style={{ fontFamily: 'var(--font-jp)' }}>
-                <FuriganaText text={current.text.replace(/\s/g, '')} />
+                <FuriganaText text={(current.textFurigana || current.text || '').replace(/\s/g, '')} />
               </p>
               <p className="text-sm text-stone-500">{current.en}</p>
               {speaking && (

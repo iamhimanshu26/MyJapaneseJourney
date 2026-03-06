@@ -25,3 +25,9 @@ export function addToHistory(query, result) {
 export function getHistoryQueries() {
   return getLookupHistory().map((i) => i.query)
 }
+
+export function clearLookupHistory() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]))
+  } catch {}
+}

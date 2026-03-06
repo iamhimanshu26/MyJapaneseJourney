@@ -4,7 +4,7 @@ import { FuriganaText } from '../components/FuriganaText'
 import { PageMeta } from '../components/PageMeta'
 import { useDiscovered } from '../hooks/useDiscovered'
 import { useToast } from '../context/ToastContext'
-import { getLookupHistory, addToHistory } from '../lib/lookupHistory'
+import { getLookupHistory, addToHistory, clearLookupHistory } from '../lib/lookupHistory'
 import { VOCAB_BY_LEVEL } from '../data/vocab'
 import { GRAMMAR_BY_LEVEL } from '../data/grammar'
 import { getUserVocabByLevel } from '../lib/userVocab'
@@ -277,9 +277,17 @@ export function Lookup() {
         {/* Previous results (history) */}
         {history.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
-              Previous searches
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+                Previous searches
+              </h3>
+              <button
+                onClick={() => { clearLookupHistory(); setHistory([]); setResult(null); setQuery(''); }}
+                className="text-xs text-[var(--color-text-muted)] hover:text-red-600"
+              >
+                Clear history
+              </button>
+            </div>
             <div className="space-y-3">
               {history.filter((h) => h.query !== query.trim() || !result).slice(0, 10).map((h, i) => (
                 <motion.div

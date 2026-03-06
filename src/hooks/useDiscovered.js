@@ -56,6 +56,7 @@ export function useDiscovered() {
         const t = item.type || 'vocab'
         if (i.item_type !== t) return false
         if (t === 'grammar') return d.name === item.name
+        if (t === 'kanji') return d.char === item.char
         return d.word === item.word
       })
     }

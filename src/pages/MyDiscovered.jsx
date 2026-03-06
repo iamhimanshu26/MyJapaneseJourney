@@ -69,6 +69,7 @@ export function MyDiscovered() {
                     {list.map((item) => {
                       const d = item.item_data || {}
                       const isVocab = item.item_type === 'vocab'
+                      const isKanji = item.item_type === 'kanji'
                       return (
                         <motion.div
                           key={item.id}
@@ -84,6 +85,12 @@ export function MyDiscovered() {
                                   <FuriganaText text={`${d.word}(${d.reading})`} />
                                 ) : (
                                   d.word
+                                )
+                              ) : isKanji ? (
+                                d.reading ? (
+                                  <FuriganaText text={`${d.char}(${d.reading})`} />
+                                ) : (
+                                  d.char
                                 )
                               ) : (
                                 d.name || d.structure
@@ -110,7 +117,7 @@ export function MyDiscovered() {
                           <button
                             onClick={() => handleRemove(item.id)}
                             className="text-sm text-red-500 hover:text-red-600"
-                            aria-label={`Remove ${isVocab ? d.word : d.name}`}
+                            aria-label={`Remove ${isVocab ? d.word : isKanji ? d.char : d.name}`}
                           >
                             Remove
                           </button>

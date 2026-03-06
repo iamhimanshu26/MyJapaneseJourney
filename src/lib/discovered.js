@@ -21,6 +21,7 @@ function saveToLocalStorage(item) {
   const exists = list.some((i) => {
     if (i.item_type !== type) return false
     if (type === 'grammar') return i.item_data?.name === item.name
+    if (type === 'kanji') return i.item_data?.char === item.char
     return i.item_data?.word === item.word
   })
   if (exists) return list
@@ -48,6 +49,7 @@ function isSavedInLocalStorage(item) {
   return getFromLocalStorage().some((i) => {
     if (i.item_type !== type) return false
     if (type === 'grammar') return i.item_data?.name === item.name
+    if (type === 'kanji') return i.item_data?.char === item.char
     return i.item_data?.word === item.word
   })
 }
