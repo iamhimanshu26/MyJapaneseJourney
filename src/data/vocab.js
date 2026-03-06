@@ -29,6 +29,25 @@ export const VOCAB_N5 = [
   { word: '飲む', reading: 'のむ', meaning: 'to drink', level: 'N5' },
   { word: '行く', reading: 'いく', meaning: 'to go', level: 'N5' },
   { word: '来る', reading: 'くる', meaning: 'to come', level: 'N5' },
+  { word: '見せる', reading: 'みせる', meaning: 'to show', level: 'N5' },
+  { word: '色', reading: 'いろ', meaning: 'color', level: 'N5' },
+  { word: '黒', reading: 'くろ', meaning: 'black', level: 'N5' },
+  { word: '白', reading: 'しろ', meaning: 'white', level: 'N5' },
+  { word: '赤', reading: 'あか', meaning: 'red', level: 'N5' },
+  { word: '電車', reading: 'でんしゃ', meaning: 'train', level: 'N5' },
+  { word: '自転車', reading: 'じてんしゃ', meaning: 'bicycle', level: 'N5' },
+  { word: '駅', reading: 'えき', meaning: 'station', level: 'N5' },
+  { word: '土曜日', reading: 'どようび', meaning: 'Saturday', level: 'N5' },
+  { word: '日曜日', reading: 'にちようび', meaning: 'Sunday', level: 'N5' },
+  { word: '連休', reading: 'れんきゅう', meaning: 'long weekend', level: 'N5' },
+  { word: '旅行', reading: 'りょこう', meaning: 'trip', level: 'N5' },
+  { word: '遠い', reading: 'とおい', meaning: 'far', level: 'N5' },
+  { word: '近い', reading: 'ちかい', meaning: 'near', level: 'N5' },
+  { word: '難しい', reading: 'むずかしい', meaning: 'difficult', level: 'N5' },
+  { word: '餃子', reading: 'ぎょうざ', meaning: 'gyoza', level: 'N5' },
+  { word: '紹介', reading: 'しょうかい', meaning: 'introduction', level: 'N5' },
+  { word: '和食', reading: 'わしょく', meaning: 'Japanese food', level: 'N5' },
+  { word: '焼き鳥', reading: 'やきとり', meaning: 'chicken skewers', level: 'N5' },
 ]
 
 // N4 vocabulary
@@ -48,6 +67,12 @@ export const VOCAB_N4 = [
   { word: '届ける', reading: 'とどける', meaning: 'to deliver, send', level: 'N4' },
   { word: '相談', reading: 'そうだん', meaning: 'consultation, to consult', level: 'N4' },
   { word: '参加', reading: 'さんか', meaning: 'participation, to participate', level: 'N4' },
+  { word: '帰国', reading: 'きこく', meaning: 'return to one\'s country', level: 'N4' },
+  { word: '休暇届', reading: 'きゅうかとどけ', meaning: 'leave request', level: 'N4' },
+  { word: '手伝う', reading: 'てつだう', meaning: 'to help', level: 'N4' },
+  { word: '壊す', reading: 'こわす', meaning: 'to break', level: 'N4' },
+  { word: '汚す', reading: 'よごす', meaning: 'to make dirty', level: 'N4' },
+  { word: '忘れる', reading: 'わすれる', meaning: 'to forget', level: 'N4' },
 ]
 
 export const VOCAB_BY_LEVEL = {
