@@ -1,16 +1,14 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LessonCharacter } from '../components/LessonCharacter'
 import { FuriganaText } from '../components/FuriganaText'
 import { KaiwaVideo } from '../components/KaiwaVideo'
 import { PageMeta } from '../components/PageMeta'
 import { LESSONS, getLesson } from '../data/lessons'
 
 const tabs = [
-  { id: 'kaiwa', label: '会話練習', icon: '💬', en: 'Kaiwa Renshuu' },
-  { id: 'words', label: 'Words you will learn', icon: '📖', en: '' },
-  { id: 'practice', label: 'Practice More', icon: '✏️', en: '' },
+  { id: 'kaiwa', label: '会話練習', sublabel: 'Conversation' },
+  { id: 'words', label: 'Vocabulary', sublabel: 'Words to learn' },
+  { id: 'practice', label: 'Practice', sublabel: 'Exercises' },
 ]
 
 export function GuidedChapters() {
@@ -31,126 +29,158 @@ export function GuidedChapters() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-[#faf9f7]">
       <PageMeta title="Guided Chapters" description="Learn Japanese chapter by chapter with interactive lessons, conversations, and practice." />
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8">
-          <LessonCharacter size="lg" />
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-1">Guided Chapters</h1>
-            <p className="text-[var(--color-text-muted)]">
-              Step-by-step lessons with 会話練習, vocabulary, and practice. Pick a lesson to begin!
-            </p>
-          </div>
-        </div>
 
-        {/* Lesson selector */}
-        <div className="mb-8">
-          <h2 className="text-sm font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">Choose a lesson</h2>
-          <div className="flex flex-wrap gap-3">
-            {LESSONS.map((l, i) => (
-              <motion.button
-                key={l.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.05 }}
-                onClick={() => {
-                  setSelectedLessonId(selectedLessonId === l.id ? null : l.id)
-                  setActiveTab('kaiwa')
-                }}
-                className={`px-5 py-3 rounded-xl border-2 font-medium transition-all shadow-sm ${
-                  selectedLessonId === l.id
-                    ? 'border-amber-400 bg-amber-50 text-amber-800 shadow-amber-200/50'
-                    : 'border-slate-200 bg-[var(--color-bg-card)] hover:border-amber-300 hover:bg-amber-50/50'
-                }`}
-              >
-                <span className="block text-lg">{l.title}</span>
-                <span className="text-xs text-[var(--color-text-muted)]">{l.subtitle}</span>
-              </motion.button>
-            ))}
-          </div>
+      {/* Header - refined, editorial */}
+      <header className="border-b border-stone-200/80 bg-white/80 backdrop-blur-sm sticky top-0 z-30">
+        <div className="max-w-5xl mx-auto px-6 py-6">
+          <h1 className="text-2xl font-semibold tracking-tight text-stone-800">
+            Guided Chapters
+          </h1>
+          <p className="mt-1 text-sm text-stone-500">
+            Structured lessons · Conversation · Vocabulary · Practice
+          </p>
         </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-6 py-8">
+        {/* Lesson grid - card-style, professional */}
+        <section className="mb-10">
+          <h2 className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-4">
+            Lessons
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {LESSONS.map((l, i) => {
+              const isSelected = selectedLessonId === l.id
+              return (
+                <motion.button
+                  key={l.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  onClick={() => {
+                    setSelectedLessonId(isSelected ? null : l.id)
+                    setActiveTab('kaiwa')
+                  }}
+                  className={`
+                    text-left p-4 rounded-xl transition-all duration-200
+                    ${isSelected
+                      ? 'bg-stone-900 text-white shadow-lg shadow-stone-900/20 ring-2 ring-stone-900'
+                      : 'bg-white border border-stone-200/60 hover:border-stone-300 hover:shadow-sm'
+                    }
+                  `}
+                >
+                  <span className={`text-xs font-medium ${isSelected ? 'text-stone-400' : 'text-stone-400'}`}>
+                    {l.id}
+                  </span>
+                  <p className={`mt-1 font-medium text-sm ${isSelected ? 'text-white' : 'text-stone-800'}`}>
+                    {l.title}
+                  </p>
+                  <p className={`mt-0.5 text-xs truncate ${isSelected ? 'text-stone-500' : 'text-stone-500'}`}>
+                    {l.subtitle}
+                  </p>
+                </motion.button>
+              )
+            })}
+          </div>
+        </section>
 
         <AnimatePresence mode="wait">
           {lesson ? (
-            <motion.div
+            <motion.article
               key={lesson.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="rounded-2xl border border-slate-200 bg-[var(--color-bg-card)] overflow-hidden shadow-lg"
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+              className="bg-white rounded-2xl border border-stone-200/60 shadow-sm overflow-hidden"
             >
-              {/* Tabs */}
-              <div className="flex border-b border-slate-200 bg-slate-50">
+              {/* Lesson title bar */}
+              <div className="px-6 py-4 border-b border-stone-100 bg-stone-50/50">
+                <h3 className="font-semibold text-stone-800">{lesson.title}</h3>
+                <p className="text-sm text-stone-500 mt-0.5">{lesson.subtitle}</p>
+              </div>
+
+              {/* Tabs - minimal pill style */}
+              <div className="flex gap-1 px-6 pt-4 border-b border-stone-100">
                 {tabs.map((t) => (
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
-                      activeTab === t.id ? 'bg-white text-amber-700 border-b-2 border-amber-500' : 'text-[var(--color-text-muted)] hover:bg-white/50'
-                    }`}
+                    className={`
+                      px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+                      ${activeTab === t.id
+                        ? 'bg-stone-900 text-white'
+                        : 'text-stone-500 hover:text-stone-700 hover:bg-stone-100'
+                      }
+                    `}
                   >
-                    <span>{t.icon}</span>
-                    <span>{t.label}</span>
+                    {t.label}
                   </button>
                 ))}
               </div>
 
-              <div className="p-6 min-h-[280px]">
-                {/* Kaiwa Renshuu - video style with animated characters */}
+              <div className="p-6 min-h-[320px]">
                 {activeTab === 'kaiwa' && lesson.conversations && (
                   <div className="space-y-4">
                     <KaiwaVideo conversations={lesson.conversations} />
-                    <p className="text-sm text-[var(--color-text-muted)]">Press Play to hear the conversation. Click dialogue to replay. Use prev/next to step through.</p>
+                    <p className="text-xs text-stone-400">
+                      Play to listen · Click dialogue to replay · Prev/Next to navigate
+                    </p>
                   </div>
                 )}
 
-                {/* Words you will learn */}
                 {activeTab === 'words' && lesson.vocab && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="grid gap-3 sm:grid-cols-2"
+                    className="space-y-2"
                   >
-                    {lesson.vocab.map((v, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.03 }}
-                        onClick={() => speakJapanese(v.jp)}
-                        className="flex items-center justify-between p-4 rounded-xl bg-slate-50 hover:bg-amber-50 cursor-pointer transition-colors group"
-                      >
-                        <div>
-                          <p className="font-bold examples-with-furigana" style={{ fontFamily: 'var(--font-jp)' }}>
-                            {v.furigana ? <FuriganaText text={v.furigana} /> : v.jp}
-                          </p>
-                          <p className="text-sm text-[var(--color-text-muted)]">{v.en}</p>
-                        </div>
-                        <span className="opacity-0 group-hover:opacity-100 text-amber-600">🔊</span>
-                      </motion.div>
-                    ))}
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {lesson.vocab.map((v, i) => (
+                        <motion.button
+                          key={i}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: i * 0.02 }}
+                          onClick={() => speakJapanese(v.jp)}
+                          className="flex items-start justify-between gap-3 p-4 rounded-xl text-left
+                            bg-stone-50/80 hover:bg-stone-100/80 border border-transparent hover:border-stone-200/60
+                            transition-colors group"
+                        >
+                          <div>
+                            <p className="font-medium text-stone-800 examples-with-furigana" style={{ fontFamily: 'var(--font-jp)' }}>
+                              {v.furigana ? <FuriganaText text={v.furigana} /> : v.jp}
+                            </p>
+                            <p className="text-sm text-stone-500 mt-0.5">{v.en}</p>
+                          </div>
+                          <span className="text-stone-300 group-hover:text-amber-500 transition-colors shrink-0">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                            </svg>
+                          </span>
+                        </motion.button>
+                      ))}
+                    </div>
                     {lesson.hiragana && (
-                      <div className="sm:col-span-2 mt-4 pt-4 border-t border-slate-200">
-                        <p className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Hiragana practice</p>
-                        <p className="text-lg" style={{ fontFamily: 'var(--font-jp)' }}>{lesson.hiragana.join('　')}</p>
+                      <div className="mt-6 pt-6 border-t border-stone-200/60">
+                        <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">Hiragana</p>
+                        <p className="text-lg text-stone-700" style={{ fontFamily: 'var(--font-jp)' }}>{lesson.hiragana.join('　')}</p>
                       </div>
                     )}
                     {lesson.katakana && (
-                      <div className="sm:col-span-2">
-                        <p className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Katakana practice</p>
-                        <p className="text-lg" style={{ fontFamily: 'var(--font-jp)' }}>{lesson.katakana.join('　')}</p>
+                      <div className="mt-4">
+                        <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">Katakana</p>
+                        <p className="text-lg text-stone-700" style={{ fontFamily: 'var(--font-jp)' }}>{lesson.katakana.join('　')}</p>
                       </div>
                     )}
                     {lesson.counters && (
-                      <div className="sm:col-span-2 mt-4 pt-4 border-t border-slate-200">
-                        <p className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Counters (〜つ)</p>
+                      <div className="mt-6 pt-6 border-t border-stone-200/60">
+                        <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">Counters (〜つ)</p>
                         <div className="flex flex-wrap gap-2">
                           {lesson.counters.map((c, i) => (
-                            <span key={i} className="px-3 py-1 rounded-lg bg-amber-100 text-amber-800 text-sm">
+                            <span key={i} className="px-3 py-1.5 rounded-lg bg-stone-100 text-stone-700 text-sm font-medium">
                               {c.num}: {c.kanji} ({c.jp})
                             </span>
                           ))}
@@ -160,39 +190,43 @@ export function GuidedChapters() {
                   </motion.div>
                 )}
 
-                {/* Practice More */}
                 {activeTab === 'practice' && lesson.practice && (
-                  <div className="space-y-4">
-                    <p className="text-[var(--color-text-muted)] mb-4">Try saying these out loud or writing them down:</p>
+                  <div className="space-y-3">
                     {lesson.practice.map((p, i) => (
                       <motion.div
                         key={i}
-                        initial={{ opacity: 0, x: 20 }}
+                        initial={{ opacity: 0, x: 8 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="p-4 rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/30"
+                        transition={{ delay: i * 0.05 }}
+                        className="p-5 rounded-xl bg-stone-50/80 border border-stone-200/40"
                       >
-                        <p className="font-medium text-[var(--color-text)]">{p.prompt}</p>
-                        <p className="text-sm text-amber-700 mt-1">Hint: {p.hint}</p>
+                        <p className="font-medium text-stone-800">{p.prompt}</p>
+                        <p className="text-sm text-stone-500 mt-2">
+                          <span className="font-medium text-stone-600">Hint:</span> {p.hint}
+                        </p>
                       </motion.div>
                     ))}
                   </div>
                 )}
               </div>
-            </motion.div>
+            </motion.article>
           ) : (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-16 text-center"
+              className="flex flex-col items-center justify-center py-24 px-8 rounded-2xl border-2 border-dashed border-stone-200/80 bg-stone-50/30"
             >
-              <LessonCharacter size="lg" animate={true} />
-              <p className="mt-4 text-[var(--color-text-muted)]">Select a lesson above to get started</p>
-              <p className="text-sm text-[var(--color-text-muted)] mt-2">Each lesson has 会話練習, vocabulary, and practice!</p>
+              <div className="w-12 h-12 rounded-full bg-stone-200/60 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <p className="text-stone-500 font-medium">Select a lesson to begin</p>
+              <p className="text-sm text-stone-400 mt-1">Each lesson includes conversation practice, vocabulary, and exercises</p>
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </main>
     </div>
   )
 }

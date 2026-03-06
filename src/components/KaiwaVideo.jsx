@@ -155,29 +155,17 @@ export function KaiwaVideo({ conversations = [] }) {
   if (conversations.length === 0) return null
 
   return (
-    <div className="rounded-2xl overflow-hidden border-2 border-slate-200 bg-slate-100 relative">
-      {/* Video-like header */}
-      <div className="bg-slate-800 px-4 py-2 flex items-center gap-2">
-        <span className="text-red-500 text-sm">●</span>
-        <span className="text-slate-400 text-sm">会話練習 — Kaiwa Renshuu</span>
-      </div>
-
-      {/* Stage: light manga-style backdrop with visible characters */}
-      <div className="relative aspect-video min-h-[280px] bg-gradient-to-b from-amber-50/80 via-slate-50 to-pink-50/80 flex items-end justify-center gap-12 pb-6 px-8">
-        {/* Decorative manga elements - subtle panel lines */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute top-0 left-0 right-0 h-px bg-slate-300" />
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-slate-300" />
-        </div>
-
+    <div className="rounded-xl overflow-hidden border border-stone-200/80 bg-stone-50/50 relative">
+      {/* Stage: refined backdrop */}
+      <div className="relative aspect-video min-h-[280px] bg-gradient-to-b from-stone-100 to-stone-200/50 flex items-end justify-center gap-12 pb-6 px-8">
         {/* Left character - boy */}
         <motion.div
           animate={{ scale: leftSpeaker && current ? 1.02 : 1 }}
           transition={{ duration: 0.2 }}
-          className={`flex flex-col items-center gap-2 z-10 ${leftSpeaker && current ? 'ring-4 ring-amber-400 ring-offset-2 rounded-2xl' : ''}`}
+          className={`flex flex-col items-center gap-2 z-10 ${leftSpeaker && current ? 'ring-2 ring-stone-400 ring-offset-2 rounded-2xl' : ''}`}
         >
           <BoyCharacter isSpeaking={leftSpeaker && current} />
-          <span className="text-xs font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded">
+          <span className="text-xs font-medium text-stone-600 bg-white/90 px-2.5 py-1 rounded-md shadow-sm">
             {leftSpeaker ? current?.name : (conversations[index - 1] || {})?.name || conversations[0]?.name || 'Boy'}
           </span>
         </motion.div>
@@ -186,32 +174,31 @@ export function KaiwaVideo({ conversations = [] }) {
         <motion.div
           animate={{ scale: rightSpeaker && current ? 1.02 : 1 }}
           transition={{ duration: 0.2 }}
-          className={`flex flex-col items-center gap-2 z-10 ${rightSpeaker && current ? 'ring-4 ring-pink-400 ring-offset-2 rounded-2xl' : ''}`}
+          className={`flex flex-col items-center gap-2 z-10 ${rightSpeaker && current ? 'ring-2 ring-stone-400 ring-offset-2 rounded-2xl' : ''}`}
         >
           <GirlCharacter isSpeaking={rightSpeaker && current} />
-          <span className="text-xs font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded">
+          <span className="text-xs font-medium text-stone-600 bg-white/90 px-2.5 py-1 rounded-md shadow-sm">
             {rightSpeaker ? current?.name : (conversations[index - 1] || {})?.name || conversations[1]?.name || 'Girl'}
           </span>
         </motion.div>
       </div>
 
-      {/* Manga-style speech bubble - positioned above characters, with tail pointing to speaker */}
+      {/* Manga-style speech bubble */}
       <AnimatePresence mode="wait">
         {current && (
           <motion.div
             key={index}
-            initial={{ opacity: 0, scale: 0.9, y: 8 }}
+            initial={{ opacity: 0, scale: 0.95, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -8 }}
+            exit={{ opacity: 0, scale: 0.98, y: -6 }}
             transition={{ duration: 0.2 }}
             className={`absolute z-20 max-w-[85%] ${leftSpeaker ? 'left-[12%]' : 'right-[12%] left-auto'} top-[18%]`}
           >
-            {/* Manga speech bubble: white rounded cloud with tail pointing to speaker */}
             <div
               onClick={() => speak(current.text)}
               className={`
-                relative rounded-2xl bg-white px-5 py-4 shadow-lg cursor-pointer 
-                border-2 border-slate-300 hover:border-amber-400 hover:shadow-xl transition-all
+                relative rounded-xl bg-white px-5 py-4 shadow-md cursor-pointer
+                border border-stone-200/80 hover:border-stone-300 hover:shadow-lg transition-all
                 before:content-[''] before:absolute before:w-0 before:h-0
                 before:border-l-[10px] before:border-l-transparent before:border-r-[10px] before:border-r-transparent
                 before:border-t-[14px] before:border-t-white before:-bottom-3
@@ -221,14 +208,14 @@ export function KaiwaVideo({ conversations = [] }) {
               <p className="text-lg mb-1 examples-with-furigana" style={{ fontFamily: 'var(--font-jp)' }}>
                 <FuriganaText text={current.text.replace(/\s/g, '')} />
               </p>
-              <p className="text-sm text-slate-600">{current.en}</p>
+              <p className="text-sm text-stone-500">{current.en}</p>
               {speaking && (
                 <motion.span
                   animate={{ opacity: [0.5, 1, 0.5] }}
                   transition={{ duration: 0.5, repeat: Infinity }}
-                  className="text-amber-600 text-xs mt-2 block"
+                  className="text-stone-400 text-xs mt-2 block"
                 >
-                  🔊 再生中...
+                  再生中...
                 </motion.span>
               )}
             </div>
@@ -236,12 +223,12 @@ export function KaiwaVideo({ conversations = [] }) {
         )}
       </AnimatePresence>
 
-      {/* Controls - video player style */}
-      <div className="bg-slate-800 px-4 py-3 flex items-center justify-between gap-4">
+      {/* Controls - refined */}
+      <div className="bg-white border-t border-stone-200/80 px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <button
             onClick={playing ? handlePause : handlePlay}
-            className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white hover:bg-amber-600"
+            className="w-10 h-10 rounded-full bg-stone-900 flex items-center justify-center text-white hover:bg-stone-800 transition-colors"
             aria-label={playing ? 'Pause' : 'Play'}
           >
             {playing ? (
@@ -253,7 +240,7 @@ export function KaiwaVideo({ conversations = [] }) {
           <button
             onClick={handlePrev}
             disabled={index === 0}
-            className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white hover:bg-slate-500 disabled:opacity-40"
+            className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             aria-label="Previous"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" /></svg>
@@ -261,13 +248,13 @@ export function KaiwaVideo({ conversations = [] }) {
           <button
             onClick={handleNext}
             disabled={isLast}
-            className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white hover:bg-slate-500 disabled:opacity-40"
+            className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 hover:bg-stone-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             aria-label="Next"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2-6l4.5 3V9L8 12zm11-6v12h2V6h-2z" /></svg>
           </button>
         </div>
-        <span className="text-slate-400 text-sm">
+        <span className="text-stone-400 text-sm tabular-nums">
           {index + 1} / {conversations.length}
         </span>
       </div>
