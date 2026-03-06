@@ -98,14 +98,32 @@ export function KaiwaVideo({ conversations = [] }) {
   const speak = useCallback((text) => {
     if (!('speechSynthesis' in window) || !text) return
     window.speechSynthesis.cancel()
-    const parts = String(text).split(/[、。]/).filter(Boolean)
-    if (parts.length === 0) return
+    const fullText = String(text).trim()
+    if (!fullText) return
     setSpeaking(true)
-    const u = new SpeechSynthesisUtterance(parts[0])
-    u.lang = 'ja-JP'
-    u.rate = 0.8
-    u.onend = () => setSpeaking(false)
-    window.speechSynthesis.speak(u)
+    // Speak the complete line - queue segments (split by 、。) for natural pacing
+    const chunks = fullText.split(/[、。]/).filter(Boolean)
+    if (chunks.length <= 1) {
+      const u = new SpeechSynthesisUtterance(fullText)
+      u.lang = 'ja-JP'
+      u.rate = 0.8
+      u.onend = () => setSpeaking(false)
+      window.speechSynthesis.speak(u)
+      return
+    }
+    let i = 0
+    const speakNext = () => {
+      if (i >= chunks.length) {
+        setSpeaking(false)
+        return
+      }
+      const u = new SpeechSynthesisUtterance(chunks[i].trim())
+      u.lang = 'ja-JP'
+      u.rate = 0.8
+      u.onend = () => { i++; speakNext() }
+      window.speechSynthesis.speak(u)
+    }
+    speakNext()
   }, [])
 
   useEffect(() => {
