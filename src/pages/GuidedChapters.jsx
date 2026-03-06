@@ -5,24 +5,15 @@ import { KaiwaVideo } from '../components/KaiwaVideo'
 import { PageMeta } from '../components/PageMeta'
 import { LESSONS, getLesson } from '../data/lessons'
 
-const tabs = [
-  { id: 'kaiwa', label: '会話練習', sublabel: 'Conversation' },
-  { id: 'words', label: 'Vocabulary', sublabel: 'Words to learn' },
-  { id: 'practice', label: 'Practice', sublabel: 'Exercises' },
-]
-
 export function GuidedChapters() {
   const [selectedLessonId, setSelectedLessonId] = useState(null)
-  const [activeTab, setActiveTab] = useState('kaiwa')
 
   const lesson = selectedLessonId ? getLesson(selectedLessonId) : null
 
   function speakJapanese(text) {
-    if (!('speechSynthesis' in window)) return
+    if (!('speechSynthesis' in window) || !text) return
     window.speechSynthesis.cancel()
-    const utterances = text.split(/[、。]/).filter(Boolean)
-    if (utterances.length === 0) return
-    const u = new SpeechSynthesisUtterance(utterances[0])
+    const u = new SpeechSynthesisUtterance(String(text).trim())
     u.lang = 'ja-JP'
     u.rate = 0.8
     window.speechSynthesis.speak(u)
@@ -59,10 +50,7 @@ export function GuidedChapters() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.03 }}
-                  onClick={() => {
-                    setSelectedLessonId(isSelected ? null : l.id)
-                    setActiveTab('kaiwa')
-                  }}
+                  onClick={() => setSelectedLessonId(isSelected ? null : l.id)}
                   className={`
                     text-left p-4 rounded-xl transition-all duration-200
                     ${isSelected
@@ -102,41 +90,20 @@ export function GuidedChapters() {
                 <p className="text-sm text-stone-500 mt-0.5">{lesson.subtitle}</p>
               </div>
 
-              {/* Tabs - minimal pill style */}
-              <div className="flex gap-1 px-6 pt-4 border-b border-stone-100">
-                {tabs.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setActiveTab(t.id)}
-                    className={`
-                      px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                      ${activeTab === t.id
-                        ? 'bg-stone-900 text-white'
-                        : 'text-stone-500 hover:text-stone-700 hover:bg-stone-100'
-                      }
-                    `}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="p-6 min-h-[320px]">
-                {activeTab === 'kaiwa' && lesson.conversations && (
-                  <div className="space-y-4">
+              <div className="p-6 space-y-10">
+                {/* 1. Kaiwa Renshuu - Conversation */}
+                {lesson.conversations && (
+                  <section>
+                    <h4 className="text-sm font-semibold text-stone-700 uppercase tracking-wider mb-3">会話練習 — Conversation</h4>
                     <KaiwaVideo conversations={lesson.conversations} />
-                    <p className="text-xs text-stone-400">
-                      Play to listen · Click dialogue to replay · Prev/Next to navigate
-                    </p>
-                  </div>
+                    <p className="text-xs text-stone-400 mt-2">Play to listen · Click dialogue to replay · Use speed control</p>
+                  </section>
                 )}
 
-                {activeTab === 'words' && lesson.vocab && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="space-y-2"
-                  >
+                {/* 2. Vocabulary / Kotoba */}
+                {lesson.vocab && (
+                  <section>
+                    <h4 className="text-sm font-semibold text-stone-700 uppercase tracking-wider mb-3">言葉 — Vocabulary</h4>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {lesson.vocab.map((v, i) => (
                         <motion.button
@@ -187,11 +154,14 @@ export function GuidedChapters() {
                         </div>
                       </div>
                     )}
-                  </motion.div>
+                  </section>
                 )}
 
-                {activeTab === 'practice' && lesson.practice && (
-                  <div className="space-y-3">
+                {/* 3. Practice */}
+                {lesson.practice && (
+                  <section>
+                    <h4 className="text-sm font-semibold text-stone-700 uppercase tracking-wider mb-3">練習 — Practice</h4>
+                    <div className="space-y-3">
                     {lesson.practice.map((p, i) => (
                       <motion.div
                         key={i}
@@ -206,7 +176,8 @@ export function GuidedChapters() {
                         </p>
                       </motion.div>
                     ))}
-                  </div>
+                    </div>
+                  </section>
                 )}
               </div>
             </motion.article>

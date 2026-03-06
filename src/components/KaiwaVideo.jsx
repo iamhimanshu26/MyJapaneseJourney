@@ -82,6 +82,14 @@ function GirlCharacter({ isSpeaking }) {
   )
 }
 
+const SPEED_OPTIONS = [
+  { value: 0.6, label: '0.6×', desc: 'Beginner' },
+  { value: 0.8, label: '0.8×', desc: 'Elementary' },
+  { value: 1.0, label: '1×', desc: 'Normal' },
+  { value: 1.2, label: '1.2×', desc: 'Advanced' },
+  { value: 1.4, label: '1.4×', desc: 'Near native' },
+]
+
 /**
  * Video-like Kaiwa Renshuu: manga-style animated characters with speech bubbles
  */
@@ -89,6 +97,7 @@ export function KaiwaVideo({ conversations = [] }) {
   const [playing, setPlaying] = useState(false)
   const [index, setIndex] = useState(0)
   const [speaking, setSpeaking] = useState(false)
+  const [speed, setSpeed] = useState(0.8)
 
   const current = conversations[index]
   const isLast = index >= conversations.length - 1
@@ -101,30 +110,12 @@ export function KaiwaVideo({ conversations = [] }) {
     const fullText = String(text).trim()
     if (!fullText) return
     setSpeaking(true)
-    // Speak the complete line - queue segments (split by 、。) for natural pacing
-    const chunks = fullText.split(/[、。]/).filter(Boolean)
-    if (chunks.length <= 1) {
-      const u = new SpeechSynthesisUtterance(fullText)
-      u.lang = 'ja-JP'
-      u.rate = 0.8
-      u.onend = () => setSpeaking(false)
-      window.speechSynthesis.speak(u)
-      return
-    }
-    let i = 0
-    const speakNext = () => {
-      if (i >= chunks.length) {
-        setSpeaking(false)
-        return
-      }
-      const u = new SpeechSynthesisUtterance(chunks[i].trim())
-      u.lang = 'ja-JP'
-      u.rate = 0.8
-      u.onend = () => { i++; speakNext() }
-      window.speechSynthesis.speak(u)
-    }
-    speakNext()
-  }, [])
+    const u = new SpeechSynthesisUtterance(fullText)
+    u.lang = 'ja-JP'
+    u.rate = speed
+    u.onend = () => setSpeaking(false)
+    window.speechSynthesis.speak(u)
+  }, [speed])
 
   useEffect(() => {
     if (!playing || !current) return
@@ -242,7 +233,7 @@ export function KaiwaVideo({ conversations = [] }) {
       </AnimatePresence>
 
       {/* Controls - refined */}
-      <div className="bg-white border-t border-stone-200/80 px-4 py-3 flex items-center justify-between gap-4">
+      <div className="bg-white border-t border-stone-200/80 px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <button
             onClick={playing ? handlePause : handlePlay}
@@ -271,6 +262,21 @@ export function KaiwaVideo({ conversations = [] }) {
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2-6l4.5 3V9L8 12zm11-6v12h2V6h-2z" /></svg>
           </button>
+          <div className="flex items-center gap-1 ml-2 pl-2 border-l border-stone-200">
+            <span className="text-xs text-stone-400 mr-1" title="Playback speed">Speed:</span>
+            {SPEED_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSpeed(opt.value)}
+                title={opt.desc}
+                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                  speed === opt.value ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
         <span className="text-stone-400 text-sm tabular-nums">
           {index + 1} / {conversations.length}
