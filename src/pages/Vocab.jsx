@@ -5,7 +5,7 @@ import { Flashcard } from '../components/Flashcard'
 import { PageMeta } from '../components/PageMeta'
 import { FuriganaText } from '../components/FuriganaText'
 import { VOCAB_BY_LEVEL } from '../data/vocab'
-import { getUserVocabByLevel, getUserVocabInOrder } from '../lib/userVocab'
+import { getUserVocabByLevel } from '../lib/userVocab'
 
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1']
 
@@ -22,11 +22,11 @@ function mergeVocab(seed, user) {
 }
 
 export function Vocab() {
-  const [selectedLevel, setSelectedLevel] = useState('N5')
+  const [selectedLevel, setSelectedLevel] = useState(null)
   const [mode, setMode] = useState('select') // 'select' | 'flashcards'
 
-  const savedInOrder = getUserVocabInOrder()
   const items = useMemo(() => {
+    if (!selectedLevel) return []
     const seed = VOCAB_BY_LEVEL[selectedLevel] || []
     const user = getUserVocabByLevel()[selectedLevel] || []
     return mergeVocab(seed, user)
@@ -45,32 +45,6 @@ export function Vocab() {
         </p>
 
         <HeardNewVocabCta compact />
-
-        {/* Vocab list — in order they were saved */}
-        {savedInOrder.length > 0 && (
-          <div className="mb-10">
-            <h2 className="text-xl font-semibold mb-4">My saved vocabs (in order)</h2>
-            <div className="rounded-xl border border-slate-200 bg-[var(--color-bg-card)] overflow-hidden">
-              <ul className="divide-y divide-slate-100">
-                {savedInOrder.map((v, i) => (
-                  <li
-                    key={`${v.word}-${v.reading || ''}-${i}`}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-slate-50/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-slate-400 w-6">#{i + 1}</span>
-                      <span style={{ fontFamily: 'var(--font-jp)' }} className="font-medium">
-                        {v.reading ? <FuriganaText text={`${v.word}(${v.reading})`} /> : v.word}
-                      </span>
-                      <span className="text-sm text-[var(--color-text-muted)]">{v.meaning}</span>
-                    </div>
-                    <span className="text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-700">{v.level}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
 
         {mode === 'select' ? (
           <>
@@ -92,21 +66,51 @@ export function Vocab() {
                 </motion.button>
               ))}
             </div>
-            {items.length > 0 ? (
-              <div>
-                <p className="text-sm text-[var(--color-text-muted)] mb-4">
-                  {items.length} words in {selectedLevel}
-                </p>
-                <button
-                  onClick={() => setMode('flashcards')}
-                  className="px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600"
-                >
-                  Start flashcards
-                </button>
-              </div>
+            {selectedLevel ? (
+              <>
+                {items.length > 0 ? (
+                  <div>
+                    {/* Vocab list for selected level — in saved order */}
+                    <div className="mb-6">
+                      <h2 className="text-xl font-semibold mb-4">My {selectedLevel} vocabs (in order)</h2>
+                      <div className="rounded-xl border border-slate-200 bg-[var(--color-bg-card)] overflow-hidden">
+                        <ul className="divide-y divide-slate-100">
+                          {items.map((v, i) => (
+                            <li
+                              key={`${v.word}-${v.reading || ''}-${i}`}
+                              className="flex items-center justify-between px-4 py-3 hover:bg-slate-50/50"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm text-slate-400 w-6">#{i + 1}</span>
+                                <span style={{ fontFamily: 'var(--font-jp)' }} className="font-medium">
+                                  {v.reading ? <FuriganaText text={`${v.word}(${v.reading})`} /> : v.word}
+                                </span>
+                                <span className="text-sm text-[var(--color-text-muted)]">{v.meaning}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    <p className="text-sm text-[var(--color-text-muted)] mb-4">
+                      {items.length} words in {selectedLevel}
+                    </p>
+                    <button
+                      onClick={() => setMode('flashcards')}
+                      className="px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600"
+                    >
+                      Start flashcards
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-[var(--color-text-muted)]">
+                    No vocab for {selectedLevel} yet. More content coming soon.
+                  </p>
+                )}
+              </>
             ) : (
-              <p className="text-sm text-[var(--color-text-muted)]">
-                No vocab for {selectedLevel} yet. More content coming soon.
+              <p className="text-sm text-[var(--color-text-muted)] py-4">
+                Click a level above to see your vocab.
               </p>
             )}
           </>
