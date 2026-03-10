@@ -17,6 +17,7 @@ export function LearnFromText() {
   const [file, setFile] = useState(null)
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingProgress, setLoadingProgress] = useState(null)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const { save } = useDiscovered()
@@ -53,6 +54,9 @@ export function LearnFromText() {
     setLoading(true)
     setError(null)
     setResult(null)
+    const chunkSize = 6000
+    const estimatedChunks = Math.ceil(content.length / chunkSize) || 1
+    setLoadingProgress(estimatedChunks > 1 ? `Processing ${estimatedChunks} chunks…` : 'Extracting…')
     try {
       const res = await fetch(`${getApiBase()}/api/extract`, {
         method: 'POST',
@@ -65,13 +69,14 @@ export function LearnFromText() {
         return
       }
       setResult(data)
-      // Auto-save when extraction succeeds
+      setLoadingProgress(null)
       if (data && ((data.vocab?.length || 0) + (data.grammar?.length || 0) + (data.kanji?.length || 0)) > 0) {
         performSaveAll(data)
       }
     } catch (err) {
       setError('Could not connect. Check your connection.')
       toast.error('Connection failed')
+      setLoadingProgress(null)
     } finally {
       setLoading(false)
     }
@@ -194,9 +199,16 @@ export function LearnFromText() {
         <button
           onClick={handleExtract}
           disabled={loading || !text.trim()}
-          className="mt-6 px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors"
+          className="mt-6 px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors min-h-[48px] flex items-center justify-center gap-2"
         >
-          {loading ? 'Extracting…' : 'Extract vocab, grammar & kanji'}
+          {loading ? (
+            <>
+              <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden />
+              {loadingProgress || 'Extracting…'}
+            </>
+          ) : (
+            'Extract vocab, grammar & kanji'
+          )}
         </button>
 
         {error && (

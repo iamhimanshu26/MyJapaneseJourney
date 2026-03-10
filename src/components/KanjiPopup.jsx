@@ -1,35 +1,25 @@
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { FuriganaText } from './FuriganaText'
+import { KanjiStrokeAnimation } from './KanjiStrokeAnimation'
 
 export function KanjiPopup({ kanji, onClose }) {
-  const [strokeIndex, setStrokeIndex] = useState(0)
   const examples = kanji?.examples || []
   const onExamples = kanji?.onExamples || []
   const kunExamples = kanji?.kunExamples || []
   const hasExamples = examples.length > 0 || onExamples.length > 0 || kunExamples.length > 0
 
-  useEffect(() => {
-    if (!kanji) return
-    setStrokeIndex(0)
-  }, [kanji])
-
-  useEffect(() => {
-    if (!kanji?.char) return
-    const timer = setInterval(() => {
-      setStrokeIndex((i) => (i + 1) % 4)
-    }, 1500)
-    return () => clearInterval(timer)
-  }, [kanji?.char])
-
   if (!kanji) return null
 
   return (
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="kanji-popup-title"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <motion.div
@@ -37,12 +27,16 @@ export function KanjiPopup({ kanji, onClose }) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
       >
         <div className="p-6">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-xl font-semibold text-stone-800">Kanji Details</h3>
-            <button onClick={onClose} className="text-stone-400 hover:text-stone-600 text-2xl leading-none">
+            <h3 id="kanji-popup-title" className="text-xl font-semibold text-stone-800">Kanji Details</h3>
+            <button
+              onClick={onClose}
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-stone-400 hover:text-stone-600 text-2xl leading-none rounded-lg hover:bg-stone-100 -m-2"
+              aria-label="Close"
+            >
               ×
             </button>
           </div>
@@ -69,26 +63,13 @@ export function KanjiPopup({ kanji, onClose }) {
             </div>
           </div>
 
-          {/* Stroke order - animated flip */}
+          {/* Stroke order - KanjiVG animation */}
           <div className="mb-6">
             <h4 className="text-sm font-semibold text-stone-600 mb-2">書き方 (Kakikata) — Stroke order</h4>
-            <div className="h-24 rounded-lg bg-stone-100 flex items-center justify-center overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={strokeIndex}
-                  initial={{ opacity: 0, rotateY: -90 }}
-                  animate={{ opacity: 1, rotateY: 0 }}
-                  exit={{ opacity: 0, rotateY: 90 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center justify-center w-full h-full"
-                >
-                  <span style={{ fontFamily: 'var(--font-jp)' }} className="text-6xl text-stone-700">
-                    {kanji.char}
-                  </span>
-                </motion.div>
-              </AnimatePresence>
+            <div className="h-28 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center overflow-hidden">
+              <KanjiStrokeAnimation char={kanji.char} className="w-full h-full" />
             </div>
-            <p className="text-xs text-stone-400 mt-1">Automatically cycling display</p>
+            <p className="text-xs text-stone-400 mt-1">Strokes appear in order, then repeat</p>
           </div>
 
           {/* Onyomi examples */}

@@ -77,6 +77,7 @@ export function Lookup() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [activeIndex, setActiveIndex] = useState(-1)
   const { save, checkSaved } = useDiscovered()
   const toast = useToast()
   const inputRef = useRef(null)
@@ -90,8 +91,19 @@ export function Lookup() {
   }, [result])
 
   useEffect(() => {
-    setSuggestions(getSuggestions(query, allSuggestions))
+    setSuggestions(getSuggestions(query, allSuggestions, 12))
   }, [query, allSuggestions])
+
+  useEffect(() => {
+    setActiveIndex(-1)
+  }, [query])
+
+  useEffect(() => {
+    if (activeIndex >= 0 && suggestionsRef.current) {
+      const el = suggestionsRef.current.querySelector(`#suggestion-${activeIndex}`)
+      el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  }, [activeIndex])
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -102,6 +114,33 @@ export function Lookup() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  function handleKeyDown(e) {
+    if (!showSuggestions || suggestions.length === 0) {
+      if (e.key === 'Escape') setShowSuggestions(false)
+      return
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setActiveIndex((i) => (i < suggestions.length - 1 ? i + 1 : 0))
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setActiveIndex((i) => (i <= 0 ? suggestions.length - 1 : i - 1))
+      return
+    }
+    if (e.key === 'Enter' && activeIndex >= 0 && suggestions[activeIndex]) {
+      e.preventDefault()
+      handleSuggestionClick(suggestions[activeIndex].term, suggestions[activeIndex].result)
+      return
+    }
+    if (e.key === 'Escape') {
+      setShowSuggestions(false)
+      setActiveIndex(-1)
+      inputRef.current?.blur()
+    }
+  }
 
   async function handleSave() {
     if (!result) return
@@ -197,27 +236,33 @@ export function Lookup() {
                   setShowSuggestions(true)
                 }}
                 onFocus={() => setShowSuggestions(true)}
+                onKeyDown={handleKeyDown}
                 placeholder="たぶん / tabun /  grammar..."
                 className="w-full rounded-xl border border-slate-200 bg-[var(--color-bg-card)] px-4 py-3 text-[var(--color-text)] placeholder:text-[var(--color-text-muted)]/60 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 shadow-sm"
                 disabled={loading}
                 aria-label="Search Japanese word or grammar"
                 aria-autocomplete="list"
                 aria-expanded={showSuggestions && suggestions.length > 0}
+                aria-activedescendant={activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined}
+                aria-controls="lookup-suggestions"
               />
               {showSuggestions && suggestions.length > 0 && (
                 <ul
+                  id="lookup-suggestions"
                   ref={suggestionsRef}
-                  className="absolute top-full left-0 right-0 mt-1 rounded-xl border border-slate-200 bg-white shadow-lg py-2 z-50 max-h-48 overflow-y-auto"
+                  className="absolute top-full left-0 right-0 mt-1 rounded-xl border border-slate-200 bg-white shadow-lg py-2 z-50 max-h-56 overflow-y-auto"
                   role="listbox"
                 >
                   {suggestions.map((s, i) => (
                     <li
                       key={`${s.term}-${i}`}
+                      id={`suggestion-${i}`}
                       role="option"
-                      tabIndex={0}
+                      aria-selected={i === activeIndex}
+                      tabIndex={-1}
                       onClick={() => handleSuggestionClick(s.term, s.result)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSuggestionClick(s.term, s.result)}
-                      className="px-4 py-2 cursor-pointer hover:bg-amber-50 text-[var(--color-text)] flex justify-between"
+                      onMouseEnter={() => setActiveIndex(i)}
+                      className={`px-4 py-2.5 cursor-pointer text-[var(--color-text)] flex justify-between min-h-[44px] items-center ${i === activeIndex ? 'bg-amber-50' : 'hover:bg-amber-50/50'}`}
                     >
                       <span style={s.type === 'vocab' ? { fontFamily: 'var(--font-jp)' } : {}}>{s.term}</span>
                       {s.reading && <span className="text-sm text-[var(--color-text-muted)]">{s.reading}</span>}

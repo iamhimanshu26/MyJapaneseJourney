@@ -5,10 +5,12 @@ import { Flashcard } from '../components/Flashcard'
 import { PageMeta } from '../components/PageMeta'
 import { FuriganaText } from '../components/FuriganaText'
 import { KanjiPopup } from '../components/KanjiPopup'
+import { KanjiThumbnail } from '../components/KanjiThumbnail'
 import { VOCAB_BY_LEVEL } from '../data/vocab'
 import { getUserVocabByLevel } from '../lib/userVocab'
-import { getUserKanjiByLevel } from '../lib/userKanji'
+import { getUserKanjiByLevel, updateKanji } from '../lib/userKanji'
 import { sortKanjiByLearningOrder } from '../data/kanjiOrder'
+import { useToast } from '../context/ToastContext'
 
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1']
 
@@ -53,11 +55,15 @@ function VocabItem({ item, index, type, onKanjiClick }) {
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50/50 text-left"
       >
         <div className="flex items-center gap-3">
-          <span className="flex-shrink-0 w-12 h-12 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center">
-            <span style={{ fontFamily: 'var(--font-jp)' }} className="text-2xl font-bold text-stone-700">
-              {type === 'kanji' ? item.char : item.word}
+          {type === 'kanji' ? (
+            <KanjiThumbnail char={item.char} />
+          ) : (
+            <span className="flex-shrink-0 w-12 h-12 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center">
+              <span style={{ fontFamily: 'var(--font-jp)' }} className="text-2xl font-bold text-stone-700">
+                {item.word}
+              </span>
             </span>
-          </span>
+          )}
           <div>
             <span style={{ fontFamily: 'var(--font-jp)' }} className="font-medium block">
               {type === 'kanji' ? (
@@ -106,6 +112,9 @@ export function Vocab() {
   const [mode, setMode] = useState('select')
   const [activeTab, setActiveTab] = useState('vocabs')
   const [selectedKanji, setSelectedKanji] = useState(null)
+  const [enriching, setEnriching] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const toast = useToast()
 
   const items = useMemo(() => {
     if (!selectedLevel) return []
@@ -118,7 +127,45 @@ export function Vocab() {
     if (!selectedLevel) return []
     const raw = getUserKanjiByLevel()[selectedLevel] || []
     return sortKanjiByLearningOrder(raw)
-  }, [selectedLevel])
+  }, [selectedLevel, refreshKey])
+
+  const kanjiNeedingEnrichment = useMemo(
+    () => kanjiItems.filter((k) => !k.onyomi && !k.kunyomi && (!k.onExamples?.length) && (!k.kunExamples?.length)),
+    [kanjiItems]
+  )
+
+  async function handleEnrichKanji() {
+    if (kanjiNeedingEnrichment.length === 0) {
+      toast.success('All kanji already have readings and examples.')
+      return
+    }
+    setEnriching(true)
+    let done = 0
+    for (const k of kanjiNeedingEnrichment.slice(0, 10)) {
+      try {
+        const res = await fetch(`${typeof window !== 'undefined' ? window.location.origin : ''}/api/enrichKanji`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ char: k.char }),
+        })
+        const data = await res.json()
+        if (res.ok && data.onyomi) {
+          updateKanji(k.char, {
+            onyomi: data.onyomi,
+            kunyomi: data.kunyomi,
+            onExamples: data.onExamples || [],
+            kunExamples: data.kunExamples || [],
+          })
+          done++
+        }
+        await new Promise((r) => setTimeout(r, 500))
+      } catch (_) {}
+    }
+    setEnriching(false)
+    if (done > 0) setRefreshKey((k) => k + 1)
+    toast.success(done > 0 ? `Enriched ${done} kanji with readings and examples` : 'Could not enrich. Try again.')
+    if (done > 0) setSelectedKanji(null)
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -184,8 +231,19 @@ export function Vocab() {
                 ) : (
                   kanjiItems.length > 0 ? (
                     <div>
-                      <p className="text-lg font-semibold text-stone-700 mb-4">{kanjiItems.length} Kanji in {selectedLevel}</p>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <p className="text-lg font-semibold text-stone-700">{kanjiItems.length} Kanji in {selectedLevel}</p>
+                        {kanjiNeedingEnrichment.length > 0 && (
+                          <button
+                            onClick={handleEnrichKanji}
+                            disabled={enriching}
+                            className="text-sm px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 hover:bg-amber-200 disabled:opacity-50 transition-colors"
+                          >
+                            {enriching ? 'Enriching…' : `Add readings to ${kanjiNeedingEnrichment.length} kanji`}
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6" role="list">
                         {kanjiItems.map((k, i) => (
                           <VocabItem key={`${k.char}-${i}`} item={k} index={i} type="kanji" onKanjiClick={setSelectedKanji} />
                         ))}

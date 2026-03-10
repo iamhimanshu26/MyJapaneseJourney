@@ -71,13 +71,22 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Text is required' })
   }
 
-  const CHUNK_SIZE = 6000
+  const CHUNK_SIZE = 5500
   const chunks = fullText.length <= CHUNK_SIZE
     ? [fullText]
     : (() => {
         const arr = []
-        for (let i = 0; i < fullText.length; i += CHUNK_SIZE) {
-          arr.push(fullText.slice(i, i + CHUNK_SIZE))
+        let pos = 0
+        const breakChars = new Set(['。', '．', '\n', '.', ' ', '\t'])
+        while (pos < fullText.length) {
+          let end = Math.min(pos + CHUNK_SIZE, fullText.length)
+          if (end < fullText.length) {
+            for (let i = end - 1; i > pos; i--) {
+              if (breakChars.has(fullText[i])) { end = i + 1; break }
+            }
+          }
+          arr.push(fullText.slice(pos, end))
+          pos = end
         }
         return arr
       })()

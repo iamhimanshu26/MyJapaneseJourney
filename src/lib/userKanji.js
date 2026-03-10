@@ -63,3 +63,21 @@ export function addKanjiBatch(items) {
   }
   return added
 }
+
+/** Update existing kanji with enriched data (onyomi, kunyomi, examples). Keeps existing values if new ones are empty. */
+export function updateKanji(char, updates) {
+  const list = getAll()
+  const idx = list.findIndex((i) => i.char === char)
+  if (idx < 0) return list
+  const existing = list[idx]
+  list[idx] = {
+    ...existing,
+    onyomi: (updates.onyomi || existing.onyomi || '').trim(),
+    kunyomi: (updates.kunyomi || existing.kunyomi || '').trim(),
+    onExamples: Array.isArray(updates.onExamples) && updates.onExamples.length > 0 ? updates.onExamples.slice(0, 3) : (existing.onExamples || []),
+    kunExamples: Array.isArray(updates.kunExamples) && updates.kunExamples.length > 0 ? updates.kunExamples.slice(0, 3) : (existing.kunExamples || []),
+    examples: Array.isArray(updates.examples) && updates.examples.length > 0 ? updates.examples.slice(0, 3) : (existing.examples || []),
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+  return list
+}

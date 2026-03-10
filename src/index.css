@@ -26,6 +26,22 @@
   }
 }
 
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: 0.75rem 1rem;
+  background: var(--color-accent);
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: left 0.2s;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+}
+
 ::selection {
   @apply bg-amber-400/40;
 }
@@ -36,4 +52,9 @@
 }
 .examples-with-furigana li {
   line-height: 2.2;
+}
+
+@keyframes strokeAppear {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
