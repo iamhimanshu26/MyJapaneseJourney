@@ -25,6 +25,11 @@ export function getUserVocabByLevel() {
   return byLevel
 }
 
+/** Returns all user vocab in the order they were saved (chronological). */
+export function getUserVocabInOrder() {
+  return getAll()
+}
+
 function isDuplicate(list, item) {
   return list.some(
     (i) => i.word === item.word && (i.reading || '') === (item.reading || '')

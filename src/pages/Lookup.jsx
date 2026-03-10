@@ -7,7 +7,7 @@ import { useToast } from '../context/ToastContext'
 import { getLookupHistory, addToHistory, clearLookupHistory } from '../lib/lookupHistory'
 import { VOCAB_BY_LEVEL } from '../data/vocab'
 import { GRAMMAR_BY_LEVEL } from '../data/grammar'
-import { getUserVocabByLevel } from '../lib/userVocab'
+import { getUserVocabByLevel, addVocab } from '../lib/userVocab'
 import { getUserGrammarByLevel } from '../lib/userGrammar'
 
 function getApiBase() {
@@ -107,7 +107,11 @@ export function Lookup() {
     if (!result) return
     try {
       await save(result)
-      toast.success('Saved to My Discovered')
+      if (result.type === 'vocab' && result.word) {
+        addVocab({ word: result.word, reading: result.reading, meaning: result.meaning, level: result.level || 'N5' })
+      }
+      const level = result.level || 'N5'
+      toast.success(result.type === 'vocab' ? `Saved to ${level} Vocabs` : 'Saved to My Discovered')
     } catch {
       toast.error('Could not save')
     }
@@ -133,6 +137,13 @@ export function Lookup() {
       setResult(data)
       addToHistory(q, data)
       setHistory(getLookupHistory())
+      // Auto-save to My Discovered and Vocabulary
+      if (data.type === 'vocab' || data.type === 'grammar') {
+        await save(data)
+        if (data.type === 'vocab' && data.word) {
+          addVocab({ word: data.word, reading: data.reading, meaning: data.meaning, level: data.level || 'N5' })
+        }
+      }
     } catch (err) {
       setError('Could not connect. Check your connection and try again.')
       toast.error('Connection failed')
@@ -236,7 +247,9 @@ export function Lookup() {
                   disabled={saved}
                   className="text-sm font-medium text-amber-700 hover:text-amber-800 disabled:opacity-50"
                 >
-                  {saved ? 'Saved' : 'Save to My Discovered'}
+                  {result.type === 'vocab'
+                    ? (saved ? `Saved to ${result.level || 'N5'} Vocabs` : `Save to ${result.level || 'N5'} Vocabs`)
+                    : (saved ? 'Saved' : 'Save to My Discovered')}
                 </button>
               )}
             </div>

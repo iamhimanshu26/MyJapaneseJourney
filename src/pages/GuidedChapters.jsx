@@ -179,6 +179,56 @@ export function GuidedChapters() {
                     </div>
                   </section>
                 )}
+
+                {/* 4. Full Lesson Content (sections) - exact from source */}
+                {lesson.sections && lesson.sections.length > 0 && (
+                  <section className="pt-8 border-t-2 border-stone-200">
+                    <h4 className="text-sm font-semibold text-stone-700 uppercase tracking-wider mb-4">Full Lesson Content</h4>
+                    <div className="space-y-8">
+                      {lesson.sections.map((sec, si) => (
+                        <div key={si} className="space-y-2">
+                          <h5 className="text-sm font-semibold text-stone-600">{sec.title}</h5>
+                          {sec.type === 'sentences' && sec.items?.map((item, i) => (
+                            <div key={i} className="py-2 pl-4 border-l-2 border-stone-200">
+                              <p className="text-stone-800" style={{ fontFamily: 'var(--font-jp)' }}>{item.jp}</p>
+                              {item.en && <p className="text-sm text-stone-500 mt-0.5">{item.en}</p>}
+                            </div>
+                          ))}
+                          {sec.type === 'vocab_group' && (
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {sec.items?.map((v, i) => (
+                                <div key={i} className="flex justify-between gap-2 p-3 rounded-lg bg-stone-50 text-sm">
+                                  <span style={{ fontFamily: 'var(--font-jp)' }}>{v.jp}</span>
+                                  <span className="text-stone-500 shrink-0">{v.en}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {sec.type === 'dialogue' && sec.items?.map((item, i) => (
+                            <div key={i} className="py-2 pl-4 border-l-2 border-stone-200 space-y-1">
+                              {item.a && <p><span className="font-medium text-stone-600">A:</span> <span style={{ fontFamily: 'var(--font-jp)' }}>{item.a}</span>{item.aEn && <span className="text-stone-500 text-sm ml-2">({item.aEn})</span>}</p>}
+                              {item.b && <p><span className="font-medium text-stone-600">B:</span> <span style={{ fontFamily: 'var(--font-jp)' }}>{item.b}</span>{item.bEn && <span className="text-stone-500 text-sm ml-2">({item.bEn})</span>}</p>}
+                              {item.q && <p><span className="font-medium text-stone-600">Q:</span> <span style={{ fontFamily: 'var(--font-jp)' }}>{item.q}</span></p>}
+                              {item.text && <p style={{ fontFamily: 'var(--font-jp)' }}>{item.text}{item.en && <span className="text-stone-500 text-sm ml-2">({item.en})</span>}</p>}
+                            </div>
+                          ))}
+                          {sec.type === 'kanji' && sec.items?.map((k, i) => (
+                            <div key={i} className="p-4 rounded-xl bg-stone-50 border border-stone-200/60 space-y-1">
+                              <p className="font-semibold"><span style={{ fontFamily: 'var(--font-jp)' }}>{k.char}</span> ({k.reading}) — {k.meaning}</p>
+                              {k.kun && <p className="text-sm">くんよみ: {k.kun}</p>}
+                              {k.on && <p className="text-sm">おんよみ: {k.on}</p>}
+                              {k.kotoba && <p className="text-sm">ことば: {k.kotoba}</p>}
+                              {k.reibun && <p className="text-sm" style={{ fontFamily: 'var(--font-jp)' }}>れいぶん: {k.reibun}</p>}
+                            </div>
+                          ))}
+                          {sec.type === 'text' && sec.lines?.map((line, i) => (
+                            <p key={i} className="text-stone-700 text-sm" style={line.jp ? { fontFamily: 'var(--font-jp)' } : {}}>{line.jp || line}</p>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
               </div>
             </motion.article>
           ) : (

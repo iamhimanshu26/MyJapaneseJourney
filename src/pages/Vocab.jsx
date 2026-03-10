@@ -3,8 +3,9 @@ import { motion } from 'framer-motion'
 import { HeardNewVocabCta } from '../components/HeardNewVocabCta'
 import { Flashcard } from '../components/Flashcard'
 import { PageMeta } from '../components/PageMeta'
+import { FuriganaText } from '../components/FuriganaText'
 import { VOCAB_BY_LEVEL } from '../data/vocab'
-import { getUserVocabByLevel } from '../lib/userVocab'
+import { getUserVocabByLevel, getUserVocabInOrder } from '../lib/userVocab'
 
 const LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1']
 
@@ -24,6 +25,7 @@ export function Vocab() {
   const [selectedLevel, setSelectedLevel] = useState('N5')
   const [mode, setMode] = useState('select') // 'select' | 'flashcards'
 
+  const savedInOrder = getUserVocabInOrder()
   const items = useMemo(() => {
     const seed = VOCAB_BY_LEVEL[selectedLevel] || []
     const user = getUserVocabByLevel()[selectedLevel] || []
@@ -43,6 +45,32 @@ export function Vocab() {
         </p>
 
         <HeardNewVocabCta compact />
+
+        {/* Vocab list — in order they were saved */}
+        {savedInOrder.length > 0 && (
+          <div className="mb-10">
+            <h2 className="text-xl font-semibold mb-4">My saved vocabs (in order)</h2>
+            <div className="rounded-xl border border-slate-200 bg-[var(--color-bg-card)] overflow-hidden">
+              <ul className="divide-y divide-slate-100">
+                {savedInOrder.map((v, i) => (
+                  <li
+                    key={`${v.word}-${v.reading || ''}-${i}`}
+                    className="flex items-center justify-between px-4 py-3 hover:bg-slate-50/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-slate-400 w-6">#{i + 1}</span>
+                      <span style={{ fontFamily: 'var(--font-jp)' }} className="font-medium">
+                        {v.reading ? <FuriganaText text={`${v.word}(${v.reading})`} /> : v.word}
+                      </span>
+                      <span className="text-sm text-[var(--color-text-muted)]">{v.meaning}</span>
+                    </div>
+                    <span className="text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-700">{v.level}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
 
         {mode === 'select' ? (
           <>
