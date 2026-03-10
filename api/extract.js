@@ -26,12 +26,12 @@ const EXTRACT_PROMPT = `You are a Japanese language expert. Extract vocabulary, 
 CRITICAL: Respond with ONLY a valid JSON object. No markdown, no \`\`\`json, no explanation. Start with { and end with }.
 
 Exact format (copy this structure):
-{"vocab":[{"word":"日","reading":"ひ","meaning":"day","level":"N5","examples":[{"jp":"今日(きょう)はいい天気(てんき)です。","en":"Today is nice weather."}]}],"grammar":[{"name":"〜です","structure":"Noun+です","meaning":"polite copula","level":"N5","example":"学生です"}],"kanji":[{"char":"日","reading":"ひ","meaning":"day","level":"N5","examples":[{"jp":"日本(にほん)","en":"Japan"}]}]}
+{"vocab":[{"word":"日","reading":"ひ","meaning":"day","level":"N5","examples":[{"jp":"今日(きょう)はいい天気(てんき)です。","en":"Today is nice weather."}]}],"grammar":[{"name":"〜です","structure":"Noun+です","meaning":"polite copula","level":"N5","example":"学生です"}],"kanji":[{"char":"月","reading":"つき","meaning":"moon, month","level":"N5","onyomi":"ゲツ,ガツ","kunyomi":"つき","onExamples":[{"jp":"今月(こんげつ)","en":"this month"},{"jp":"来月(らいげつ)","en":"next month"}],"kunExamples":[{"jp":"月(つき)","en":"moon"},{"jp":"毎月(まいつき)","en":"every month"}]}]}
 
 Rules:
 - vocab: word, reading, meaning, level; optional "examples": [{"jp":"sentence with 漢字(読み)","en":"translation"}]
 - grammar: name, structure, meaning, level, example
-- kanji: char, reading, meaning, level; optional "examples": [{"jp":"word using this kanji","en":"meaning"}]
+- kanji: char, reading (primary), meaning, level; onyomi (e.g. "ゲツ"), kunyomi (e.g. "つき"); optional "onExamples": [{"jp":"","en":""}], "kunExamples": [{"jp":"","en":""}]
 - Use double quotes for all keys and string values. Escape " as \\" inside strings.
 - No trailing commas. No comments.
 - Empty arrays [] if nothing found.
@@ -192,10 +192,14 @@ export default async function handler(req, res) {
       .filter((k) => k && typeof k === 'object')
       .map((k) => ({
         char: String(k.char ?? k.character ?? k.kanji ?? ''),
-        reading: String(k.reading ?? k.on ?? k.kunyomi ?? ''),
+        reading: String(k.reading ?? k.kunyomi ?? k.on ?? ''),
         meaning: String(k.meaning ?? k.english ?? ''),
         level: String(k.level ?? 'N5'),
-        examples: Array.isArray(k.examples) ? k.examples.slice(0, 2).map((e) => ({ jp: String(e?.jp ?? e?.ja ?? ''), en: String(e?.en ?? e?.english ?? '') })) : [],
+        onyomi: String(k.onyomi ?? k.on ?? '').trim(),
+        kunyomi: String(k.kunyomi ?? k.kun ?? '').trim(),
+        onExamples: Array.isArray(k.onExamples) ? k.onExamples.slice(0, 3).map((e) => ({ jp: String(e?.jp ?? ''), en: String(e?.en ?? '') })) : [],
+        kunExamples: Array.isArray(k.kunExamples) ? k.kunExamples.slice(0, 3).map((e) => ({ jp: String(e?.jp ?? ''), en: String(e?.en ?? '') })) : [],
+        examples: Array.isArray(k.examples) ? k.examples.slice(0, 2).map((e) => ({ jp: String(e?.jp ?? ''), en: String(e?.en ?? '') })) : [],
       }))
       .filter((k) => k.char)
 

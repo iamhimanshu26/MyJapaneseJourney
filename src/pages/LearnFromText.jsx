@@ -112,6 +112,10 @@ export function LearnFromText() {
         reading: k.reading || '',
         meaning: k.meaning || '',
         level: k.level || 'N5',
+        onyomi: k.onyomi || '',
+        kunyomi: k.kunyomi || '',
+        onExamples: k.onExamples || [],
+        kunExamples: k.kunExamples || [],
         examples: k.examples || [],
       }))
     )

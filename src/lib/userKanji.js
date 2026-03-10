@@ -40,7 +40,11 @@ export function addKanji(item) {
     reading: String(item.reading || '').trim(),
     meaning: String(item.meaning || '').trim(),
     level: LEVELS.includes(item.level) ? item.level : 'N5',
-    examples: Array.isArray(item.examples) ? item.examples : [],
+    onyomi: String(item.onyomi || '').trim(),
+    kunyomi: String(item.kunyomi || '').trim(),
+    onExamples: Array.isArray(item.onExamples) ? item.onExamples.slice(0, 3) : [],
+    kunExamples: Array.isArray(item.kunExamples) ? item.kunExamples.slice(0, 3) : [],
+    examples: Array.isArray(item.examples) ? item.examples.slice(0, 3) : [],
   }
   if (!entry.char) return list
   if (isDuplicate(list, entry)) return list
