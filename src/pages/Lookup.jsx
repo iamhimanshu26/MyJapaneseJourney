@@ -137,13 +137,7 @@ export function Lookup() {
       setResult(data)
       addToHistory(q, data)
       setHistory(getLookupHistory())
-      // Auto-save to My Discovered and Vocabulary
-      if (data.type === 'vocab' || data.type === 'grammar') {
-        await save(data)
-        if (data.type === 'vocab' && data.word) {
-          addVocab({ word: data.word, reading: data.reading, meaning: data.meaning, level: data.level || 'N5' })
-        }
-      }
+      await saveResult(data)
     } catch (err) {
       setError('Could not connect. Check your connection and try again.')
       toast.error('Connection failed')
@@ -154,9 +148,24 @@ export function Lookup() {
 
   function handleSuggestionClick(term, resultFromHistory) {
     setQuery(term)
-    if (resultFromHistory) setResult(resultFromHistory)
+    if (resultFromHistory) {
+      setResult(resultFromHistory)
+      // Auto-save when viewing from history/suggestions too
+      saveResult(resultFromHistory)
+    }
     setShowSuggestions(false)
     inputRef.current?.focus()
+  }
+
+  async function saveResult(data) {
+    if (!data || (data.type !== 'vocab' && data.type !== 'grammar')) return
+    try {
+      await save(data)
+      if (data.type === 'vocab' && data.word) {
+        const level = data.level && ['N5', 'N4', 'N3', 'N2', 'N1'].includes(data.level) ? data.level : 'N5'
+        addVocab({ word: data.word, reading: data.reading, meaning: data.meaning, level })
+      }
+    } catch (_) {}
   }
 
   return (
@@ -311,6 +320,7 @@ export function Lookup() {
                   onClick={() => {
                     setQuery(h.query)
                     setResult(h.result)
+                    saveResult(h.result)
                   }}
                   className="rounded-xl border border-slate-200 bg-[var(--color-bg-card)] p-4 cursor-pointer hover:border-amber-300 hover:bg-amber-50/30 transition-colors"
                 >
