@@ -43,6 +43,7 @@ export function addVocab(item) {
     reading: String(item.reading || '').trim(),
     meaning: String(item.meaning || '').trim(),
     level: LEVELS.includes(item.level) ? item.level : 'N5',
+    examples: Array.isArray(item.examples) ? item.examples.slice(0, 3) : [],
   }
   if (!entry.word) return list
   if (isDuplicate(list, entry)) return list

@@ -90,6 +90,7 @@ export function LearnFromText() {
         reading: v.reading || '',
         meaning: v.meaning || '',
         level: v.level || 'N5',
+        examples: v.examples || [],
       }))
     )
 
@@ -111,6 +112,7 @@ export function LearnFromText() {
         reading: k.reading || '',
         meaning: k.meaning || '',
         level: k.level || 'N5',
+        examples: k.examples || [],
       }))
     )
 

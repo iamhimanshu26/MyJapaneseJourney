@@ -26,12 +26,12 @@ const EXTRACT_PROMPT = `You are a Japanese language expert. Extract vocabulary, 
 CRITICAL: Respond with ONLY a valid JSON object. No markdown, no \`\`\`json, no explanation. Start with { and end with }.
 
 Exact format (copy this structure):
-{"vocab":[{"word":"日","reading":"ひ","meaning":"day","level":"N5"}],"grammar":[{"name":"〜です","structure":"Noun+です","meaning":"polite copula","level":"N5","example":"学生です"}],"kanji":[{"char":"日","reading":"ひ","meaning":"day","level":"N5"}]}
+{"vocab":[{"word":"日","reading":"ひ","meaning":"day","level":"N5","examples":[{"jp":"今日(きょう)はいい天気(てんき)です。","en":"Today is nice weather."}]}],"grammar":[{"name":"〜です","structure":"Noun+です","meaning":"polite copula","level":"N5","example":"学生です"}],"kanji":[{"char":"日","reading":"ひ","meaning":"day","level":"N5","examples":[{"jp":"日本(にほん)","en":"Japan"}]}]}
 
 Rules:
-- vocab: each item has word, reading (hiragana), meaning, level (N5-N1)
-- grammar: each has name, structure, meaning, level, example
-- kanji: each has char, reading, meaning, level
+- vocab: word, reading, meaning, level; optional "examples": [{"jp":"sentence with 漢字(読み)","en":"translation"}]
+- grammar: name, structure, meaning, level, example
+- kanji: char, reading, meaning, level; optional "examples": [{"jp":"word using this kanji","en":"meaning"}]
 - Use double quotes for all keys and string values. Escape " as \\" inside strings.
 - No trailing commas. No comments.
 - Empty arrays [] if nothing found.
@@ -170,6 +170,7 @@ export default async function handler(req, res) {
         reading: String(v.reading ?? v.kana ?? v.furigana ?? ''),
         meaning: String(v.meaning ?? v.english ?? v.en ?? ''),
         level: String(v.level ?? 'N5'),
+        examples: Array.isArray(v.examples) ? v.examples.slice(0, 3).map((e) => ({ jp: String(e?.jp ?? e?.ja ?? ''), en: String(e?.en ?? e?.english ?? '') })) : [],
       }))
       .filter((v) => v.word)
 
@@ -194,6 +195,7 @@ export default async function handler(req, res) {
         reading: String(k.reading ?? k.on ?? k.kunyomi ?? ''),
         meaning: String(k.meaning ?? k.english ?? ''),
         level: String(k.level ?? 'N5'),
+        examples: Array.isArray(k.examples) ? k.examples.slice(0, 2).map((e) => ({ jp: String(e?.jp ?? e?.ja ?? ''), en: String(e?.en ?? e?.english ?? '') })) : [],
       }))
       .filter((k) => k.char)
 

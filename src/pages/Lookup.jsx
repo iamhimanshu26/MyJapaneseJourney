@@ -163,7 +163,10 @@ export function Lookup() {
       await save(data)
       if (data.type === 'vocab' && data.word) {
         const level = data.level && ['N5', 'N4', 'N3', 'N2', 'N1'].includes(data.level) ? data.level : 'N5'
-        addVocab({ word: data.word, reading: data.reading, meaning: data.meaning, level })
+        const examples = (data.examples || []).slice(0, 3).map((ex) =>
+          typeof ex === 'object' ? { jp: ex?.jp || '', en: ex?.en || '' } : { jp: String(ex), en: '' }
+        )
+        addVocab({ word: data.word, reading: data.reading, meaning: data.meaning, level, examples })
       }
     } catch (_) {}
   }

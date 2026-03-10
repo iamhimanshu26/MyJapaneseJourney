@@ -24,6 +24,11 @@ export function getUserKanjiByLevel() {
   return byLevel
 }
 
+/** Returns all user kanji in the order they were saved. */
+export function getUserKanjiInOrder() {
+  return getAll()
+}
+
 function isDuplicate(list, item) {
   return list.some((i) => i.char === item.char)
 }
@@ -35,6 +40,7 @@ export function addKanji(item) {
     reading: String(item.reading || '').trim(),
     meaning: String(item.meaning || '').trim(),
     level: LEVELS.includes(item.level) ? item.level : 'N5',
+    examples: Array.isArray(item.examples) ? item.examples : [],
   }
   if (!entry.char) return list
   if (isDuplicate(list, entry)) return list
