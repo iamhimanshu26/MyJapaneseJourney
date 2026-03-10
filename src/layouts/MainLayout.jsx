@@ -6,6 +6,7 @@ const navItems = [
   { path: '/vocab', label: 'Vocabulary' },
   { path: '/grammar', label: 'Grammar' },
   { path: '/discovered', label: 'My Discovered' },
+  { path: '/any-idea', label: 'Any Idea!', highlight: true },
 ]
 
 export function MainLayout() {

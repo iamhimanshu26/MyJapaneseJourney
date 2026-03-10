@@ -8,6 +8,9 @@ import { getLookupHistory, addToHistory, clearLookupHistory } from '../lib/looku
 import { VOCAB_BY_LEVEL } from '../data/vocab'
 import { GRAMMAR_BY_LEVEL } from '../data/grammar'
 import { getUserVocabByLevel, addVocab } from '../lib/userVocab'
+import { getUserVerbsByLevel, addVerb } from '../lib/userVerbs'
+import { addKanji } from '../lib/userKanji'
+import { isSingleKanji, isVerb } from '../lib/vocabClassifier'
 import { getUserGrammarByLevel } from '../lib/userGrammar'
 
 function getApiBase() {
@@ -20,7 +23,12 @@ function getAllSuggestions() {
   for (const level of ['N5', 'N4', 'N3', 'N2', 'N1']) {
     const seed = VOCAB_BY_LEVEL[level] || []
     const user = getUserVocabByLevel()[level] || []
-    for (const v of [...seed, ...user]) {
+    const userVerbs = getUserVerbsByLevel()[level] || []
+    for (const v of [...seed.filter((x) => !isSingleKanji(x.word) && !isVerb(x)), ...user]) {
+      vocab.push({ term: v.word, reading: v.reading, type: 'vocab' })
+      if (v.reading) vocab.push({ term: v.reading, reading: v.reading, type: 'vocab' })
+    }
+    for (const v of [...seed.filter(isVerb), ...userVerbs]) {
       vocab.push({ term: v.word, reading: v.reading, type: 'vocab' })
       if (v.reading) vocab.push({ term: v.reading, reading: v.reading, type: 'vocab' })
     }
@@ -147,10 +155,21 @@ export function Lookup() {
     try {
       await save(result)
       if (result.type === 'vocab' && result.word) {
-        addVocab({ word: result.word, reading: result.reading, meaning: result.meaning, level: result.level || 'N5' })
+        const level = result.level || 'N5'
+        const payload = { word: result.word, reading: result.reading, meaning: result.meaning, level, examples: result.examples, partOfSpeech: result.partOfSpeech }
+        if (isSingleKanji(result.word)) {
+          addKanji({ char: result.word, reading: result.reading, meaning: result.meaning, level })
+          toast.success(`Saved to ${level} Kanji`)
+        } else if (isVerb(result)) {
+          addVerb(payload)
+          toast.success(`Saved to ${level} Verbs`)
+        } else {
+          addVocab(payload)
+          toast.success(`Saved to ${level} Vocab`)
+        }
+      } else {
+        toast.success('Saved to My Discovered')
       }
-      const level = result.level || 'N5'
-      toast.success(result.type === 'vocab' ? `Saved to ${level} Vocabs` : 'Saved to My Discovered')
     } catch {
       toast.error('Could not save')
     }
@@ -205,7 +224,14 @@ export function Lookup() {
         const examples = (data.examples || []).slice(0, 3).map((ex) =>
           typeof ex === 'object' ? { jp: ex?.jp || '', en: ex?.en || '' } : { jp: String(ex), en: '' }
         )
-        addVocab({ word: data.word, reading: data.reading, meaning: data.meaning, level, examples })
+        const payload = { word: data.word, reading: data.reading, meaning: data.meaning, level, examples, partOfSpeech: data.partOfSpeech }
+        if (isSingleKanji(data.word)) {
+          addKanji({ char: data.word, reading: data.reading, meaning: data.meaning, level })
+        } else if (isVerb(data)) {
+          addVerb(payload)
+        } else {
+          addVocab(payload)
+        }
       }
     } catch (_) {}
   }
@@ -305,7 +331,9 @@ export function Lookup() {
                   className="text-sm font-medium text-amber-700 hover:text-amber-800 disabled:opacity-50"
                 >
                   {result.type === 'vocab'
-                    ? (saved ? `Saved to ${result.level || 'N5'} Vocabs` : `Save to ${result.level || 'N5'} Vocabs`)
+                    ? (saved
+                      ? `Saved to ${result.level || 'N5'} ${isSingleKanji(result.word) ? 'Kanji' : isVerb(result) ? 'Verbs' : 'Vocab'}`
+                      : `Save to ${result.level || 'N5'} ${isSingleKanji(result.word) ? 'Kanji' : isVerb(result) ? 'Verbs' : 'Vocab'}`)
                     : (saved ? 'Saved' : 'Save to My Discovered')}
                 </button>
               )}

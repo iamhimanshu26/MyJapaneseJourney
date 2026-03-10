@@ -8,7 +8,9 @@ import { KanjiPopup } from '../components/KanjiPopup'
 import { KanjiThumbnail } from '../components/KanjiThumbnail'
 import { VOCAB_BY_LEVEL } from '../data/vocab'
 import { getUserVocabByLevel } from '../lib/userVocab'
+import { getUserVerbsByLevel } from '../lib/userVerbs'
 import { getUserKanjiByLevel, updateKanji } from '../lib/userKanji'
+import { isSingleKanji, isVerb } from '../lib/vocabClassifier'
 import { sortKanjiByLearningOrder } from '../data/kanjiOrder'
 import { useToast } from '../context/ToastContext'
 
@@ -116,17 +118,35 @@ export function Vocab() {
   const [refreshKey, setRefreshKey] = useState(0)
   const toast = useToast()
 
-  const items = useMemo(() => {
+  const vocabItems = useMemo(() => {
     if (!selectedLevel) return []
-    const seed = VOCAB_BY_LEVEL[selectedLevel] || []
-    const user = getUserVocabByLevel()[selectedLevel] || []
+    const seed = (VOCAB_BY_LEVEL[selectedLevel] || []).filter((v) => !isSingleKanji(v.word) && !isVerb(v))
+    const user = (getUserVocabByLevel()[selectedLevel] || []).filter((v) => !isSingleKanji(v.word) && !isVerb(v))
+    return mergeVocab(seed, user)
+  }, [selectedLevel])
+
+  const verbItems = useMemo(() => {
+    if (!selectedLevel) return []
+    const seed = (VOCAB_BY_LEVEL[selectedLevel] || []).filter((v) => isVerb(v))
+    const user = getUserVerbsByLevel()[selectedLevel] || []
     return mergeVocab(seed, user)
   }, [selectedLevel])
 
   const kanjiItems = useMemo(() => {
     if (!selectedLevel) return []
-    const raw = getUserKanjiByLevel()[selectedLevel] || []
-    return sortKanjiByLearningOrder(raw)
+    const seedKanji = (VOCAB_BY_LEVEL[selectedLevel] || [])
+      .filter((v) => isSingleKanji(v.word))
+      .map((v) => ({ char: v.word, reading: v.reading, meaning: v.meaning, level: v.level }))
+    const userKanji = getUserKanjiByLevel()[selectedLevel] || []
+    const merged = []
+    const seen = new Set()
+    for (const k of [...seedKanji, ...userKanji]) {
+      if (k.char && !seen.has(k.char)) {
+        seen.add(k.char)
+        merged.push(k)
+      }
+    }
+    return sortKanjiByLearningOrder(merged)
   }, [selectedLevel, refreshKey])
 
   const kanjiNeedingEnrichment = useMemo(
@@ -208,25 +228,47 @@ export function Vocab() {
                     onClick={() => setActiveTab('vocabs')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'vocabs' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                   >
-                    Vocabs
+                    Vocab
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('verbs')}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === 'verbs' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  >
+                    Verbs
                   </button>
                 </div>
 
                 {activeTab === 'vocabs' ? (
-                  items.length > 0 ? (
+                  vocabItems.length > 0 ? (
                     <div>
-                      <p className="text-lg font-semibold text-stone-700 mb-4">{items.length} words in {selectedLevel}</p>
+                      <p className="text-lg font-semibold text-stone-700 mb-4">{vocabItems.length} words in {selectedLevel}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-                        {items.map((v, i) => (
+                        {vocabItems.map((v, i) => (
                           <VocabItem key={`${v.word}-${v.reading || ''}-${i}`} item={v} index={i} type="vocab" />
                         ))}
                       </div>
-                      <button onClick={() => setMode('flashcards')} className="px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600">
+                      <button onClick={() => { setMode('flashcards'); }} className="px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600">
                         Start flashcards
                       </button>
                     </div>
                   ) : (
-                    <p className="text-sm text-[var(--color-text-muted)]">No vocab for {selectedLevel} yet. Search or extract to add words.</p>
+                    <p className="text-sm text-[var(--color-text-muted)]">No vocab for {selectedLevel} yet. Words (not single kanji) go here. Search or extract to add.</p>
+                  )
+                ) : activeTab === 'verbs' ? (
+                  verbItems.length > 0 ? (
+                    <div>
+                      <p className="text-lg font-semibold text-stone-700 mb-4">{verbItems.length} verbs in {selectedLevel}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+                        {verbItems.map((v, i) => (
+                          <VocabItem key={`${v.word}-${v.reading || ''}-${i}`} item={v} index={i} type="vocab" />
+                        ))}
+                      </div>
+                      <button onClick={() => { setMode('flashcards'); }} className="px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600">
+                        Start flashcards
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-[var(--color-text-muted)]">No verbs for {selectedLevel} yet. Save verbs like 来る, する from Lookup.</p>
                   )
                 ) : (
                   kanjiItems.length > 0 ? (
@@ -263,7 +305,7 @@ export function Vocab() {
             <button onClick={() => setMode('select')} className="mb-4 text-sm text-amber-600 hover:underline">
               ← Back to level select
             </button>
-            <Flashcard items={items} />
+            <Flashcard items={activeTab === 'verbs' ? verbItems : activeTab === 'vocabs' ? vocabItems : []} />
           </div>
         )}
       </motion.div>

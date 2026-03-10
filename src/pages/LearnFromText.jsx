@@ -5,8 +5,10 @@ import { PageMeta } from '../components/PageMeta'
 import { useDiscovered } from '../hooks/useDiscovered'
 import { useToast } from '../context/ToastContext'
 import { addVocabBatch } from '../lib/userVocab'
+import { addVerbBatch } from '../lib/userVerbs'
 import { addGrammarBatch } from '../lib/userGrammar'
 import { addKanjiBatch } from '../lib/userKanji'
+import { isSingleKanji, isVerb } from '../lib/vocabClassifier'
 
 function getApiBase() {
   if (typeof window === 'undefined') return ''
@@ -85,19 +87,52 @@ export function LearnFromText() {
   const performSaveAll = useCallback(async (data) => {
     if (!data) return
     let vocabAdded = 0
+    let verbAdded = 0
     let grammarAdded = 0
     let kanjiAdded = 0
 
-    // Save to Vocabulary
-    vocabAdded = addVocabBatch(
-      (data.vocab || []).map((v) => ({
-        word: v.word,
-        reading: v.reading || '',
-        meaning: v.meaning || '',
-        level: v.level || 'N5',
-        examples: v.examples || [],
-      }))
-    )
+    const rawVocab = (data.vocab || []).map((v) => ({
+      word: v.word,
+      reading: v.reading || '',
+      meaning: v.meaning || '',
+      level: v.level || 'N5',
+      examples: v.examples || [],
+      partOfSpeech: v.partOfSpeech,
+    }))
+
+    const vocabOnly = rawVocab.filter((v) => !isSingleKanji(v.word) && !isVerb(v))
+    const verbsOnly = rawVocab.filter((v) => isVerb(v))
+    const singleKanjiFromVocab = rawVocab.filter((v) => isSingleKanji(v.word))
+
+    vocabAdded = addVocabBatch(vocabOnly)
+    verbAdded = addVerbBatch(verbsOnly)
+
+    // Save to Kanji: from kanji array + single-char from vocab
+    const kanjiItems = [
+      ...(data.kanji || []).map((k) => ({
+        char: k.char,
+        reading: k.reading || '',
+        meaning: k.meaning || '',
+        level: k.level || 'N5',
+        onyomi: k.onyomi || '',
+        kunyomi: k.kunyomi || '',
+        onExamples: k.onExamples || [],
+        kunExamples: k.kunExamples || [],
+        examples: k.examples || [],
+      })),
+      ...singleKanjiFromVocab.map((v) => ({
+        char: v.word,
+        reading: v.reading,
+        meaning: v.meaning,
+        level: v.level,
+        onyomi: '',
+        kunyomi: '',
+        onExamples: [],
+        kunExamples: [],
+        examples: [],
+      })),
+    ]
+    kanjiAdded = addKanjiBatch(kanjiItems)
 
     // Save to Grammar
     grammarAdded = addGrammarBatch(
@@ -146,7 +181,8 @@ export function LearnFromText() {
     }
 
     const parts = []
-    if (vocabAdded) parts.push(`${vocabAdded} to Vocabulary`)
+    if (vocabAdded) parts.push(`${vocabAdded} to Vocab`)
+    if (verbAdded) parts.push(`${verbAdded} to Verbs`)
     if (grammarAdded) parts.push(`${grammarAdded} to Grammar`)
     if (kanjiAdded) parts.push(`${kanjiAdded} to Kanji`)
     if (parts.length) toast.success(`Saved ${parts.join(', ')} and all to My Discovered`)

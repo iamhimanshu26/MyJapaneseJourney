@@ -7,6 +7,7 @@ const Vocab = lazy(() => import('./pages/Vocab').then((m) => ({ default: m.Vocab
 const Grammar = lazy(() => import('./pages/Grammar').then((m) => ({ default: m.Grammar })))
 const Lookup = lazy(() => import('./pages/Lookup').then((m) => ({ default: m.Lookup })))
 const MyDiscovered = lazy(() => import('./pages/MyDiscovered').then((m) => ({ default: m.MyDiscovered })))
+const AnyIdea = lazy(() => import('./pages/AnyIdea').then((m) => ({ default: m.AnyIdea })))
 const GuidedChapters = lazy(() => import('./pages/GuidedChapters').then((m) => ({ default: m.GuidedChapters })))
 const LearnFromText = lazy(() => import('./pages/LearnFromText').then((m) => ({ default: m.LearnFromText })))
 const Login = lazy(() => import('./pages/Login').then((m) => ({ default: m.Login })))
@@ -31,6 +32,7 @@ function App() {
           <Route path="grammar" element={<Grammar />} />
           <Route path="lookup" element={<Lookup />} />
           <Route path="discovered" element={<MyDiscovered />} />
+        <Route path="any-idea" element={<AnyIdea />} />
           <Route path="chapters" element={<GuidedChapters />} />
           <Route path="learn-from-text" element={<LearnFromText />} />
           <Route path="login" element={<Login />} />
