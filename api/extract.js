@@ -21,20 +21,21 @@ function checkRateLimit(ip) {
   return record.count <= RATE_LIMIT_MAX
 }
 
-const EXTRACT_PROMPT = `You are a Japanese language expert. Extract ALL Japanese vocabulary, grammar, and individual kanji from the user's text.
+const EXTRACT_PROMPT = `You are a Japanese language expert. Extract vocabulary, grammar, and kanji from the user's text.
 
-You MUST respond with ONLY a single valid JSON object. No markdown, no code blocks, no explanation. The response must parse with JSON.parse().
+CRITICAL: Respond with ONLY a valid JSON object. No markdown, no \`\`\`json, no explanation. Start with { and end with }.
 
-Format:
-{"vocab":[{"word":"日本語","reading":"にほんご","meaning":"Japanese language","level":"N5"}],"grammar":[{"name":"〜です","structure":"Noun + です","meaning":"Polite copula","level":"N5","example":"学生(がくせい)です。"}],"kanji":[{"char":"日","reading":"ひ","meaning":"day","level":"N5"}]}
+Exact format (copy this structure):
+{"vocab":[{"word":"日","reading":"ひ","meaning":"day","level":"N5"}],"grammar":[{"name":"〜です","structure":"Noun+です","meaning":"polite copula","level":"N5","example":"学生です"}],"kanji":[{"char":"日","reading":"ひ","meaning":"day","level":"N5"}]}
 
 Rules:
-- vocab: every word/phrase with {word, reading, meaning, level}. "word"=Japanese, "reading"=hiragana.
-- grammar: every grammar point with {name, structure, meaning, level, example}. Example uses 漢字(読み).
-- kanji: individual kanji characters with {char, reading, meaning, level}. Extract kanji that appear in the text.
-- JLPT level N5–N1 when inferrable, else "N5"
-- Skip purely English or numbers. Empty arrays [] if nothing found.
-- No trailing commas. Double quotes only. Escape quotes in strings.`
+- vocab: each item has word, reading (hiragana), meaning, level (N5-N1)
+- grammar: each has name, structure, meaning, level, example
+- kanji: each has char, reading, meaning, level
+- Use double quotes for all keys and string values. Escape " as \\" inside strings.
+- No trailing commas. No comments.
+- Empty arrays [] if nothing found.
+- Keep output compact. Limit to ~50 vocab, ~20 grammar, ~30 kanji to stay within token limit.`
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -65,21 +66,32 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid JSON body' })
   }
 
-  const text = (body.text || body.content || '').trim().slice(0, 30000)
-  if (!text) {
+  const fullText = (body.text || body.content || '').trim().slice(0, 50000)
+  if (!fullText) {
     return res.status(400).json({ error: 'Text is required' })
   }
 
-  try {
+  const CHUNK_SIZE = 6000
+  const chunks = fullText.length <= CHUNK_SIZE
+    ? [fullText]
+    : (() => {
+        const arr = []
+        for (let i = 0; i < fullText.length; i += CHUNK_SIZE) {
+          arr.push(fullText.slice(i, i + CHUNK_SIZE))
+        }
+        return arr
+      })()
+
+  const runExtract = async (textChunk) => {
     const response = await fetch(`${GEMINI_URL}?key=${encodeURIComponent(apiKey)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text }] }],
+        contents: [{ role: 'user', parts: [{ text: textChunk }] }],
         systemInstruction: { parts: [{ text: EXTRACT_PROMPT }] },
         generationConfig: {
           temperature: 0.2,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 8192,
           responseMimeType: 'application/json',
         },
       }),
@@ -88,7 +100,7 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errText = await response.text()
       console.error('Gemini extract error', response.status, errText)
-      return res.status(502).json({ error: 'Extraction failed. Try again.' })
+      throw new Error('Extraction failed')
     }
 
     const data = await response.json()
@@ -97,33 +109,43 @@ export default async function handler(req, res) {
     const textPart = parts.find(p => p?.text) || parts[0]
     let raw = (textPart?.text || '').trim() || '{}'
 
-    // Strip markdown code blocks (Gemini sometimes wraps JSON)
-    raw = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?\s*```\s*$/, '')
+    // Strip markdown code blocks
+    raw = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?\s*```\s*$/i, '')
 
-    // Extract the JSON object
+    // Extract the first complete {...} object using brace balance
     let jsonStr = raw
-    const braceMatch = raw.match(/\{[\s\S]*\}/)
-    if (braceMatch) jsonStr = braceMatch[0]
+    const start = raw.indexOf('{')
+    if (start >= 0) {
+      let depth = 0
+      let end = start
+      for (let i = start; i < raw.length; i++) {
+        if (raw[i] === '{') depth++
+        else if (raw[i] === '}') { depth--; if (depth === 0) { end = i + 1; break } }
+      }
+      if (end > start) jsonStr = raw.slice(start, end)
+    }
 
-    // Fix trailing commas (invalid in JSON but LLMs often produce them)
-    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1')
+    // Repair common LLM JSON issues
+    jsonStr = jsonStr
+      .replace(/,(\s*[}\]])/g, '$1')           // trailing commas
+      .replace(/\r\n/g, '\n')                  // normalize newlines
+      .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')  // remove control chars, keep \n \t
 
     let result
     try {
       result = JSON.parse(jsonStr)
     } catch (parseErr) {
-      // Fallback: try parsing as JSONC (strip // and /* */ comments)
       try {
-        const cleaned = jsonStr
-          .replace(/\/\/[^\n]*/g, '')
-          .replace(/\/\*[\s\S]*?\*\//g, '')
+        const cleaned = jsonStr.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '')
         result = JSON.parse(cleaned)
       } catch {
-        console.error('Extract parse error:', parseErr?.message, 'Preview:', jsonStr?.slice(0, 400))
-        return res.status(502).json({
-          error: 'Could not parse extraction result. Try again or use shorter text.',
-        })
+        console.error('Extract parse error:', parseErr?.message, 'Preview:', jsonStr?.slice(0, 600))
+        throw new Error('Could not parse extraction result')
       }
+    }
+
+    if (!result || typeof result !== 'object') {
+      throw new Error('Could not parse extraction result')
     }
 
     // Normalize: some models use vocabulary/vocabulary_items or grammar_points
@@ -175,9 +197,37 @@ export default async function handler(req, res) {
       }))
       .filter((k) => k.char)
 
-    return res.status(200).json(result)
+    return result
+  }
+
+  const seenVocab = new Set()
+  const seenGrammar = new Set()
+  const seenKanji = new Set()
+  const merged = { vocab: [], grammar: [], kanji: [] }
+
+  try {
+    for (let i = 0; i < chunks.length; i++) {
+      const chunkResult = await runExtract(chunks[i])
+      if (!chunkResult) continue
+      for (const v of chunkResult.vocab || []) {
+        const key = `${v.word}|${v.reading || ''}`
+        if (!seenVocab.has(key)) { seenVocab.add(key); merged.vocab.push(v) }
+      }
+      for (const g of chunkResult.grammar || []) {
+        const key = g.name || ''
+        if (key && !seenGrammar.has(key)) { seenGrammar.add(key); merged.grammar.push(g) }
+      }
+      for (const k of chunkResult.kanji || []) {
+        if (k.char && !seenKanji.has(k.char)) { seenKanji.add(k.char); merged.kanji.push(k) }
+      }
+    }
+    return res.status(200).json(merged)
   } catch (err) {
     console.error('Extract error', err)
-    return res.status(500).json({ error: 'Something went wrong. Please try again.' })
+    const isParseErr = err?.message?.includes('parse extraction')
+    const isExtractErr = err?.message === 'Extraction failed'
+    const status = isParseErr || isExtractErr ? 502 : 500
+    const msg = isParseErr ? 'Could not parse extraction result. Try again or use shorter text.' : (isExtractErr ? 'Extraction failed. Try again.' : 'Something went wrong. Please try again.')
+    return res.status(status).json({ error: msg })
   }
 }

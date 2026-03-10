@@ -31,7 +31,7 @@ export function LearnFromText() {
     const reader = new FileReader()
     reader.onload = () => {
       const content = String(reader.result || '')
-      setText(content.slice(0, 30000))
+      setText(content.slice(0, 50000))
     }
     reader.onerror = () => {
       setError('Could not read file')
