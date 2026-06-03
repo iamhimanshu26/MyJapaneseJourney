@@ -142,7 +142,25 @@ export default async function handler(req, res) {
     })
   } catch (err) {
     console.error('Enrich kanji', err)
-    const msg = err?.message?.includes('parse') ? 'Could not parse result. Try again.' : 'Enrichment failed. Try again.'
-    return res.status(502).json({ error: msg })
+    if (inputChars.length === 1) {
+      return res.status(200).json({
+        char: inputChars[0],
+        onyomi: '',
+        kunyomi: '',
+        onExamples: [],
+        kunExamples: [],
+        fallback_used: true,
+      })
+    }
+    return res.status(200).json({
+      kanji: inputChars.map((char) => ({
+        char,
+        onyomi: '',
+        kunyomi: '',
+        onExamples: [],
+        kunExamples: [],
+      })),
+      fallback_used: true,
+    })
   }
 }

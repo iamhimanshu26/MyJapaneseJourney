@@ -109,7 +109,7 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errText = await response.text()
       console.error('Gemini extract error', response.status, errText)
-      throw new Error('Extraction failed')
+      return { vocab: [], grammar: [], kanji: [] }
     }
 
     const data = await response.json()

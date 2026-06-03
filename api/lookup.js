@@ -127,7 +127,17 @@ export default async function handler(req, res) {
         const err = JSON.parse(errText)
         if (err?.error?.message) msg = err.error.message
       } catch (_) {}
-      return res.status(502).json({ error: msg })
+      return res.status(200).json({
+        type: 'vocab',
+        word: query,
+        reading: '',
+        meaning: 'Meaning unavailable due temporary AI quota/rate limit.',
+        partOfSpeech: '',
+        level: 'N4',
+        examples: [],
+        fallback_used: true,
+        warning: msg,
+      })
     }
 
     const data = await response.json()
