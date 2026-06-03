@@ -1,7 +1,7 @@
 export function setCors(res, methods = 'GET, POST, PATCH, DELETE, OPTIONS') {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', methods)
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Auth-User-Id, X-User-Email, X-User-Name')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Auth-User-Id, X-Session-Token, X-User-Email, X-User-Name, Authorization')
 }
 
 export function handleOptions(req, res, methods) {

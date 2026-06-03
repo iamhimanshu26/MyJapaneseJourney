@@ -1,6 +1,6 @@
 const GUEST_ID_KEY = 'my-japanese-journey-guest-id'
 
-function getGuestId() {
+export function getOrCreateGuestId() {
   try {
     const existing = localStorage.getItem(GUEST_ID_KEY)
     if (existing) return existing
@@ -13,10 +13,11 @@ function getGuestId() {
 }
 
 export function getUserIdentity(user) {
-  const authUserId = user?.id || getGuestId()
+  const authUserId = user?.id || getOrCreateGuestId()
   return {
     authUserId,
     email: user?.email || null,
-    name: user?.user_metadata?.full_name || user?.user_metadata?.name || null,
+    name: user?.name || user?.loginId || null,
+    sessionToken: user?.sessionToken || null,
   }
 }

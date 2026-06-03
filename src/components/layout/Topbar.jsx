@@ -88,7 +88,7 @@ export function Topbar({ onMenu }) {
             </span>
           </button>
 
-          <span className="text-xs text-slate-200">{user?.email || t.guest}</span>
+          <span className="text-xs text-slate-200">{user?.loginId || t.guest}</span>
           {hasAuth && user ? (
             <button
               type="button"

@@ -77,7 +77,7 @@ export function Dashboard() {
         transition={{ duration: 0.4 }}
       >
         <SectionHeader
-          title={user ? `Welcome back, ${user.email?.split('@')[0] || 'Learner'}` : 'Welcome to Kotoba Seven'}
+          title={user ? `Welcome back, ${user.loginId || 'Learner'}` : 'Welcome to Kotoba Seven'}
           subtitle="AI-powered Japanese Learning Intelligence Dashboard for JLPT/NAT readiness."
           actions={[
             <Link key="lookup" to="/lookup" className="rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white">
@@ -91,10 +91,8 @@ export function Dashboard() {
 
         {hasAuth && !user && (
           <p className="mb-4 text-sm text-slate-400">
-            <Link to="/signup" className="font-medium text-blue-400 hover:underline">Sign up</Link>
-            {' '}or{' '}
-            <Link to="/login" className="font-medium text-blue-400 hover:underline">log in</Link>
-            {' '}to sync your progress across devices.
+            <Link to="/login" className="font-medium text-blue-400 hover:underline">Log in</Link>
+            {' '}with your ID/password to sync your progress from Neon.
           </p>
         )}
 

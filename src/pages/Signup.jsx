@@ -6,8 +6,9 @@ import { useToast } from '../context/ToastContext'
 import { PageMeta } from '../components/PageMeta'
 
 export function Signup() {
-  const [email, setEmail] = useState('')
+  const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
+  const [role, setRole] = useState('student')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
@@ -19,7 +20,7 @@ export function Signup() {
     setError('')
     setLoading(true)
     try {
-      await signUp(email, password)
+      await signUp(loginId, password, role)
       toast.success('Account created')
       navigate('/onboarding')
     } catch (err) {
@@ -41,12 +42,14 @@ export function Signup() {
         <h1 className="text-2xl font-bold mb-6">Create account</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">Email</label>
+            <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">Login ID</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={loginId}
+              onChange={(e) => setLoginId(e.target.value)}
               required
+              minLength={3}
+              maxLength={40}
               className="w-full rounded-xl border border-slate-200 bg-[var(--color-bg-card)] px-4 py-3"
             />
           </div>
@@ -60,6 +63,18 @@ export function Signup() {
               minLength={6}
               className="w-full rounded-xl border border-slate-200 bg-[var(--color-bg-card)] px-4 py-3"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">Role</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-[var(--color-bg-card)] px-4 py-3"
+            >
+              <option value="student">Student</option>
+              <option value="employee">Employee</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <button

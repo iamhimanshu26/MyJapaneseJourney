@@ -16,6 +16,24 @@ const BOOTSTRAP_STATEMENTS = [
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
   )`,
+  `create table if not exists auth_users (
+    id uuid primary key default gen_random_uuid(),
+    login_id text not null unique,
+    password_hash text not null,
+    role text not null default 'student' check (role in ('student', 'employee', 'admin', 'guest')),
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  )`,
+  `create table if not exists auth_sessions (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null references auth_users(id) on delete cascade,
+    token_hash text not null unique,
+    expires_at timestamptz not null,
+    revoked_at timestamptz,
+    created_at timestamptz not null default now()
+  )`,
+  'create index if not exists idx_auth_users_login on auth_users(login_id)',
+  'create index if not exists idx_auth_sessions_user on auth_sessions(user_id, expires_at desc)',
   `create table if not exists discovered_items (
     id uuid primary key default gen_random_uuid(),
     user_id uuid not null references user_profiles(id) on delete cascade,

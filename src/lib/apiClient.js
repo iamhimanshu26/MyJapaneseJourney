@@ -6,6 +6,7 @@ function getApiBase() {
 function buildHeaders(identity) {
   const headers = { 'Content-Type': 'application/json' }
   if (identity?.authUserId) headers['X-Auth-User-Id'] = identity.authUserId
+  if (identity?.sessionToken) headers['X-Session-Token'] = identity.sessionToken
   if (identity?.email) headers['X-User-Email'] = identity.email
   if (identity?.name) headers['X-User-Name'] = identity.name
   return headers
