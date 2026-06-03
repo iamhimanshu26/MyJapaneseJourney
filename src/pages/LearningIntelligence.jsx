@@ -93,7 +93,31 @@ export function LearningIntelligence() {
               <RecommendationCard title="Weak Areas" actions={data.weakAreas || []} />
             </div>
 
-            <RecommendationCard title="AI Recommended Next Actions" actions={data.recommendations || []} />
+            <RecommendationCard
+              title="AI Recommended Next Actions"
+              actions={(data.recommendations || []).map((item) => (typeof item === 'string' ? item : item.label))}
+            />
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="card-shell">
+                <h3 className="text-sm font-semibold text-slate-200">Learning Pattern Analysis</h3>
+                <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                  <li>Most active mode: <strong>{data.learningPatternAnalysis?.mostActiveWindow || '-'}</strong></li>
+                  <li>Consistency score: <strong>{data.learningPatternAnalysis?.consistencyScore || 0}%</strong></li>
+                  <li>Weak pattern: <strong>{data.learningPatternAnalysis?.weakPattern || '-'}</strong></li>
+                  <li>Strongest pattern: <strong>{data.learningPatternAnalysis?.strongestPattern || '-'}</strong></li>
+                </ul>
+              </div>
+              <div className="card-shell">
+                <h3 className="text-sm font-semibold text-slate-200">Study Efficiency Metrics</h3>
+                <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                  <li>Avg session length: <strong>{data.studyEfficiencyMetrics?.averageSessionMinutes || 0} min</strong></li>
+                  <li>Items/session: <strong>{data.studyEfficiencyMetrics?.itemsReviewedPerSession || 0}</strong></li>
+                  <li>Retention rate: <strong>{data.studyEfficiencyMetrics?.retentionRate || 0}%</strong></li>
+                  <li>Completion rate: <strong>{data.studyEfficiencyMetrics?.completionRate || 0}%</strong></li>
+                </ul>
+              </div>
+            </div>
           </div>
         ) : null}
       </motion.div>

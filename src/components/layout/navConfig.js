@@ -11,5 +11,8 @@ export const NAV_ITEMS = [
   { path: '/analytics', label: 'Analytics', icon: '📈' },
   { path: '/learning-intelligence', label: 'Learning Intelligence', icon: '🎯' },
   { path: '/learning-plan', label: 'Learning Plan', icon: '🧭' },
+  { path: '/learning-timeline', label: 'Learning Timeline', icon: '🕒' },
+  { path: '/knowledge-graph', label: 'Knowledge Graph', icon: '🕸️' },
+  { path: '/kotoba-sensei', label: 'Kotoba Sensei', icon: '🧠' },
   { path: '/settings', label: 'Settings', icon: '⚙️' },
 ]

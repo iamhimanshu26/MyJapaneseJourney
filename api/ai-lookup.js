@@ -1,4 +1,4 @@
-import { ensureUserProfile, query } from '../server/lib/db.js'
+import { appendTimelineEvent, ensureUserProfile, query } from '../server/lib/db.js'
 import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
 import { checkRateLimit, generateJson } from '../server/lib/gemini.js'
 import { handleOptions, methodNotAllowed, parseJsonBody, setCors } from '../server/lib/http.js'
@@ -97,6 +97,46 @@ export default async function handler(req, res) {
     const lookupQuery = String(body.query || body.q || '').trim()
     if (!lookupQuery) return res.status(400).json({ error: 'query is required' })
 
+    const existingItem = await query(
+      `select *
+       from discovered_items
+       where user_id = $1
+         and (word = $2 or coalesce(reading, '') = $2)
+       order by updated_at desc
+       limit 1`,
+      [profile.id, lookupQuery]
+    )
+    if (existingItem.rows[0]) {
+      const row = existingItem.rows[0]
+      const fromDb = {
+        type: row.type,
+        word: row.word,
+        reading: row.reading || '',
+        romaji: row.romaji || '',
+        meaning_en: row.meaning_en || '',
+        meaning_hi: row.meaning_hi || '',
+        jlpt_level: row.jlpt_level || 'N5',
+        part_of_speech: row.part_of_speech || '',
+        formal_casual_usage: '',
+        business_usage: row.business_usage || '',
+        similar_words: row.similar_words || [],
+        common_mistake: row.common_mistake || '',
+        example_jp: row.example_jp || '',
+        example_romaji: row.example_romaji || '',
+        example_en: row.example_en || '',
+        source: 'knowledge-base',
+        fallback_used: false,
+      }
+      await appendTimelineEvent({
+        userId: profile.id,
+        activityType: 'ai_lookup',
+        title: `Lookup reused saved item: ${row.word}`,
+        description: 'Returned from your Neon knowledge base without AI call.',
+        metadata: { query: lookupQuery, source: 'knowledge-base' },
+      })
+      return res.status(200).json(fromDb)
+    }
+
     let result
     try {
       result = await generateJson({
@@ -139,6 +179,28 @@ export default async function handler(req, res) {
        values ($1, 'ai_lookup', null, $2::jsonb, now())`,
       [profile.id, JSON.stringify({ query: lookupQuery, jlptLevel: normalized.jlpt_level })]
     )
+
+    await appendTimelineEvent({
+      userId: profile.id,
+      activityType: 'ai_lookup',
+      title: `Looked up ${normalized.word || lookupQuery}`,
+      description: normalized.meaning_en || 'AI word intelligence lookup completed.',
+      metadata: { query: lookupQuery, jlpt: normalized.jlpt_level, fallback: normalized.fallback_used },
+    })
+
+    if (normalized.word && Array.isArray(normalized.similar_words)) {
+      for (const similar of normalized.similar_words.slice(0, 6)) {
+        const target = String(similar || '').trim()
+        if (!target) continue
+        await query(
+          `insert into knowledge_graph_relations (user_id, source_term, target_term, relation_type, weight, created_at)
+           values ($1, $2, $3, 'similar', 0.8, now())
+           on conflict (user_id, source_term, target_term, relation_type)
+           do update set weight = greatest(knowledge_graph_relations.weight, excluded.weight)`,
+          [profile.id, normalized.word, target]
+        )
+      }
+    }
 
     return res.status(200).json(normalized)
   } catch (error) {

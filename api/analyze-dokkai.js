@@ -1,4 +1,4 @@
-import { ensureUserProfile, query } from '../server/lib/db.js'
+import { appendTimelineEvent, ensureUserProfile, query } from '../server/lib/db.js'
 import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
 import { checkRateLimit, generateJson } from '../server/lib/gemini.js'
 import { handleOptions, methodNotAllowed, parseJsonBody, setCors } from '../server/lib/http.js'
@@ -11,6 +11,9 @@ Return strict JSON only:
   "english_translation": "...",
   "estimated_jlpt_level": "N5|N4|N3|N2|N1",
   "summary": "...",
+  "difficulty_score": 0,
+  "reading_speed_wpm": 0,
+  "summary_quality_score": 0,
   "vocabulary": [{"word":"", "reading":"", "meaning_en":"", "jlpt_level":""}],
   "kanji": [{"char":"", "reading":"", "meaning_en":""}],
   "grammar_points": [{"name":"", "meaning":"", "level":""}],
@@ -62,6 +65,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const history = await query(
         `select id, input_text, romaji, english_translation, summary, estimated_jlpt_level,
+                difficulty_score, reading_speed_wpm, summary_quality_score,
                 vocabulary_json, kanji_json, grammar_json, questions_json, created_at
          from dokkai_analyses
          where user_id = $1
@@ -104,12 +108,31 @@ export default async function handler(req, res) {
       practice_questions: Array.isArray(analysis.practice_questions) ? analysis.practice_questions : [],
       fallback_used: Boolean(analysis.fallback_used),
     }
+    const charCount = normalized.original_text.length
+    const complexityIndex = (normalized.kanji.length * 2) + normalized.grammar_points.length + Math.floor(charCount / 120)
+    const difficultyScore = Math.max(10, Math.min(100, Number(analysis.difficulty_score || complexityIndex * 4 || 40)))
+    const readingSpeedWpm = Math.max(60, Math.min(240, Number(analysis.reading_speed_wpm || 210 - difficultyScore)))
+    const summaryQualityScore = Math.max(50, Math.min(100, Number(analysis.summary_quality_score || 70 + normalized.practice_questions.length * 4)))
+    const vocabularyDeck = normalized.vocabulary.slice(0, 15).map((item) => ({
+      type: 'vocabulary',
+      word: item.word,
+      reading: item.reading,
+      meaning_en: item.meaning_en,
+      jlpt_level: item.jlpt_level || normalized.estimated_jlpt_level || 'N4',
+    }))
+    const grammarDeck = normalized.grammar_points.slice(0, 10).map((item) => ({
+      type: 'grammar',
+      word: item.name,
+      meaning_en: item.meaning,
+      jlpt_level: item.level || normalized.estimated_jlpt_level || 'N4',
+    }))
 
     await query(
       `insert into dokkai_analyses (
         user_id, input_text, romaji, english_translation, summary, estimated_jlpt_level,
+        difficulty_score, reading_speed_wpm, summary_quality_score,
         vocabulary_json, kanji_json, grammar_json, questions_json, created_at
-      ) values ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9::jsonb, $10::jsonb, now())`,
+      ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, $12::jsonb, $13::jsonb, now())`,
       [
         profile.id,
         normalized.original_text,
@@ -117,6 +140,9 @@ export default async function handler(req, res) {
         normalized.english_translation,
         normalized.summary,
         normalized.estimated_jlpt_level,
+        difficultyScore,
+        readingSpeedWpm,
+        summaryQualityScore,
         JSON.stringify(normalized.vocabulary),
         JSON.stringify(normalized.kanji),
         JSON.stringify(normalized.grammar_points),
@@ -127,10 +153,25 @@ export default async function handler(req, res) {
     await query(
       `insert into learning_activity (user_id, activity_type, score, metadata, created_at)
        values ($1, 'dokkai_analysis', null, $2::jsonb, now())`,
-      [profile.id, JSON.stringify({ estimatedJlpt: normalized.estimated_jlpt_level })]
+      [profile.id, JSON.stringify({ estimatedJlpt: normalized.estimated_jlpt_level, difficultyScore, summaryQualityScore })]
     )
 
-    return res.status(200).json(normalized)
+    await appendTimelineEvent({
+      userId: profile.id,
+      activityType: 'dokkai_analysis',
+      title: 'Completed a Dokkai analysis',
+      description: `Difficulty ${difficultyScore}/100 • estimated ${normalized.estimated_jlpt_level}`,
+      metadata: { difficultyScore, readingSpeedWpm, summaryQualityScore },
+    })
+
+    return res.status(200).json({
+      ...normalized,
+      difficulty_score: difficultyScore,
+      reading_speed_wpm: readingSpeedWpm,
+      summary_quality_score: summaryQualityScore,
+      vocabulary_deck: vocabularyDeck,
+      grammar_deck: grammarDeck,
+    })
   } catch (error) {
     console.error('analyze-dokkai error', error)
     return res.status(500).json({ error: 'Dokkai analysis failed' })

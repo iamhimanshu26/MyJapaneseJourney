@@ -24,13 +24,22 @@ function scoreItem(item) {
 
 export function ReviewMode() {
   const { items, loading, identity, update } = useDiscovered()
+  const [filterStatus, setFilterStatus] = useState('all')
   const [index, setIndex] = useState(0)
   const [submitting, setSubmitting] = useState(false)
+  const [sessionStats, setSessionStats] = useState({
+    attempts: 0,
+    success: 0,
+    retentionScore: 0,
+    streak: 0,
+  })
   const toast = useToast()
 
   const queue = useMemo(
-    () => [...items].sort((a, b) => scoreItem(b) - scoreItem(a)),
-    [items]
+    () => [...items]
+      .filter((item) => (filterStatus === 'all' ? true : item.status === filterStatus))
+      .sort((a, b) => scoreItem(b) - scoreItem(a)),
+    [items, filterStatus]
   )
 
   const current = queue[index]
@@ -48,8 +57,18 @@ export function ReviewMode() {
         status: data.nextStatus,
         review_count: (current.review_count || 0) + 1,
         last_reviewed_at: new Date().toISOString(),
+        next_review_at: data.nextReviewAt,
+        ease_factor: data.easeFactor,
       })
       toast.success(`Marked as ${data.nextStatus}`)
+      setSessionStats((prev) => {
+        const attempts = prev.attempts + 1
+        const successDelta = result === 'good' || result === 'easy' ? 1 : 0
+        const success = prev.success + successDelta
+        const streak = successDelta ? prev.streak + 1 : 0
+        const retentionScore = Math.round((success / Math.max(1, attempts)) * 100)
+        return { attempts, success, retentionScore, streak }
+      })
       setIndex((prev) => (prev + 1 < queue.length ? prev + 1 : 0))
     } catch (err) {
       toast.error(err.message || 'Could not save review result')
@@ -66,6 +85,36 @@ export function ReviewMode() {
           title="Review Mode"
           subtitle="Weak and recent items are prioritized using a lightweight spaced repetition flow."
         />
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <label htmlFor="review-status-filter" className="text-xs uppercase tracking-[0.1em] text-slate-400">Filter</label>
+          <select
+            id="review-status-filter"
+            value={filterStatus}
+            onChange={(e) => {
+              setFilterStatus(e.target.value)
+              setIndex(0)
+            }}
+            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+          >
+            <option value="all">all</option>
+            <option value="weak">weak</option>
+            <option value="learning">learning</option>
+            <option value="new">new</option>
+            <option value="favorite">favorite</option>
+          </select>
+        </div>
+
+        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-sm text-slate-300">
+            Success rate: <strong className="text-slate-100">{sessionStats.attempts ? Math.round((sessionStats.success / sessionStats.attempts) * 100) : 0}%</strong>
+          </div>
+          <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-sm text-slate-300">
+            Retention rate: <strong className="text-slate-100">{sessionStats.retentionScore}%</strong>
+          </div>
+          <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-sm text-slate-300">
+            Review streak: <strong className="text-slate-100">{sessionStats.streak}</strong>
+          </div>
+        </div>
         {loading ? <LoadingState /> : null}
         {!loading && !queue.length ? (
           <EmptyState title="No items to review" message="Save words or grammar from AI Lookup and return here to review." />

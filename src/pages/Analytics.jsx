@@ -28,6 +28,10 @@ export function Analytics() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [range, setRange] = useState('30d')
+  const [view, setView] = useState('weekly')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
   useEffect(() => {
     let mounted = true
@@ -35,7 +39,12 @@ export function Analytics() {
       setLoading(true)
       setError('')
       try {
-        const response = await apiRequest('/api/analytics', { method: 'GET', identity })
+        const query = new URLSearchParams({ range, view })
+        if (range === 'custom') {
+          if (startDate) query.set('start', startDate)
+          if (endDate) query.set('end', endDate)
+        }
+        const response = await apiRequest(`/api/analytics?${query.toString()}`, { method: 'GET', identity })
         if (mounted) setData(response)
       } catch (err) {
         if (mounted) setError(err.message || 'Failed to load analytics')
@@ -47,7 +56,7 @@ export function Analytics() {
     return () => {
       mounted = false
     }
-  }, [identity])
+  }, [identity, range, view, startDate, endDate])
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -57,6 +66,24 @@ export function Analytics() {
           title="Enterprise Analytics"
           subtitle="Study activity, category trends, and monthly learning outcomes."
         />
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <select value={range} onChange={(e) => setRange(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+            <option value="custom">Custom range</option>
+          </select>
+          <select value={view} onChange={(e) => setView(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+            <option value="weekly">Weekly view</option>
+            <option value="monthly">Monthly view</option>
+          </select>
+          {range === 'custom' ? (
+            <>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" />
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" />
+            </>
+          ) : null}
+        </div>
 
         {loading ? <LoadingState /> : null}
         {!loading && error ? <EmptyState title="Analytics unavailable" message={error} /> : null}
@@ -78,6 +105,10 @@ export function Analytics() {
               <div className="card-shell">
                 <p className="text-xs uppercase tracking-[0.1em] text-slate-400">Mastery Rate</p>
                 <p className="mt-2 text-2xl font-bold text-slate-100">{data.cards.masteryRate}%</p>
+              </div>
+              <div className="card-shell">
+                <p className="text-xs uppercase tracking-[0.1em] text-slate-400">Favorites</p>
+                <p className="mt-2 text-2xl font-bold text-slate-100">{data.cards.favorites}</p>
               </div>
             </div>
 
@@ -115,6 +146,36 @@ export function Analytics() {
 
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="card-shell">
+                <h3 className="text-sm font-semibold text-slate-200">Readiness Trend</h3>
+                <div className="mt-4 h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data.readinessTrend || []}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <XAxis dataKey="day" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" />
+                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
+                      <Line type="monotone" dataKey="readiness_score" stroke="#a78bfa" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="card-shell">
+                <h3 className="text-sm font-semibold text-slate-200">Monthly Reports</h3>
+                <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                  {(data.monthlyReports || []).map((report) => (
+                    <li key={report.month} className="rounded-lg border border-slate-700 bg-slate-950/70 p-3">
+                      <p className="font-medium text-slate-100">{report.month}</p>
+                      <p className="text-xs text-slate-400">
+                        Mastered: {report.mastered} • New: {report.newItems} • Reviewed: {report.reviewed} • Readiness: {report.readiness}%
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="card-shell">
                 <h3 className="text-sm font-semibold text-slate-200">Grammar Progress by Level</h3>
                 <div className="mt-4 h-72">
                   <ResponsiveContainer width="100%" height="100%">
@@ -139,6 +200,51 @@ export function Analytics() {
                       <YAxis stroke="#94a3b8" />
                       <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
                       <Line type="monotone" dataKey="discovered_count" stroke="#818cf8" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-3">
+              <div className="card-shell">
+                <h3 className="text-sm font-semibold text-slate-200">AI Usage Trend</h3>
+                <div className="mt-4 h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data.aiUsageTrend || []}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <XAxis dataKey="week" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" />
+                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
+                      <Line type="monotone" dataKey="lookup_count" stroke="#22d3ee" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="card-shell">
+                <h3 className="text-sm font-semibold text-slate-200">Interview Improvement</h3>
+                <div className="mt-4 h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data.interviewImprovement || []}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <XAxis dataKey="week" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" />
+                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
+                      <Line type="monotone" dataKey="avg_score" stroke="#fbbf24" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="card-shell">
+                <h3 className="text-sm font-semibold text-slate-200">Dokkai Improvement</h3>
+                <div className="mt-4 h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data.dokkaiImprovement || []}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <XAxis dataKey="week" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" />
+                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
+                      <Line type="monotone" dataKey="avg_summary_quality" stroke="#34d399" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

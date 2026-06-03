@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const LANG_KEY = 'mjj-ui-language'
@@ -23,6 +24,8 @@ const COPY = {
 export function Topbar({ onMenu }) {
   const { user, signOut, hasAuth } = useAuth()
   const [language, setLanguage] = useState('en')
+  const [search, setSearch] = useState('')
+  const navigate = useNavigate()
 
   useEffect(() => {
     try {
@@ -40,6 +43,14 @@ export function Topbar({ onMenu }) {
   }
 
   const t = useMemo(() => COPY[language] || COPY.en, [language])
+
+  function onSearchSubmit(e) {
+    e.preventDefault()
+    const query = search.trim()
+    if (!query) return
+    navigate(`/lookup?q=${encodeURIComponent(query)}`)
+    setSearch('')
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-700 bg-slate-800/85 backdrop-blur">
@@ -60,11 +71,15 @@ export function Topbar({ onMenu }) {
         </div>
 
         <div className="hidden w-full max-w-md px-4 md:block">
-          <input
-            type="search"
-            placeholder={t.search}
-            className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-300/70 focus:border-blue-300 focus:outline-none"
-          />
+          <form onSubmit={onSearchSubmit}>
+            <input
+              type="search"
+              placeholder={t.search}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-300/70 focus:border-blue-300 focus:outline-none"
+            />
+          </form>
         </div>
 
         <div className="flex items-center gap-3">

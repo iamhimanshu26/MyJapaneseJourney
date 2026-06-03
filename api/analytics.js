@@ -2,6 +2,18 @@ import { ensureUserProfile, query } from '../server/lib/db.js'
 import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
 import { handleOptions, methodNotAllowed, setCors } from '../server/lib/http.js'
 
+function resolveRange(queryParams = {}) {
+  const range = String(queryParams.range || '30d').toLowerCase()
+  const now = new Date()
+  if (range === 'custom') {
+    const start = queryParams.start ? new Date(String(queryParams.start)) : new Date(now.getTime() - 30 * 86_400_000)
+    const end = queryParams.end ? new Date(String(queryParams.end)) : now
+    return { start, end, label: 'custom' }
+  }
+  const days = range === '7d' ? 7 : range === '90d' ? 90 : 30
+  return { start: new Date(now.getTime() - days * 86_400_000), end: now, label: range }
+}
+
 export default async function handler(req, res) {
   if (handleOptions(req, res, 'GET, OPTIONS')) return
   setCors(res, 'GET, OPTIONS')
@@ -13,6 +25,9 @@ export default async function handler(req, res) {
   try {
     const profile = await ensureUserProfile(auth)
     const userId = profile.id
+    const { start, end, label } = resolveRange(req.query || {})
+    const view = String(req.query?.view || 'weekly').toLowerCase()
+    const bucket = view === 'monthly' ? 'week' : 'day'
 
     const [
       totals,
@@ -23,6 +38,10 @@ export default async function handler(req, res) {
       weakest,
       strongest,
       monthly,
+      aiUsageTrend,
+      readinessTrend,
+      interviewImprovement,
+      dokkaiImprovement,
     ] = await Promise.all([
       query(
         `select
@@ -53,24 +72,26 @@ export default async function handler(req, res) {
         [userId]
       ),
       query(
-        `select to_char(date_trunc('day', created_at), 'YYYY-MM-DD') as day,
+        `select to_char(date_trunc('${bucket}', created_at), 'YYYY-MM-DD') as day,
                 count(*)::int as activity_count
          from learning_activity
          where user_id = $1
-           and created_at >= now() - interval '14 day'
-         group by date_trunc('day', created_at)
+           and created_at >= $2
+           and created_at <= $3
+         group by date_trunc('${bucket}', created_at)
          order by day`,
-        [userId]
+        [userId, start.toISOString(), end.toISOString()]
       ),
       query(
         `select to_char(date_trunc('week', created_at), 'YYYY-MM-DD') as week,
                 count(*)::int as discovered_count
          from discovered_items
          where user_id = $1
-           and created_at >= now() - interval '8 week'
+           and created_at >= $2
+           and created_at <= $3
          group by date_trunc('week', created_at)
          order by week`,
-        [userId]
+        [userId, start.toISOString(), end.toISOString()]
       ),
       query(
         `select type,
@@ -103,6 +124,51 @@ export default async function handler(req, res) {
          where user_id = $1`,
         [userId]
       ),
+      query(
+        `select to_char(date_trunc('week', created_at), 'YYYY-MM-DD') as week,
+                count(*)::int as lookup_count
+         from ai_lookups
+         where user_id = $1
+           and created_at >= $2
+           and created_at <= $3
+         group by date_trunc('week', created_at)
+         order by week`,
+        [userId, start.toISOString(), end.toISOString()]
+      ),
+      query(
+        `select to_char(plan_date, 'YYYY-MM-DD') as day,
+                coalesce(round(avg(nullif(plan_payload->>'readinessScore', '')::numeric), 0)::int, 0) as readiness_score
+         from study_plans
+         where user_id = $1
+           and plan_date >= $2::date
+           and plan_date <= $3::date
+         group by plan_date
+         order by day`,
+        [userId, start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)]
+      ),
+      query(
+        `select to_char(date_trunc('week', created_at), 'YYYY-MM-DD') as week,
+                coalesce(round(avg(score), 0)::int, 0) as avg_score
+         from interview_practice
+         where user_id = $1
+           and created_at >= $2
+           and created_at <= $3
+         group by date_trunc('week', created_at)
+         order by week`,
+        [userId, start.toISOString(), end.toISOString()]
+      ),
+      query(
+        `select to_char(date_trunc('week', created_at), 'YYYY-MM-DD') as week,
+                coalesce(round(avg(difficulty_score), 0)::int, 0) as avg_difficulty,
+                coalesce(round(avg(summary_quality_score), 0)::int, 0) as avg_summary_quality
+         from dokkai_analyses
+         where user_id = $1
+           and created_at >= $2
+           and created_at <= $3
+         group by date_trunc('week', created_at)
+         order by week`,
+        [userId, start.toISOString(), end.toISOString()]
+      ),
     ])
 
     const totalItems = totals.rows[0]?.total_items || 0
@@ -110,6 +176,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       profile,
+      range: label,
       cards: {
         totalItems,
         mastered,
@@ -132,6 +199,19 @@ export default async function handler(req, res) {
         reviewed_this_month: 0,
         mastered_total: 0,
       },
+      aiUsageTrend: aiUsageTrend.rows,
+      readinessTrend: readinessTrend.rows,
+      interviewImprovement: interviewImprovement.rows,
+      dokkaiImprovement: dokkaiImprovement.rows,
+      monthlyReports: [
+        {
+          month: new Date().toISOString().slice(0, 7),
+          mastered: mastered,
+          newItems: monthly.rows[0]?.new_this_month || 0,
+          reviewed: monthly.rows[0]?.reviewed_this_month || 0,
+          readiness: readinessTrend.rows.at(-1)?.readiness_score || 0,
+        },
+      ],
     })
   } catch (error) {
     console.error('analytics error', error)

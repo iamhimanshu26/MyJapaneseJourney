@@ -2,6 +2,8 @@ export function DokkaiResult({
   analysis,
   onSaveVocabulary,
   onSaveGrammar,
+  onSaveKanji,
+  onSaveAll,
   onCopy,
   onGenerateQuiz,
 }) {
@@ -21,6 +23,9 @@ export function DokkaiResult({
         <p><span className="font-semibold text-slate-100">Romaji:</span> {analysis.romaji || '-'}</p>
         <p><span className="font-semibold text-slate-100">English:</span> {analysis.english_translation || '-'}</p>
         <p><span className="font-semibold text-slate-100">Summary:</span> {analysis.summary || '-'}</p>
+        <p><span className="font-semibold text-slate-100">Difficulty Score:</span> {analysis.difficulty_score ?? '-'}/100</p>
+        <p><span className="font-semibold text-slate-100">Reading Speed Estimation:</span> {analysis.reading_speed_wpm ?? '-'} WPM</p>
+        <p><span className="font-semibold text-slate-100">Summary Quality Score:</span> {analysis.summary_quality_score ?? '-'}/100</p>
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
@@ -68,6 +73,12 @@ export function DokkaiResult({
         </button>
         <button type="button" onClick={onSaveGrammar} className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-100 hover:bg-slate-700">
           Save grammar to My Discovered
+        </button>
+        <button type="button" onClick={onSaveKanji} className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-100 hover:bg-slate-700">
+          Save kanji to My Discovered
+        </button>
+        <button type="button" onClick={onSaveAll} className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-100 hover:bg-slate-700">
+          Save all extracted items
         </button>
         <button type="button" onClick={onGenerateQuiz} className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-100 hover:bg-slate-700">
           Generate quiz

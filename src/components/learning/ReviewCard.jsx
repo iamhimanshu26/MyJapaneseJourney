@@ -13,11 +13,18 @@ export function ReviewCard({ item, onRate }) {
       </p>
       {item.reading ? <p className="mt-1 text-sm text-slate-400">{item.reading}</p> : null}
       <p className="mt-4 text-sm text-slate-200">{item.meaning_en || 'No meaning available'}</p>
+      {item.romaji ? <p className="mt-1 text-xs text-slate-400">Romaji: {item.romaji}</p> : null}
+      {item.business_usage ? <p className="mt-1 text-xs text-slate-400">Business: {item.business_usage}</p> : null}
       {item.example_jp ? (
         <div className="mt-4 rounded-xl border border-slate-700 bg-slate-950/70 p-3 text-sm text-slate-200">
           <p style={{ fontFamily: 'var(--font-jp)' }}>{item.example_jp}</p>
           {item.example_en ? <p className="mt-1 text-xs text-slate-400">{item.example_en}</p> : null}
         </div>
+      ) : null}
+      {item.next_review_at ? (
+        <p className="mt-3 text-xs text-slate-500">
+          Next review due: {new Date(item.next_review_at).toLocaleString()}
+        </p>
       ) : null}
       <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[

@@ -104,11 +104,17 @@ export function useDiscovered() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (params = {}) => {
     setLoading(true)
     setError(null)
     try {
-      const data = await apiRequest('/api/discovered-items?sort=recent', {
+      const query = new URLSearchParams()
+      const merged = { sort: 'recent', ...params }
+      Object.entries(merged).forEach(([key, value]) => {
+        if (value == null || value === '') return
+        query.set(key, String(value))
+      })
+      const data = await apiRequest(`/api/discovered-items?${query.toString()}`, {
         method: 'GET',
         identity,
       })

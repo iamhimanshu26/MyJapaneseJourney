@@ -19,9 +19,11 @@ const TOPICS = [
 export function InterviewCoach() {
   const { identity } = useDiscovered()
   const [topic, setTopic] = useState(TOPICS[0])
+  const [customTopic, setCustomTopic] = useState('')
   const [userAnswer, setUserAnswer] = useState('')
   const [result, setResult] = useState(null)
   const [history, setHistory] = useState([])
+  const [progress, setProgress] = useState(null)
   const [loading, setLoading] = useState(false)
   const toast = useToast()
 
@@ -31,6 +33,7 @@ export function InterviewCoach() {
       try {
         const data = await apiRequest('/api/interview-coach', { method: 'GET', identity })
         if (mounted) setHistory(data.items || [])
+        if (mounted) setProgress(data.progress || null)
       } catch (_) {}
     })()
     return () => {
@@ -41,13 +44,32 @@ export function InterviewCoach() {
   async function handleGenerate() {
     setLoading(true)
     try {
+      const effectiveTopic = customTopic.trim() || topic
       const data = await apiRequest('/api/interview-coach', {
         method: 'POST',
         identity,
-        body: { topic, userAnswer },
+        body: { topic: effectiveTopic, userAnswer },
       })
       setResult(data)
       setHistory((prev) => [{ ...data, created_at: new Date().toISOString() }, ...prev].slice(0, 12))
+      setProgress((prev) => {
+        if (!prev) {
+          return {
+            avg_score: data.score,
+            avg_vocab: data.vocabulary_score,
+            avg_grammar: data.grammar_score,
+            avg_fluency: data.fluency_score,
+            avg_business: data.business_score,
+          }
+        }
+        return {
+          avg_score: Math.round((Number(prev.avg_score || 0) + Number(data.score || 0)) / 2),
+          avg_vocab: Math.round((Number(prev.avg_vocab || 0) + Number(data.vocabulary_score || 0)) / 2),
+          avg_grammar: Math.round((Number(prev.avg_grammar || 0) + Number(data.grammar_score || 0)) / 2),
+          avg_fluency: Math.round((Number(prev.avg_fluency || 0) + Number(data.fluency_score || 0)) / 2),
+          avg_business: Math.round((Number(prev.avg_business || 0) + Number(data.business_score || 0)) / 2),
+        }
+      })
     } catch (err) {
       toast.error(err.message || 'Failed to generate interview guidance')
     } finally {
@@ -77,6 +99,12 @@ export function InterviewCoach() {
               ))}
             </select>
             <label className="mt-4 mb-2 block text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">Your answer (optional)</label>
+            <input
+              value={customTopic}
+              onChange={(e) => setCustomTopic(e.target.value)}
+              placeholder="Optional custom interview topic"
+              className="mb-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-blue-400 focus:outline-none"
+            />
             <textarea
               value={userAnswer}
               onChange={(e) => setUserAnswer(e.target.value)}
@@ -111,10 +139,29 @@ export function InterviewCoach() {
                 <p><span className="font-semibold text-slate-100">Professional version:</span> {result.professional_version_jp || '-'}</p>
                 <p><span className="font-semibold text-slate-100">Feedback:</span> {result.feedback || '-'}</p>
                 <p><span className="font-semibold text-slate-100">Score:</span> {result.score ?? '-'}/100</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <p><span className="font-semibold text-slate-100">Vocabulary Score:</span> {result.vocabulary_score ?? '-'}/100</p>
+                  <p><span className="font-semibold text-slate-100">Grammar Score:</span> {result.grammar_score ?? '-'}/100</p>
+                  <p><span className="font-semibold text-slate-100">Fluency Score:</span> {result.fluency_score ?? '-'}/100</p>
+                  <p><span className="font-semibold text-slate-100">Business Japanese Score:</span> {result.business_score ?? '-'}/100</p>
+                </div>
               </div>
             ) : null}
           </div>
         </div>
+
+        {progress ? (
+          <section className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Interview Progress Tracking</h3>
+            <div className="mt-3 grid gap-3 text-sm text-slate-300 sm:grid-cols-5">
+              <p>Overall: <strong>{progress.avg_score || 0}</strong></p>
+              <p>Vocabulary: <strong>{progress.avg_vocab || 0}</strong></p>
+              <p>Grammar: <strong>{progress.avg_grammar || 0}</strong></p>
+              <p>Fluency: <strong>{progress.avg_fluency || 0}</strong></p>
+              <p>Business: <strong>{progress.avg_business || 0}</strong></p>
+            </div>
+          </section>
+        ) : null}
 
         {history.length ? (
           <section className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-5">

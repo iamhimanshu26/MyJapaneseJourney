@@ -1,4 +1,4 @@
-import { ensureUserProfile, query } from '../server/lib/db.js'
+import { appendTimelineEvent, ensureUserProfile, query } from '../server/lib/db.js'
 import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
 import { checkRateLimit, generateJson } from '../server/lib/gemini.js'
 import { handleOptions, methodNotAllowed, parseJsonBody, setCors } from '../server/lib/http.js'
@@ -13,10 +13,15 @@ Return strict JSON only:
   "simpler_version_jp": "",
   "professional_version_jp": "",
   "feedback": "",
-  "score": 0
+  "score": 0,
+  "vocabulary_score": 0,
+  "grammar_score": 0,
+  "fluency_score": 0,
+  "business_score": 0
 }
 Rules:
 - score is integer 0-100.
+- sub-scores are integers 0-100.
 - Answer should be practical for interview situations.
 - Keep concise.
 - JSON only.`
@@ -35,6 +40,10 @@ function buildFallbackInterview(topic, userAnswer, reason = '') {
       ? `AI quota/rate limit fallback used. Refine this answer once quota recovers. Original answer: ${userAnswer || 'N/A'}`
       : `Good structure. Add one concrete project example to strengthen impact. Original answer: ${userAnswer || 'N/A'}`,
     score: 72,
+    vocabulary_score: 70,
+    grammar_score: 68,
+    fluency_score: 73,
+    business_score: 75,
     fallback_used: Boolean(reason),
   }
 }
@@ -60,15 +69,29 @@ export default async function handler(req, res) {
     const profile = await ensureUserProfile(auth)
 
     if (req.method === 'GET') {
-      const history = await query(
-        `select id, topic, user_answer, ai_answer_jp, romaji, english_meaning, feedback, score, created_at
+      const [history, aggregates] = await Promise.all([
+        query(
+          `select id, topic, user_answer, ai_answer_jp, romaji, english_meaning, simpler_version_jp, professional_version_jp,
+                  feedback, score, vocabulary_score, grammar_score, fluency_score, business_score, created_at
          from interview_practice
          where user_id = $1
          order by created_at desc
          limit 12`,
-        [profile.id]
-      )
-      return res.status(200).json({ items: history.rows })
+          [profile.id]
+        ),
+        query(
+          `select
+              coalesce(round(avg(score))::int, 0) as avg_score,
+              coalesce(round(avg(vocabulary_score))::int, 0) as avg_vocab,
+              coalesce(round(avg(grammar_score))::int, 0) as avg_grammar,
+              coalesce(round(avg(fluency_score))::int, 0) as avg_fluency,
+              coalesce(round(avg(business_score))::int, 0) as avg_business
+           from interview_practice
+           where user_id = $1`,
+          [profile.id]
+        ),
+      ])
+      return res.status(200).json({ items: history.rows, progress: aggregates.rows[0] || null })
     }
 
     const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.headers['x-real-ip'] || 'unknown'
@@ -104,13 +127,18 @@ export default async function handler(req, res) {
       professional_version_jp: String(coached.professional_version_jp || ''),
       feedback: String(coached.feedback || ''),
       score: Number.isFinite(Number(coached.score)) ? Math.max(0, Math.min(100, Number(coached.score))) : 0,
+      vocabulary_score: Number.isFinite(Number(coached.vocabulary_score)) ? Math.max(0, Math.min(100, Number(coached.vocabulary_score))) : 0,
+      grammar_score: Number.isFinite(Number(coached.grammar_score)) ? Math.max(0, Math.min(100, Number(coached.grammar_score))) : 0,
+      fluency_score: Number.isFinite(Number(coached.fluency_score)) ? Math.max(0, Math.min(100, Number(coached.fluency_score))) : 0,
+      business_score: Number.isFinite(Number(coached.business_score)) ? Math.max(0, Math.min(100, Number(coached.business_score))) : 0,
       fallback_used: Boolean(coached.fallback_used),
     }
 
     await query(
       `insert into interview_practice
-       (user_id, topic, user_answer, ai_answer_jp, romaji, english_meaning, feedback, score, created_at)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, now())`,
+       (user_id, topic, user_answer, ai_answer_jp, romaji, english_meaning, simpler_version_jp, professional_version_jp,
+        feedback, score, vocabulary_score, grammar_score, fluency_score, business_score, created_at)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, now())`,
       [
         profile.id,
         normalized.topic,
@@ -118,16 +146,36 @@ export default async function handler(req, res) {
         normalized.ai_answer_jp,
         normalized.romaji,
         normalized.english_meaning,
+        normalized.simpler_version_jp,
+        normalized.professional_version_jp,
         normalized.feedback,
         normalized.score,
+        normalized.vocabulary_score,
+        normalized.grammar_score,
+        normalized.fluency_score,
+        normalized.business_score,
       ]
     )
 
     await query(
       `insert into learning_activity (user_id, activity_type, score, metadata, created_at)
        values ($1, 'interview_practice', $2, $3::jsonb, now())`,
-      [profile.id, normalized.score, JSON.stringify({ topic })]
+      [profile.id, normalized.score, JSON.stringify({ topic, vocabularyScore: normalized.vocabulary_score, grammarScore: normalized.grammar_score })]
     )
+
+    await appendTimelineEvent({
+      userId: profile.id,
+      activityType: 'interview_practice',
+      title: `Interview practice: ${topic}`,
+      description: `Overall score ${normalized.score}/100`,
+      metadata: {
+        score: normalized.score,
+        vocabularyScore: normalized.vocabulary_score,
+        grammarScore: normalized.grammar_score,
+        fluencyScore: normalized.fluency_score,
+        businessScore: normalized.business_score,
+      },
+    })
 
     return res.status(200).json(normalized)
   } catch (error) {

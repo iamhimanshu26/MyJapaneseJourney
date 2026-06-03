@@ -1,18 +1,67 @@
-# My Japanese Journey
+# KOTOBA SEVEN
 
-A company-ready Japanese learning platform (JLPT N5–N1) with vocabulary flashcards, grammar explanations, and AI-powered word lookup.
+**AI-Powered Japanese Learning Intelligence Platform** for JLPT/NAT preparation, interview readiness, and daily guided study execution.
 
-## Features
+## Product Positioning
 
-- **Dashboard** – Overview, progress, quick links
-- **Vocabulary** – Flashcards by JLPT level (N5, N4+)
-- **Grammar** – Patterns and explanations (N5–N3)
-- **Heard New Vocab** – AI lookup via Gemini: search any word/grammar, get meaning, examples, furigana
-- **My Discovered** – Save looked-up words; syncs to Supabase when auth is configured
-- **Auth** – Optional Supabase auth (Login, Signup, Onboarding) for team/company use
-- **Responsive** – Mobile hamburger menu, accessible UI
-- **Error handling** – Error boundary, toast notifications
-- **API security** – Rate limiting (30 req/min per IP) on lookup
+Kotoba Seven is no longer a static learning dashboard. It is an **intelligence layer** that answers:
+
+- Where am I now?
+- What should I do today?
+- What am I struggling with?
+- How close am I to my goal?
+
+## Core Platform Modules
+
+- **Dashboard Storytelling**: readiness, streak, daily goal, AI study plan, recommendation panel, activity feed.
+- **AI Word Intelligence (Lookup)**: bilingual insights, usage notes, save-to-knowledge-base flow.
+- **My Discovered**: searchable knowledge base with bulk actions, AI tags, clustering, exports.
+- **Review Mode**: spaced repetition with retention/session metrics.
+- **Dokkai Analyzer**: JLPT estimate, difficulty score, reading speed estimate, extracted decks.
+- **Interview Coach**: role-based coaching with score breakdown and progress tracking.
+- **Analytics 2.0**: weekly/monthly/custom trends with AI usage and readiness reports.
+- **Learning Intelligence 2.0**: weak-area analysis, pattern analysis, study efficiency metrics.
+- **Kotoba Sensei**: AI copilot connecting all learning modules.
+- **Learning Timeline**: chronological activity stream.
+- **Knowledge Graph**: vocabulary/kanji/grammar relation visualization.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  A[React + Vite Frontend] --> B[Vercel API Routes]
+  B --> C[Neon PostgreSQL]
+  B --> D[Gemini AI]
+  C --> E[user_profiles / auth_users / auth_sessions]
+  C --> F[discovered_items / review_sessions / learning_activity]
+  C --> G[study_plans / activity_timeline / knowledge_graph_relations]
+  C --> H[dokkai_analyses / interview_practice / ai_lookups]
+```
+
+## Neon Database Architecture
+
+Primary data tables:
+
+- `users` (via `auth_users`)
+- `user_profiles`
+- `discovered_items`
+- `learning_activity`
+- `review_sessions`
+- `dokkai_analyses`
+- `interview_practice`
+- `ai_lookups`
+- `study_plans`
+- `activity_timeline`
+- `knowledge_graph_relations`
+
+Neon is the **source of truth**. `localStorage` is used only for guest/cache/legacy import fallback.
+
+## AI Modules
+
+- `/api/ai-lookup` - AI word intelligence + lookup history
+- `/api/analyze-dokkai` - reading analysis + extracted decks
+- `/api/interview-coach` - interview coaching + score decomposition
+- `/api/intelligence` - learning intelligence, study plan, timeline, copilot, knowledge graph actions
 
 ## Tech Stack
 
@@ -20,8 +69,18 @@ A company-ready Japanese learning platform (JLPT N5–N1) with vocabulary flashc
 - Tailwind CSS v4
 - Framer Motion
 - React Router
-- Supabase (optional – auth + discovered items)
-- Vercel (deployment + serverless API)
+- Recharts
+- Vercel Serverless Functions
+- Neon PostgreSQL (`@neondatabase/serverless`)
+- Gemini API
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | Neon Postgres connection string (server-side only) |
+| `GEMINI_API_KEY` | Yes | Gemini API key for AI modules |
+| `SKIP_DB_BOOTSTRAP` | No | Set `1` to skip auto schema bootstrap |
 
 ## Quick Start
 
@@ -30,50 +89,33 @@ git clone https://github.com/iamhimanshu26/MyJapaneseJourney.git
 cd MyJapaneseJourney
 npm install
 cp .env.example .env
-# Edit .env with GEMINI_API_KEY (required) and optionally Supabase
+# Add DATABASE_URL and GEMINI_API_KEY
 npm run dev
 ```
 
-## Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GEMINI_API_KEY` | Yes | Google Gemini API key for lookup (get from [AI Studio](https://aistudio.google.com)) |
-| `VITE_SUPABASE_URL` | No | Supabase project URL – enables auth & cloud sync |
-| `VITE_SUPABASE_ANON_KEY` | No | Supabase anon key |
-
-**Without Supabase:** The app works fully. My Discovered uses localStorage.
-
-**With Supabase:** Add URL + anon key. Run the migration (`supabase/migrations/001_initial.sql`) in Supabase SQL Editor. Sign up / log in to sync discovered items across devices.
-
 ## Deployment (Vercel)
-
-1. Connect your GitHub repo to Vercel
-2. Add env vars: `GEMINI_API_KEY` (required), optionally `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
-3. Deploy – Vercel auto-builds from the repo
-
-Or with CLI:
 
 ```bash
 npx vercel --prod
 ```
 
-## Project Structure
+Set env vars in Vercel Project Settings:
 
-```
-kotoba/
-├── api/           # Vercel serverless (lookup)
-├── src/
-│   ├── components/
-│   ├── context/   # Auth, Toast
-│   ├── hooks/    # useDiscovered
-│   ├── layouts/
-│   ├── lib/      # supabase, discovered
-│   ├── pages/
-│   └── data/     # vocab, grammar seed
-├── supabase/migrations/
-└── vercel.json
-```
+- `DATABASE_URL`
+- `GEMINI_API_KEY`
+
+## Roadmap
+
+- **Phase 1**: Dashboard storytelling, demo workspace mode, study planner, timeline
+- **Phase 2**: Kotoba Sensei, knowledge graph, vocabulary clustering
+- **Phase 3**: Dokkai/Interview enhancements, Analytics 2.0, Learning Intelligence 2.0
+- **Phase 4**: Settings and UX/performance polish
+
+## Related Docs
+
+- `docs/NEON-SETUP.md`
+- `docs/neon-schema.sql`
+- `docs/PLAN.md`
 
 ## License
 

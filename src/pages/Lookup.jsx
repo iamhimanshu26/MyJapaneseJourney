@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'react-router-dom'
 import { PageMeta } from '../components/PageMeta'
 import { SectionHeader } from '../components/shared/SectionHeader'
 import { AIResultCard } from '../components/ai/AIResultCard'
@@ -8,6 +9,7 @@ import { useToast } from '../context/ToastContext'
 import { apiRequest } from '../lib/apiClient'
 
 export function Lookup() {
+  const [searchParams] = useSearchParams()
   const [query, setQuery] = useState('')
   const [result, setResult] = useState(null)
   const [lookupHistory, setLookupHistory] = useState([])
@@ -17,6 +19,20 @@ export function Lookup() {
   const { save, checkSaved, update, identity, items } = useDiscovered()
   const toast = useToast()
   const saved = useMemo(() => (result ? checkSaved(result) : false), [result, checkSaved])
+
+  useEffect(() => {
+    const initial = searchParams.get('q')
+    if (initial && !query) setQuery(initial)
+  }, [searchParams, query])
+
+  useEffect(() => {
+    const initial = searchParams.get('q')
+    if (!initial || result || loading) return
+    if (String(query || '').trim() === String(initial).trim()) {
+      handleSearch()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, searchParams])
 
   useEffect(() => {
     let mounted = true

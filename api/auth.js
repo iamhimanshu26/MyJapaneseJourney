@@ -126,6 +126,12 @@ async function handleProfile(req, res, body) {
   const targetLevel = body.target_level ? String(body.target_level).toUpperCase() : null
   const targetExam = body.target_exam ? String(body.target_exam).toUpperCase() : null
   const displayName = body.name ? String(body.name).slice(0, 120) : null
+  const targetExamDate = body.target_exam_date ? String(body.target_exam_date).slice(0, 10) : null
+  const dailyGoalMinutes = Number.isFinite(Number(body.daily_goal_minutes))
+    ? Math.max(5, Math.min(300, Number(body.daily_goal_minutes)))
+    : null
+  const uiTheme = body.ui_theme ? String(body.ui_theme).slice(0, 20).toLowerCase() : null
+  const uiLanguage = body.ui_language ? String(body.ui_language).slice(0, 10).toLowerCase() : null
 
   const result = await query(
     `update user_profiles
@@ -133,10 +139,14 @@ async function handleProfile(req, res, body) {
          target_level = coalesce($2, target_level),
          target_exam = coalesce($3, target_exam),
          name = coalesce($4, name),
+         target_exam_date = coalesce($5, target_exam_date),
+         daily_goal_minutes = coalesce($6, daily_goal_minutes),
+         ui_theme = coalesce($7, ui_theme),
+         ui_language = coalesce($8, ui_language),
          updated_at = now()
-     where auth_user_id = $5
+     where auth_user_id = $9
      returning *`,
-    [currentLevel, targetLevel, targetExam, displayName, session.user.id]
+    [currentLevel, targetLevel, targetExam, displayName, targetExamDate, dailyGoalMinutes, uiTheme, uiLanguage, session.user.id]
   )
 
   return res.status(200).json({ profile: result.rows[0] || session.profile })

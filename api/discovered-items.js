@@ -1,4 +1,4 @@
-import { ensureUserProfile, query } from '../server/lib/db.js'
+import { appendTimelineEvent, ensureUserProfile, query } from '../server/lib/db.js'
 import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
 import { handleOptions, methodNotAllowed, parseJsonBody, setCors, toArray } from '../server/lib/http.js'
 
@@ -26,7 +26,50 @@ const UPDATABLE_FIELDS = new Set([
   'is_favorite',
   'review_count',
   'last_reviewed_at',
+  'next_review_at',
+  'ease_factor',
 ])
+
+const CLUSTER_RULES = [
+  { category: 'business', keywords: ['business', 'meeting', 'client', 'company', 'office', 'salary', 'project', 'interview'] },
+  { category: 'technology', keywords: ['technology', 'system', 'software', 'code', 'api', 'database', 'ai', 'cloud'] },
+  { category: 'travel', keywords: ['travel', 'airport', 'train', 'hotel', 'ticket', 'station'] },
+  { category: 'daily-life', keywords: ['daily', 'home', 'family', 'food', 'shopping', 'routine'] },
+]
+
+function mergeUniqueTags(...tagSets) {
+  return [...new Set(tagSets.flat().map((t) => String(t || '').trim().toLowerCase()).filter(Boolean))]
+}
+
+function detectClusterCategory(item) {
+  const corpus = [
+    item.word,
+    item.meaning_en,
+    item.part_of_speech,
+    item.business_usage,
+    ...(item.tags || []),
+    ...(item.ai_tags || []),
+  ]
+    .join(' ')
+    .toLowerCase()
+
+  for (const rule of CLUSTER_RULES) {
+    if (rule.keywords.some((keyword) => corpus.includes(keyword))) return rule.category
+  }
+  return item.type === 'grammar' ? 'grammar-patterns' : item.type === 'kanji' ? 'kanji-core' : 'general'
+}
+
+function inferAiTags(item) {
+  const tags = []
+  if (item.jlpt_level) tags.push(item.jlpt_level.toLowerCase())
+  if (item.type) tags.push(item.type.toLowerCase())
+  if (item.status) tags.push(item.status.toLowerCase())
+  const lower = `${item.word || ''} ${item.meaning_en || ''} ${item.business_usage || ''}`.toLowerCase()
+  if (lower.includes('interview') || lower.includes('面接')) tags.push('interview')
+  if (lower.includes('business') || lower.includes('会社') || lower.includes('会議')) tags.push('business')
+  if (lower.includes('technology') || lower.includes('技術') || lower.includes('system')) tags.push('technology')
+  return mergeUniqueTags(tags)
+}
 
 function normalizeType(type) {
   const raw = String(type || 'vocabulary').toLowerCase()
@@ -46,8 +89,7 @@ function normalizeItem(payload = {}) {
   const type = normalizeType(payload.type || payload.item_type)
   const source = payload.item_data && typeof payload.item_data === 'object' ? payload.item_data : payload
   const word = String(source.word || source.name || source.char || source.phrase || '').trim()
-
-  return {
+  const normalized = {
     type,
     word,
     reading: String(source.reading || '').trim() || null,
@@ -63,9 +105,48 @@ function normalizeItem(payload = {}) {
     similar_words: toArray(source.similar_words || source.similarWords).map((s) => String(s).trim()).filter(Boolean),
     common_mistake: String(source.common_mistake || source.commonMistake || '').trim() || null,
     tags: toArray(source.tags).map((t) => String(t).trim()).filter(Boolean),
+    ai_tags: toArray(source.ai_tags || source.aiTags).map((t) => String(t).trim()).filter(Boolean),
     is_favorite: Boolean(source.is_favorite || source.isFavorite),
     status: normalizeStatus(source.status, source.is_favorite || source.isFavorite),
+    next_review_at: source.next_review_at || null,
+    ease_factor: Number.isFinite(Number(source.ease_factor)) ? Number(source.ease_factor) : 2.5,
   }
+  normalized.ai_tags = mergeUniqueTags(normalized.ai_tags, inferAiTags(normalized))
+  normalized.cluster_category = String(source.cluster_category || source.clusterCategory || '').trim() || detectClusterCategory(normalized)
+  normalized.tags = mergeUniqueTags(normalized.tags)
+  return normalized
+}
+
+function toCsv(items) {
+  const headers = [
+    'id', 'type', 'word', 'reading', 'meaning_en', 'jlpt_level', 'status',
+    'cluster_category', 'tags', 'ai_tags', 'review_count', 'created_at',
+  ]
+  const esc = (value) => {
+    const text = String(value ?? '')
+    if (text.includes(',') || text.includes('"') || text.includes('\n')) return `"${text.replace(/"/g, '""')}"`
+    return text
+  }
+  const lines = [headers.join(',')]
+  for (const item of items) {
+    lines.push(
+      [
+        item.id,
+        item.type,
+        item.word,
+        item.reading,
+        item.meaning_en,
+        item.jlpt_level,
+        item.status,
+        item.cluster_category,
+        (item.tags || []).join('|'),
+        (item.ai_tags || []).join('|'),
+        item.review_count,
+        item.created_at,
+      ].map(esc).join(',')
+    )
+  }
+  return lines.join('\n')
 }
 
 export default async function handler(req, res) {
@@ -88,7 +169,7 @@ export default async function handler(req, res) {
     const profile = await ensureUserProfile(auth)
 
     if (req.method === 'GET') {
-      const { search = '', type = '', jlpt = '', status = '', sort = 'recent' } = req.query || {}
+      const { search = '', type = '', jlpt = '', status = '', sort = 'recent', mode = '', format = 'json', limit = '500', offset = '0' } = req.query || {}
       const conditions = ['user_id = $1']
       const values = [profile.id]
       let idx = values.length + 1
@@ -111,17 +192,124 @@ export default async function handler(req, res) {
       if (status && VALID_STATUSES.has(String(status).toLowerCase())) {
         conditions.push(`status = $${idx}`)
         values.push(String(status).toLowerCase())
+        idx += 1
       }
 
       const order = SORT_MAP[String(sort)] || SORT_MAP.recent
+      const pageLimit = Math.max(1, Math.min(1000, Number(limit) || 500))
+      const pageOffset = Math.max(0, Number(offset) || 0)
       const result = await query(
-        `select * from discovered_items where ${conditions.join(' and ')} order by ${order}`,
-        values
+        `select * from discovered_items where ${conditions.join(' and ')} order by ${order} limit $${idx} offset $${idx + 1}`,
+        [...values, pageLimit, pageOffset]
       )
+      if (String(mode).toLowerCase() === 'export') {
+        if (String(format).toLowerCase() === 'csv') {
+          const csv = toCsv(result.rows)
+          res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+          res.setHeader('Content-Disposition', 'attachment; filename="my-discovered-export.csv"')
+          return res.status(200).send(csv)
+        }
+        return res.status(200).json({ profile, exported_at: new Date().toISOString(), items: result.rows })
+      }
+      if (String(mode).toLowerCase() === 'clusters') {
+        const clusterMap = new Map()
+        for (const item of result.rows) {
+          const key = item.cluster_category || detectClusterCategory(item)
+          if (!clusterMap.has(key)) clusterMap.set(key, [])
+          clusterMap.get(key).push(item)
+        }
+        const clusters = [...clusterMap.entries()].map(([cluster, clusterItems]) => ({
+          cluster,
+          count: clusterItems.length,
+          sample: clusterItems.slice(0, 5),
+        }))
+        return res.status(200).json({ profile, clusters })
+      }
       return res.status(200).json({ items: result.rows, profile })
     }
 
     if (req.method === 'POST') {
+      const action = String(body.action || '').toLowerCase()
+      if (action === 'bulk-status') {
+        const ids = toArray(body.ids).map((id) => String(id).trim()).filter(Boolean)
+        const nextStatus = normalizeStatus(body.status, false)
+        if (!ids.length) return res.status(400).json({ error: 'ids are required for bulk status update' })
+        const result = await query(
+          `update discovered_items
+           set status = $1,
+               updated_at = now()
+           where user_id = $2 and id = any($3::uuid[])
+           returning *`,
+          [nextStatus, profile.id, ids]
+        )
+        await appendTimelineEvent({
+          userId: profile.id,
+          activityType: 'bulk_status_update',
+          title: 'Batch status update completed',
+          description: `Updated ${result.rows.length} items to ${nextStatus}.`,
+          metadata: { idsCount: ids.length, status: nextStatus },
+        })
+        return res.status(200).json({ items: result.rows, updated: result.rows.length })
+      }
+      if (action === 'bulk-review') {
+        const ids = toArray(body.ids).map((id) => String(id).trim()).filter(Boolean)
+        if (!ids.length) return res.status(400).json({ error: 'ids are required for bulk review' })
+        const result = await query(
+          `update discovered_items
+           set status = case when status = 'mastered' then status else 'learning' end,
+               review_count = review_count + 1,
+               last_reviewed_at = now(),
+               updated_at = now()
+           where user_id = $1 and id = any($2::uuid[])
+           returning *`,
+          [profile.id, ids]
+        )
+        await appendTimelineEvent({
+          userId: profile.id,
+          activityType: 'batch_review',
+          title: 'Batch review completed',
+          description: `Reviewed ${result.rows.length} saved items in bulk mode.`,
+          metadata: { idsCount: ids.length },
+        })
+        return res.status(200).json({ items: result.rows, reviewed: result.rows.length })
+      }
+      if (action === 'ai-tag') {
+        const ids = toArray(body.ids).map((id) => String(id).trim()).filter(Boolean)
+        if (!ids.length) return res.status(400).json({ error: 'ids are required for AI tagging' })
+        const current = await query(
+          `select *
+           from discovered_items
+           where user_id = $1 and id = any($2::uuid[])`,
+          [profile.id, ids]
+        )
+        const updated = []
+        for (const item of current.rows) {
+          const inferred = inferAiTags(item)
+          const tags = mergeUniqueTags(item.tags || [], inferred)
+          const aiTags = mergeUniqueTags(item.ai_tags || [], inferred)
+          const clusterCategory = detectClusterCategory({ ...item, tags, ai_tags: aiTags })
+          const result = await query(
+            `update discovered_items
+             set tags = $1,
+                 ai_tags = $2,
+                 cluster_category = $3,
+                 updated_at = now()
+             where id = $4 and user_id = $5
+             returning *`,
+            [tags, aiTags, clusterCategory, item.id, profile.id]
+          )
+          if (result.rows[0]) updated.push(result.rows[0])
+        }
+        await appendTimelineEvent({
+          userId: profile.id,
+          activityType: 'ai_tagging',
+          title: 'AI tag generation completed',
+          description: `Generated AI tags for ${updated.length} items.`,
+          metadata: { idsCount: ids.length },
+        })
+        return res.status(200).json({ items: updated, updated: updated.length })
+      }
+
       const payloads = Array.isArray(body.items) ? body.items : [body]
       const inserted = []
 
@@ -146,20 +334,31 @@ export default async function handler(req, res) {
           `insert into discovered_items (
             user_id, type, word, reading, romaji, meaning_en, meaning_hi, jlpt_level, part_of_speech,
             example_jp, example_romaji, example_en, business_usage, similar_words, common_mistake,
-            tags, status, is_favorite, review_count, updated_at
+            tags, ai_tags, cluster_category, status, is_favorite, review_count, next_review_at, ease_factor, updated_at
           ) values (
             $1, $2, $3, $4, $5, $6, $7, $8, $9,
             $10, $11, $12, $13, $14, $15,
-            $16, $17, $18, 0, now()
+            $16, $17, $18, $19, $20, 0, $21, $22, now()
           )
           returning *`,
           [
             profile.id, item.type, item.word, item.reading, item.romaji, item.meaning_en, item.meaning_hi, item.jlpt_level,
             item.part_of_speech, item.example_jp, item.example_romaji, item.example_en, item.business_usage,
-            item.similar_words, item.common_mistake, item.tags, item.status, item.is_favorite,
+            item.similar_words, item.common_mistake, item.tags, item.ai_tags, item.cluster_category, item.status, item.is_favorite,
+            item.next_review_at, item.ease_factor,
           ]
         )
         inserted.push(created.rows[0])
+      }
+
+      if (inserted.length) {
+        await appendTimelineEvent({
+          userId: profile.id,
+          activityType: 'discovered_save',
+          title: 'Saved new discovered items',
+          description: `Added ${inserted.length} item${inserted.length > 1 ? 's' : ''} to your knowledge base.`,
+          metadata: { count: inserted.length },
+        })
       }
 
       return res.status(200).json({ items: inserted, imported: Array.isArray(body.items) })
@@ -196,6 +395,15 @@ export default async function handler(req, res) {
         const list = toArray(body.similar_words || body.similarWords).map((t) => String(t).trim()).filter(Boolean)
         values.push(list)
         assignments.push(`similar_words = $${values.length}`)
+      }
+      if ('ai_tags' in body || 'aiTags' in body) {
+        const list = toArray(body.ai_tags || body.aiTags).map((t) => String(t).trim()).filter(Boolean)
+        values.push(mergeUniqueTags(list))
+        assignments.push(`ai_tags = $${values.length}`)
+      }
+      if ('cluster_category' in body || 'clusterCategory' in body) {
+        values.push(String(body.cluster_category || body.clusterCategory || '').trim() || null)
+        assignments.push(`cluster_category = $${values.length}`)
       }
 
       if (assignments.length === 0) {

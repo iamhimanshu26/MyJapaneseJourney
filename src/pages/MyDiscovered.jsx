@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useDiscovered } from '../hooks/useDiscovered'
@@ -16,7 +16,7 @@ const STATUSES = ['all', 'new', 'learning', 'weak', 'mastered', 'favorite']
 const SORT_OPTIONS = ['recent', 'alphabetical', 'jlpt']
 
 export function MyDiscovered() {
-  const { items, loading, remove, update } = useDiscovered()
+  const { items, loading, remove, update, refresh, identity } = useDiscovered()
   const toast = useToast()
   const [search, setSearch] = useState('')
   const [level, setLevel] = useState('ALL')
@@ -24,29 +24,35 @@ export function MyDiscovered() {
   const [status, setStatus] = useState('all')
   const [sort, setSort] = useState('recent')
   const [view, setView] = useState('card')
+  const [selectedIds, setSelectedIds] = useState([])
+  const [bulkStatus, setBulkStatus] = useState('learning')
+  const [clusters, setClusters] = useState([])
+  const [showClusters, setShowClusters] = useState(false)
+  const [busy, setBusy] = useState(false)
 
-  const filtered = useMemo(() => {
-    let list = [...items]
-    if (search.trim()) {
-      const q = search.trim().toLowerCase()
-      list = list.filter((item) =>
-        String(item.word || '').toLowerCase().includes(q) ||
-        String(item.meaning_en || '').toLowerCase().includes(q) ||
-        String(item.reading || '').toLowerCase().includes(q)
-      )
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      refresh({
+        search: search.trim(),
+        jlpt: level !== 'ALL' ? level : '',
+        type: category !== 'all' ? category : '',
+        status: status !== 'all' ? status : '',
+        sort,
+      })
+    }, 220)
+    return () => clearTimeout(timer)
+  }, [search, level, category, status, sort, refresh])
+
+  const filtered = useMemo(() => [...items], [items])
+  const groupedByLevel = useMemo(() => {
+    const map = new Map()
+    for (const item of filtered) {
+      const lvl = item.jlpt_level || 'Unknown'
+      if (!map.has(lvl)) map.set(lvl, [])
+      map.get(lvl).push(item)
     }
-    if (level !== 'ALL') list = list.filter((item) => item.jlpt_level === level)
-    if (category !== 'all') list = list.filter((item) => item.type === category)
-    if (status !== 'all') list = list.filter((item) => item.status === status)
-    if (sort === 'alphabetical') {
-      list.sort((a, b) => String(a.word || '').localeCompare(String(b.word || '')))
-    } else if (sort === 'jlpt') {
-      list.sort((a, b) => String(a.jlpt_level || '').localeCompare(String(b.jlpt_level || '')))
-    } else {
-      list.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
-    }
-    return list
-  }, [items, search, level, category, status, sort])
+    return [...map.entries()].sort((a, b) => String(a[0]).localeCompare(String(b[0])))
+  }, [filtered])
 
   async function handleRemove(id) {
     try {
@@ -78,6 +84,98 @@ export function MyDiscovered() {
       toast.success(item.is_favorite ? 'Removed from favorites' : 'Added to favorites')
     } catch (err) {
       toast.error(err.message || 'Could not update favorite')
+    }
+  }
+
+  function toggleSelect(id) {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  }
+
+  async function runBulkAction(action, payload = {}) {
+    if (!selectedIds.length) {
+      toast.info('Select at least one item first')
+      return
+    }
+    setBusy(true)
+    try {
+      const response = await fetch('/api/discovered-items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Auth-User-Id': identity.authUserId,
+          ...(identity.sessionToken ? { 'X-Session-Token': identity.sessionToken } : {}),
+        },
+        body: JSON.stringify({ action, ids: selectedIds, ...payload }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data?.error || 'Bulk action failed')
+      setSelectedIds([])
+      await refresh({
+        search: search.trim(),
+        jlpt: level !== 'ALL' ? level : '',
+        type: category !== 'all' ? category : '',
+        status: status !== 'all' ? status : '',
+        sort,
+      })
+      toast.success(`Bulk action completed on ${data.updated || data.reviewed || data.items?.length || 0} items`)
+    } catch (err) {
+      toast.error(err.message || 'Bulk action failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function exportData(format) {
+    try {
+      const response = await fetch(`/api/discovered-items?mode=export&format=${encodeURIComponent(format)}&sort=${encodeURIComponent(sort)}&limit=1000`, {
+        headers: {
+          'X-Auth-User-Id': identity.authUserId,
+          ...(identity.sessionToken ? { 'X-Session-Token': identity.sessionToken } : {}),
+        },
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData?.error || 'Export failed')
+      }
+      if (format === 'csv') {
+        const csv = await response.text()
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const anchor = document.createElement('a')
+        anchor.href = url
+        anchor.download = 'my-discovered-export.csv'
+        anchor.click()
+        URL.revokeObjectURL(url)
+      } else {
+        const json = await response.json()
+        const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const anchor = document.createElement('a')
+        anchor.href = url
+        anchor.download = 'my-discovered-export.json'
+        anchor.click()
+        URL.revokeObjectURL(url)
+      }
+      toast.success(`Exported ${format.toUpperCase()} successfully`)
+    } catch (err) {
+      toast.error(err.message || 'Export failed')
+    }
+  }
+
+  async function loadClusters() {
+    try {
+      const response = await fetch('/api/discovered-items?mode=clusters&limit=1000', {
+        headers: {
+          'X-Auth-User-Id': identity.authUserId,
+          ...(identity.sessionToken ? { 'X-Session-Token': identity.sessionToken } : {}),
+        },
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data?.error || 'Failed to load clusters')
+      setClusters(data.clusters || [])
+      setShowClusters(true)
+    } catch (err) {
+      toast.error(err.message || 'Failed to load clusters')
     }
   }
 
@@ -116,6 +214,53 @@ export function MyDiscovered() {
           </select>
         </section>
 
+        <section className="mb-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs text-slate-400">Selected: <strong className="text-slate-200">{selectedIds.length}</strong></p>
+            <select value={bulkStatus} onChange={(e) => setBulkStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100">
+              {STATUSES.filter((s) => s !== 'all').map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <button type="button" onClick={() => runBulkAction('bulk-status', { status: bulkStatus })} disabled={busy} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100 disabled:opacity-60">
+              Batch Status Update
+            </button>
+            <button type="button" onClick={() => runBulkAction('bulk-review')} disabled={busy} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100 disabled:opacity-60">
+              Batch Review
+            </button>
+            <button type="button" onClick={() => runBulkAction('ai-tag')} disabled={busy} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100 disabled:opacity-60">
+              AI Generate Tags
+            </button>
+            <button type="button" onClick={() => exportData('csv')} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100">
+              Export CSV
+            </button>
+            <button type="button" onClick={() => exportData('json')} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100">
+              Export JSON
+            </button>
+            <button type="button" onClick={loadClusters} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100">
+              AI Clusters
+            </button>
+          </div>
+        </section>
+
+        {showClusters ? (
+          <section className="mb-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-slate-100">AI Vocabulary Clustering</h3>
+              <button type="button" onClick={() => setShowClusters(false)} className="text-xs text-slate-400 hover:text-slate-200">Hide</button>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {clusters.map((cluster) => (
+                <article key={cluster.cluster} className="rounded-xl border border-slate-700 bg-slate-950/60 p-3">
+                  <p className="text-sm font-semibold text-slate-100">{cluster.cluster}</p>
+                  <p className="text-xs text-slate-400">{cluster.count} items</p>
+                  <p className="mt-1 text-xs text-slate-300">
+                    {(cluster.sample || []).slice(0, 3).map((item) => item.word).join(', ') || 'No sample'}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <div className="mb-4 flex gap-2">
           <button
             type="button"
@@ -139,7 +284,7 @@ export function MyDiscovered() {
             title="No discovered items found"
             message="Start with AI Word Intelligence lookup and save words into your personal Japanese knowledge base."
             actionLabel="Go to AI Lookup"
-            onAction={() => { window.location.href = '/lookup' }}
+            onAction={() => { window.location.assign('/lookup') }}
           />
         ) : null}
 
@@ -149,6 +294,7 @@ export function MyDiscovered() {
               <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
+                    <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} />
                     <JLPTBadge level={item.jlpt_level || 'N5'} />
                     <MasteryBadge status={item.status} />
                   </div>
@@ -162,6 +308,9 @@ export function MyDiscovered() {
                 <div className="mt-3 flex flex-wrap gap-1">
                   {(item.tags || []).map((tag) => (
                     <span key={tag} className="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300">{tag}</span>
+                  ))}
+                  {(item.ai_tags || []).map((tag) => (
+                    <span key={`ai-${tag}`} className="rounded bg-blue-500/20 px-2 py-0.5 text-[11px] text-blue-200">#{tag}</span>
                   ))}
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-400">
@@ -205,7 +354,12 @@ export function MyDiscovered() {
               <tbody>
                 {filtered.map((item) => (
                   <tr key={item.id} className="border-b border-slate-800/60 text-slate-200">
-                    <td className="px-3 py-3" style={{ fontFamily: 'var(--font-jp)' }}>{item.word}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} />
+                        <span style={{ fontFamily: 'var(--font-jp)' }}>{item.word}</span>
+                      </div>
+                    </td>
                     <td className="px-3 py-3">{item.reading || '-'}</td>
                     <td className="px-3 py-3">{item.meaning_en || '-'}</td>
                     <td className="px-3 py-3">{item.jlpt_level || '-'}</td>
@@ -222,6 +376,19 @@ export function MyDiscovered() {
               </tbody>
             </table>
           </div>
+        ) : null}
+
+        {!loading && groupedByLevel.length ? (
+          <section className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">JLPT Level Sections</h3>
+            <div className="mt-3 space-y-2">
+              {groupedByLevel.map(([lvl, list]) => (
+                <p key={lvl} className="text-sm text-slate-300">
+                  <span className="font-semibold text-slate-100">{lvl}:</span> {list.length} items
+                </p>
+              ))}
+            </div>
+          </section>
         ) : null}
       </motion.div>
     </div>

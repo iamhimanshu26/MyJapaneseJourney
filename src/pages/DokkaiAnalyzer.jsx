@@ -13,6 +13,7 @@ export function DokkaiAnalyzer() {
   const [text, setText] = useState('')
   const [analysis, setAnalysis] = useState(null)
   const [history, setHistory] = useState([])
+  const [quizOpen, setQuizOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const toast = useToast()
 
@@ -76,6 +77,28 @@ export function DokkaiAnalyzer() {
     toast.success('Grammar points saved to My Discovered')
   }
 
+  async function saveKanji() {
+    if (!analysis?.kanji?.length) return
+    for (const kanji of analysis.kanji) {
+      await save({
+        type: 'kanji',
+        word: kanji.char,
+        reading: kanji.reading,
+        meaning_en: kanji.meaning_en,
+        jlpt_level: analysis.estimated_jlpt_level || 'N4',
+        status: 'new',
+      })
+    }
+    toast.success('Kanji saved to My Discovered')
+  }
+
+  async function saveAllExtracted() {
+    await saveVocabulary()
+    await saveGrammar()
+    await saveKanji()
+    toast.success('All extracted decks saved')
+  }
+
   function copyAnalysis() {
     if (!analysis) return
     const content = JSON.stringify(analysis, null, 2)
@@ -85,7 +108,7 @@ export function DokkaiAnalyzer() {
 
   function generateQuiz() {
     if (!analysis?.practice_questions?.length) return
-    toast.info(`Generated ${analysis.practice_questions.length} practice questions`)
+    setQuizOpen(true)
   }
 
   return (
@@ -121,10 +144,29 @@ export function DokkaiAnalyzer() {
               analysis={analysis}
               onSaveVocabulary={saveVocabulary}
               onSaveGrammar={saveGrammar}
+              onSaveKanji={saveKanji}
+              onSaveAll={saveAllExtracted}
               onCopy={copyAnalysis}
               onGenerateQuiz={generateQuiz}
             />
           </div>
+        ) : null}
+
+        {quizOpen && analysis?.practice_questions?.length ? (
+          <section className="mt-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Generated Practice Quiz</h3>
+              <button type="button" onClick={() => setQuizOpen(false)} className="text-xs text-slate-400 hover:text-slate-200">Close</button>
+            </div>
+            <ol className="space-y-3 text-sm text-slate-200">
+              {analysis.practice_questions.map((item, idx) => (
+                <li key={`${item.question}-${idx}`} className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
+                  <p>{idx + 1}. {item.question}</p>
+                  <p className="mt-1 text-xs text-slate-400">Answer: {item.answer}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
         ) : null}
 
         {history.length ? (
@@ -141,6 +183,9 @@ export function DokkaiAnalyzer() {
                     english_translation: item.english_translation,
                     summary: item.summary,
                     estimated_jlpt_level: item.estimated_jlpt_level,
+                    difficulty_score: item.difficulty_score,
+                    reading_speed_wpm: item.reading_speed_wpm,
+                    summary_quality_score: item.summary_quality_score,
                     vocabulary: item.vocabulary || item.vocabulary_json || [],
                     kanji: item.kanji || item.kanji_json || [],
                     grammar_points: item.grammar_points || item.grammar_json || [],
