@@ -22,7 +22,7 @@ export function LearningIntelligence() {
       setLoading(true)
       setError('')
       try {
-        const response = await apiRequest('/api/learning-intelligence', { method: 'GET', identity })
+        const response = await apiRequest('/api/intelligence', { method: 'GET', identity })
         if (mounted) setData(response)
       } catch (err) {
         if (mounted) setError(err.message || 'Failed to load learning intelligence')

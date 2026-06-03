@@ -25,7 +25,7 @@ export function LearningPlan() {
       setLoading(true)
       setError('')
       try {
-        const response = await apiRequest('/api/learning-plan', { method: 'GET', identity })
+        const response = await apiRequest('/api/intelligence?view=plan', { method: 'GET', identity })
         if (mounted) setData(response)
       } catch (err) {
         if (mounted) setError(err.message || 'Failed to load learning plan')

@@ -12,16 +12,14 @@ DATABASE_URL=postgres://<user>:<password>@<host>/<db>?sslmode=require
 
 ## API routes powered by Neon
 
-- `GET/POST /api/discovered-items`
-- `PATCH/DELETE /api/discovered-items/:id`
+- `GET/POST/PATCH/DELETE /api/discovered-items` (`id` via query/body for PATCH/DELETE)
 - `POST /api/ai-lookup`
 - `POST /api/analyze-dokkai`
 - `POST /api/interview-coach`
 - `GET /api/analytics`
-- `GET /api/learning-intelligence`
-- `GET /api/learning-plan`
+- `GET /api/intelligence` (learning intelligence)
+- `GET /api/intelligence?view=plan` (learning plan)
 - `POST /api/review-session`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
-- `PATCH /api/auth/profile`
-- `POST /api/auth/logout`
+- `POST /api/auth` (login or logout with `action: \"logout\"`)
+- `GET /api/auth` (current session)
+- `PATCH /api/auth` (profile update)

@@ -154,7 +154,7 @@ export function useDiscovered() {
 
   const remove = useCallback(async (id) => {
     try {
-      await apiRequest(`/api/discovered-items/${id}`, {
+      await apiRequest(`/api/discovered-items?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
         identity,
       })
@@ -166,7 +166,7 @@ export function useDiscovered() {
 
   const update = useCallback(async (id, patch) => {
     try {
-      const data = await apiRequest(`/api/discovered-items/${id}`, {
+      const data = await apiRequest(`/api/discovered-items?id=${encodeURIComponent(id)}`, {
         method: 'PATCH',
         identity,
         body: patch,

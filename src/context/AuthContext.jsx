@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
     }
 
     setSessionToken(stored.token)
-    fetch('/api/auth/me', {
+    fetch('/api/auth', {
       headers: { 'x-session-token': stored.token },
     })
       .then(async (response) => {
@@ -69,7 +69,7 @@ export function AuthProvider({ children }) {
   }
 
   async function signIn(loginId, password, role = 'student') {
-    const response = await fetch('/api/auth/login', {
+    const response = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ loginId, password, role }),
@@ -108,9 +108,13 @@ export function AuthProvider({ children }) {
     storeSession(null)
 
     if (!token) return
-    await fetch('/api/auth/logout', {
+    await fetch('/api/auth', {
       method: 'POST',
-      headers: { 'x-session-token': token },
+      headers: {
+        'content-type': 'application/json',
+        'x-session-token': token,
+      },
+      body: JSON.stringify({ action: 'logout' }),
     }).catch(() => {})
   }
 
@@ -127,7 +131,7 @@ export function AuthProvider({ children }) {
       return localProfile
     }
 
-    const response = await fetch('/api/auth/profile', {
+    const response = await fetch('/api/auth', {
       method: 'PATCH',
       headers: {
         'content-type': 'application/json',

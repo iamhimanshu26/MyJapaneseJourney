@@ -1,6 +1,6 @@
-import { ensureUserProfile, query } from './_lib/db.js'
-import { getAuthContext, ensureAuthUserId } from './_lib/auth.js'
-import { handleOptions, methodNotAllowed, parseJsonBody, setCors } from './_lib/http.js'
+import { ensureUserProfile, query } from '../server/lib/db.js'
+import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
+import { handleOptions, methodNotAllowed, parseJsonBody, setCors } from '../server/lib/http.js'
 
 const VALID_RESULTS = new Set(['again', 'hard', 'good', 'easy'])
 

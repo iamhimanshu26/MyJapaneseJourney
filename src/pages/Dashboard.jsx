@@ -29,7 +29,7 @@ export function Dashboard() {
       try {
         const [analyticsData, intelligenceData] = await Promise.all([
           apiRequest('/api/analytics', { method: 'GET', identity }),
-          apiRequest('/api/learning-intelligence', { method: 'GET', identity }),
+          apiRequest('/api/intelligence', { method: 'GET', identity }),
         ])
         if (!mounted) return
         setAnalytics(analyticsData)
