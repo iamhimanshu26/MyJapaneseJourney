@@ -1,7 +1,7 @@
-import { ensureUserProfile, query } from './_lib/db'
-import { getAuthContext, ensureAuthUserId } from './_lib/auth'
-import { checkRateLimit, generateJson } from './_lib/gemini'
-import { handleOptions, methodNotAllowed, parseJsonBody, setCors } from './_lib/http'
+import { ensureUserProfile, query } from './_lib/db.js'
+import { getAuthContext, ensureAuthUserId } from './_lib/auth.js'
+import { checkRateLimit, generateJson } from './_lib/gemini.js'
+import { handleOptions, methodNotAllowed, parseJsonBody, setCors } from './_lib/http.js'
 
 const SYSTEM_PROMPT = `You are an expert Japanese tutor for enterprise learning dashboards.
 Return strict JSON only.

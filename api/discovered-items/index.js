@@ -1,6 +1,6 @@
-import { ensureUserProfile, query } from '../_lib/db'
-import { getAuthContext, ensureAuthUserId } from '../_lib/auth'
-import { handleOptions, methodNotAllowed, parseJsonBody, setCors, toArray } from '../_lib/http'
+import { ensureUserProfile, query } from '../_lib/db.js'
+import { getAuthContext, ensureAuthUserId } from '../_lib/auth.js'
+import { handleOptions, methodNotAllowed, parseJsonBody, setCors, toArray } from '../_lib/http.js'
 
 const VALID_TYPES = new Set(['vocabulary', 'grammar', 'kanji', 'phrase'])
 const VALID_STATUSES = new Set(['new', 'learning', 'weak', 'mastered', 'favorite'])
