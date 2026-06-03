@@ -21,6 +21,23 @@ Rules:
 - Must include all keys.
 - JSON only.`
 
+function buildFallbackAnalysis(inputText, reason = '') {
+  return {
+    original_text: inputText,
+    romaji: '',
+    english_translation: 'Translation unavailable due temporary AI quota/rate limit.',
+    estimated_jlpt_level: 'N4',
+    summary: reason
+      ? `Fallback summary generated because AI request failed: ${reason}`
+      : 'Fallback summary generated.',
+    vocabulary: [],
+    kanji: [],
+    grammar_points: [],
+    practice_questions: [],
+    fallback_used: true,
+  }
+}
+
 export default async function handler(req, res) {
   if (handleOptions(req, res, 'GET, POST, OPTIONS')) return
   setCors(res, 'GET, POST, OPTIONS')
@@ -62,12 +79,17 @@ export default async function handler(req, res) {
     const inputText = String(body.text || '').trim().slice(0, 10000)
     if (!inputText) return res.status(400).json({ error: 'text is required' })
 
-    const analysis = await generateJson({
-      systemPrompt: SYSTEM_PROMPT,
-      prompt: inputText,
-      maxOutputTokens: 4096,
-      temperature: 0.2,
-    })
+    let analysis
+    try {
+      analysis = await generateJson({
+        systemPrompt: SYSTEM_PROMPT,
+        prompt: inputText,
+        maxOutputTokens: 4096,
+        temperature: 0.2,
+      })
+    } catch (error) {
+      analysis = buildFallbackAnalysis(inputText, String(error?.message || ''))
+    }
 
     const normalized = {
       original_text: String(analysis.original_text || inputText),
@@ -79,6 +101,7 @@ export default async function handler(req, res) {
       kanji: Array.isArray(analysis.kanji) ? analysis.kanji : [],
       grammar_points: Array.isArray(analysis.grammar_points) ? analysis.grammar_points : [],
       practice_questions: Array.isArray(analysis.practice_questions) ? analysis.practice_questions : [],
+      fallback_used: Boolean(analysis.fallback_used),
     }
 
     await query(

@@ -21,6 +21,23 @@ Rules:
 - Keep concise.
 - JSON only.`
 
+function buildFallbackInterview(topic, userAnswer, reason = '') {
+  const jp = `本日(ほんじつ)は自己紹介(じこしょうかい)の機会(きかい)をいただき、ありがとうございます。私は継続的(けいぞくてき)な改善(かいぜん)とチーム連携(れんけい)を強(つよ)みとして、貢献(こうけん)したいと考(かんが)えています。`
+  return {
+    topic,
+    ai_answer_jp: jp,
+    romaji: 'Honjitsu wa jikoshoukai no kikai o itadaki, arigatou gozaimasu. Watashi wa keizokuteki na kaizen to chiimu renkei o tsuyomi to shite, kouken shitai to kangaeteimasu.',
+    english_meaning: 'Thank you for this opportunity. My strengths are continuous improvement and team collaboration, and I would like to contribute with those.',
+    simpler_version_jp: '自己紹介の機会をありがとうございます。私は改善と協力を大切にして働きます。',
+    professional_version_jp: jp,
+    feedback: reason
+      ? `AI quota/rate limit fallback used. Refine this answer once quota recovers. Original answer: ${userAnswer || 'N/A'}`
+      : `Good structure. Add one concrete project example to strengthen impact. Original answer: ${userAnswer || 'N/A'}`,
+    score: 72,
+    fallback_used: Boolean(reason),
+  }
+}
+
 export default async function handler(req, res) {
   if (handleOptions(req, res, 'GET, POST, OPTIONS')) return
   setCors(res, 'GET, POST, OPTIONS')
@@ -64,12 +81,17 @@ export default async function handler(req, res) {
 
     const prompt = `Topic: ${topic}\nUser answer (optional): ${userAnswer || 'N/A'}`
 
-    const coached = await generateJson({
-      systemPrompt: SYSTEM_PROMPT,
-      prompt,
-      maxOutputTokens: 2048,
-      temperature: 0.4,
-    })
+    let coached
+    try {
+      coached = await generateJson({
+        systemPrompt: SYSTEM_PROMPT,
+        prompt,
+        maxOutputTokens: 2048,
+        temperature: 0.4,
+      })
+    } catch (error) {
+      coached = buildFallbackInterview(topic, userAnswer, String(error?.message || ''))
+    }
 
     const normalized = {
       topic,
@@ -81,6 +103,7 @@ export default async function handler(req, res) {
       professional_version_jp: String(coached.professional_version_jp || ''),
       feedback: String(coached.feedback || ''),
       score: Number.isFinite(Number(coached.score)) ? Math.max(0, Math.min(100, Number(coached.score))) : 0,
+      fallback_used: Boolean(coached.fallback_used),
     }
 
     await query(

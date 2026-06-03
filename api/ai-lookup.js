@@ -32,6 +32,27 @@ Rules:
 - Estimate JLPT level realistically.
 - Output valid JSON only.`
 
+function buildFallbackLookup(query, reason = '') {
+  return {
+    type: 'vocabulary',
+    word: query,
+    reading: '',
+    romaji: '',
+    meaning_en: 'Meaning unavailable due temporary AI quota/rate limit.',
+    meaning_hi: 'एआई कोटा सीमा के कारण अर्थ अभी उपलब्ध नहीं है।',
+    jlpt_level: 'N4',
+    part_of_speech: '',
+    formal_casual_usage: 'Retry when AI quota resets for detailed usage analysis.',
+    business_usage: 'Use in context once full AI response is available.',
+    similar_words: [],
+    common_mistake: reason ? `Fallback used because AI request failed: ${reason}` : 'Fallback response',
+    example_jp: '',
+    example_romaji: '',
+    example_en: '',
+    fallback_used: true,
+  }
+}
+
 export default async function handler(req, res) {
   if (handleOptions(req, res, 'GET, POST, OPTIONS')) return
   setCors(res, 'GET, POST, OPTIONS')
@@ -75,12 +96,17 @@ export default async function handler(req, res) {
     const lookupQuery = String(body.query || body.q || '').trim()
     if (!lookupQuery) return res.status(400).json({ error: 'query is required' })
 
-    const result = await generateJson({
-      systemPrompt: SYSTEM_PROMPT,
-      prompt: lookupQuery,
-      maxOutputTokens: 2048,
-      temperature: 0.3,
-    })
+    let result
+    try {
+      result = await generateJson({
+        systemPrompt: SYSTEM_PROMPT,
+        prompt: lookupQuery,
+        maxOutputTokens: 2048,
+        temperature: 0.3,
+      })
+    } catch (error) {
+      result = buildFallbackLookup(lookupQuery, String(error?.message || ''))
+    }
 
     const normalized = {
       type: String(result.type || 'vocabulary').toLowerCase(),
@@ -98,6 +124,7 @@ export default async function handler(req, res) {
       example_jp: String(result.example_jp || '').trim(),
       example_romaji: String(result.example_romaji || '').trim(),
       example_en: String(result.example_en || '').trim(),
+      fallback_used: Boolean(result.fallback_used),
     }
 
     await query(
