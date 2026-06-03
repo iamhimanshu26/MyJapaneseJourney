@@ -22,6 +22,7 @@ Rules:
 - JSON only.`
 
 function buildFallbackInterview(topic, userAnswer, reason = '') {
+  const shortReason = String(reason || '').replace(/\s+/g, ' ').slice(0, 160)
   const jp = `本日(ほんじつ)は自己紹介(じこしょうかい)の機会(きかい)をいただき、ありがとうございます。私は継続的(けいぞくてき)な改善(かいぜん)とチーム連携(れんけい)を強(つよ)みとして、貢献(こうけん)したいと考(かんが)えています。`
   return {
     topic,
@@ -30,7 +31,7 @@ function buildFallbackInterview(topic, userAnswer, reason = '') {
     english_meaning: 'Thank you for this opportunity. My strengths are continuous improvement and team collaboration, and I would like to contribute with those.',
     simpler_version_jp: '自己紹介の機会をありがとうございます。私は改善と協力を大切にして働きます。',
     professional_version_jp: jp,
-    feedback: reason
+    feedback: shortReason
       ? `AI quota/rate limit fallback used. Refine this answer once quota recovers. Original answer: ${userAnswer || 'N/A'}`
       : `Good structure. Add one concrete project example to strengthen impact. Original answer: ${userAnswer || 'N/A'}`,
     score: 72,

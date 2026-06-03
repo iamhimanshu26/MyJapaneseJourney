@@ -22,13 +22,14 @@ Rules:
 - JSON only.`
 
 function buildFallbackAnalysis(inputText, reason = '') {
+  const shortReason = String(reason || '').replace(/\s+/g, ' ').slice(0, 160)
   return {
     original_text: inputText,
     romaji: '',
     english_translation: 'Translation unavailable due temporary AI quota/rate limit.',
     estimated_jlpt_level: 'N4',
-    summary: reason
-      ? `Fallback summary generated because AI request failed: ${reason}`
+    summary: shortReason
+      ? `Fallback summary generated because AI request failed: ${shortReason}`
       : 'Fallback summary generated.',
     vocabulary: [],
     kanji: [],

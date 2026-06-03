@@ -33,6 +33,7 @@ Rules:
 - Output valid JSON only.`
 
 function buildFallbackLookup(query, reason = '') {
+  const shortReason = String(reason || '').replace(/\s+/g, ' ').slice(0, 160)
   return {
     type: 'vocabulary',
     word: query,
@@ -45,7 +46,7 @@ function buildFallbackLookup(query, reason = '') {
     formal_casual_usage: 'Retry when AI quota resets for detailed usage analysis.',
     business_usage: 'Use in context once full AI response is available.',
     similar_words: [],
-    common_mistake: reason ? `Fallback used because AI request failed: ${reason}` : 'Fallback response',
+    common_mistake: shortReason ? `Fallback used because AI request failed: ${shortReason}` : 'Fallback response',
     example_jp: '',
     example_romaji: '',
     example_en: '',
