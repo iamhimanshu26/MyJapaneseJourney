@@ -19,4 +19,9 @@ DATABASE_URL=postgres://<user>:<password>@<host>/<db>?sslmode=require
 - `POST /api/interview-coach`
 - `GET /api/analytics`
 - `GET /api/learning-intelligence`
+- `GET /api/learning-plan`
 - `POST /api/review-session`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `PATCH /api/auth/profile`
+- `POST /api/auth/logout`

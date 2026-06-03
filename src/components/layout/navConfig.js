@@ -10,5 +10,6 @@ export const NAV_ITEMS = [
   { path: '/kanji', label: 'Kanji', icon: '漢' },
   { path: '/analytics', label: 'Analytics', icon: '📈' },
   { path: '/learning-intelligence', label: 'Learning Intelligence', icon: '🎯' },
+  { path: '/learning-plan', label: 'Learning Plan', icon: '🧭' },
   { path: '/settings', label: 'Settings', icon: '⚙️' },
 ]

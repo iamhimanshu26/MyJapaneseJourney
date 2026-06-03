@@ -12,6 +12,7 @@ const DokkaiAnalyzer = lazy(() => import('./pages/DokkaiAnalyzer').then((m) => (
 const InterviewCoach = lazy(() => import('./pages/InterviewCoach').then((m) => ({ default: m.InterviewCoach })))
 const Analytics = lazy(() => import('./pages/Analytics').then((m) => ({ default: m.Analytics })))
 const LearningIntelligence = lazy(() => import('./pages/LearningIntelligence').then((m) => ({ default: m.LearningIntelligence })))
+const LearningPlan = lazy(() => import('./pages/LearningPlan').then((m) => ({ default: m.LearningPlan })))
 const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })))
 const Kanji = lazy(() => import('./pages/Kanji').then((m) => ({ default: m.Kanji })))
 const AnyIdea = lazy(() => import('./pages/AnyIdea').then((m) => ({ default: m.AnyIdea })))
@@ -44,6 +45,7 @@ function App() {
           <Route path="interview-coach" element={<InterviewCoach />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="learning-intelligence" element={<LearningIntelligence />} />
+          <Route path="learning-plan" element={<LearningPlan />} />
           <Route path="settings" element={<Settings />} />
           <Route path="kanji" element={<Kanji />} />
           <Route path="any-idea" element={<AnyIdea />} />

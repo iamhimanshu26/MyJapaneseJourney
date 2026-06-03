@@ -18,6 +18,11 @@ export default async function handler(req, res) {
   try {
     const profile = await ensureUserProfile(auth)
     const userId = profile.id
+    let role = 'guest'
+    if (!auth.authUserId.startsWith('guest:')) {
+      const roleResult = await query('select role from auth_users where id = $1 limit 1', [auth.authUserId])
+      role = roleResult.rows[0]?.role || 'student'
+    }
 
     const [summary, lookups, activities] = await Promise.all([
       query(
@@ -73,8 +78,12 @@ export default async function handler(req, res) {
       'Practice 15 weak vocabulary words',
       'Complete one reading passage',
       'Recheck recently discovered words',
-      'Practice business Japanese self-introduction',
     ]
+    if (role === 'employee' || role === 'admin') {
+      recommendations.push('Practice business Japanese self-introduction')
+    } else {
+      recommendations.push('Use Dokkai Analyzer to extract and save 3 study items')
+    }
 
     return res.status(200).json({
       profile,
@@ -90,6 +99,7 @@ export default async function handler(req, res) {
       },
       weakAreas,
       recommendations,
+      role,
       recentActivity: activities.rows,
     })
   } catch (error) {

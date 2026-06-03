@@ -55,6 +55,11 @@ export function LearningIntelligence() {
           title="Learning Intelligence"
           subtitle="AI-driven mastery analysis for JLPT/NAT preparation."
         />
+        {!loading && !error && data ? (
+          <p className="mb-4 inline-flex rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs font-medium text-slate-300">
+            Role context: {data.role || 'guest'}
+          </p>
+        ) : null}
 
         {loading ? <LoadingState /> : null}
         {!loading && error ? <EmptyState title="Unable to load insights" message={error} /> : null}

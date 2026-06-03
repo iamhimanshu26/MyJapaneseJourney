@@ -4,9 +4,11 @@ import { PageMeta } from '../components/PageMeta'
 import { SectionHeader } from '../components/shared/SectionHeader'
 import { useDiscovered } from '../hooks/useDiscovered'
 import { useToast } from '../context/ToastContext'
+import { useAuth } from '../context/AuthContext'
 
 export function Settings() {
   const { importLocalToNeon } = useDiscovered()
+  const { user } = useAuth()
   const [importing, setImporting] = useState(false)
   const toast = useToast()
 
@@ -31,6 +33,19 @@ export function Settings() {
           subtitle="Manage enterprise data options and migration helpers."
         />
         <div className="space-y-4">
+          <section className="card-shell">
+            <h2 className="text-sm font-semibold text-slate-100">Account & Access</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Login ID: <span className="font-medium text-slate-200">{user?.loginId || 'Guest session'}</span>
+            </p>
+            <p className="mt-1 text-sm text-slate-400">
+              Role: <span className="font-medium text-slate-200">{user?.role || 'guest'}</span>
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Your direct ID/password is stored in Neon auth tables. Use the same credentials next time to restore progress.
+            </p>
+          </section>
+
           <section className="card-shell">
             <h2 className="text-sm font-semibold text-slate-100">Data Source</h2>
             <p className="mt-2 text-sm text-slate-400">

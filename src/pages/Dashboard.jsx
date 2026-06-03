@@ -161,6 +161,7 @@ export function Dashboard() {
                 { title: 'Interview Coach', desc: 'Prepare professional Japanese interview answers', path: '/interview-coach', icon: '💼' },
                 { title: 'Analytics', desc: 'Track categories, trends, and readiness metrics', path: '/analytics', icon: '📈' },
                 { title: 'Learning Intelligence', desc: 'See mastery, weak zones, and next actions', path: '/learning-intelligence', icon: '🎯' },
+                { title: 'Learning Plan', desc: 'Follow a role-aware weekly study execution plan', path: '/learning-plan', icon: '🧭' },
               ].map((card) => (
                 <Link
                   key={card.path}
