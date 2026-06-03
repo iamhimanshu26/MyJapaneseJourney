@@ -139,7 +139,7 @@ async function getLatestPlan(userId) {
 }
 
 async function buildLearningIntelligence(userId, profile, role) {
-  const [summary, lookups, activities, streak, studyPlan, timeline] = await Promise.all([
+  const [summary, lookups, activities, streak, planResult, timeline] = await Promise.all([
     buildSnapshot(userId),
     query(
       `select count(*)::int as lookup_count
@@ -212,7 +212,7 @@ async function buildLearningIntelligence(userId, profile, role) {
   }
 
   const retentionRate = Math.max(20, Math.min(100, Math.round((vocabMastery * 0.45) + (grammarMastery * 0.35) + (kanjiProgress * 0.2))))
-  const studyPlanRow = studyPlan.rows[0]
+  const studyPlanRow = planResult.rows[0]
   const studyPlan = studyPlanRow
     ? {
         id: studyPlanRow.id,
