@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #f8fafc;
-  --color-bg-card: #ffffff;
-  --color-bg-elevated: #f1f5f9;
-  --color-accent: #f59e0b;
-  --color-accent-soft: #fbbf24;
-  --color-text: #0f172a;
-  --color-text-muted: #64748b;
-  --color-border: rgba(0, 0, 0, 0.08);
+  --color-bg: #020617;
+  --color-bg-card: #0f172a;
+  --color-bg-elevated: #111827;
+  --color-accent: #3b82f6;
+  --color-accent-soft: #8b5cf6;
+  --color-text: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-border: rgba(148, 163, 184, 0.24);
   --font-sans: "DM Sans", system-ui, sans-serif;
   --font-jp: "Noto Sans JP", sans-serif;
 }
@@ -31,7 +31,7 @@
   left: -9999px;
   z-index: 999;
   padding: 0.75rem 1rem;
-  background: var(--color-accent);
+  background: #2563eb;
   color: white;
   border-radius: 0.5rem;
   font-weight: 500;
@@ -43,7 +43,7 @@
 }
 
 ::selection {
-  @apply bg-amber-400/40;
+  @apply bg-blue-500/40;
 }
 
 /* Furigana - reading above kanji, kanji on baseline for proper alignment */
@@ -57,4 +57,8 @@
 @keyframes strokeAppear {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+.card-shell {
+  @apply rounded-2xl border border-slate-800 bg-slate-900/75 p-5;
 }

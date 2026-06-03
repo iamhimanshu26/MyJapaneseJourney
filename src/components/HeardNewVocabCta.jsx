@@ -10,24 +10,24 @@ export function HeardNewVocabCta({ compact = false }) {
     >
       <Link
         to="/lookup"
-        className={`group flex items-center gap-3 rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-amber-100/50 p-4 transition-all hover:border-amber-400 hover:from-amber-100 hover:to-amber-100 ${
+        className={`group flex items-center gap-3 rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-900 to-slate-800 p-4 transition-all hover:border-blue-400 hover:from-slate-900 hover:to-slate-700 ${
           compact ? 'inline-flex' : 'block'
         }`}
       >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-200 text-amber-700">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/20 text-blue-300">
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </span>
         <div>
           <span className="block font-semibold text-[var(--color-text)]">
-            Heard New Vocab — Find Here more about it
+            Heard New Vocab / AI Word Intelligence
           </span>
           <span className="block text-sm text-[var(--color-text-muted)]">
-            Search any word or grammar • Get meaning, examples & JLPT level
+            Search any word or grammar • Get bilingual intelligence, usage, and save controls
           </span>
         </div>
-        <svg className="ml-auto h-5 w-5 text-amber-600 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="ml-auto h-5 w-5 text-blue-300 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </Link>

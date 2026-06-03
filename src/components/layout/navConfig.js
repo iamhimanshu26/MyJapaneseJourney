@@ -1,0 +1,14 @@
+export const NAV_ITEMS = [
+  { path: '/', label: 'Dashboard', icon: '🏠' },
+  { path: '/lookup', label: 'Heard New Vocab / AI Lookup', icon: '🤖' },
+  { path: '/discovered', label: 'My Discovered', icon: '🧠' },
+  { path: '/review-mode', label: 'Review Mode', icon: '🗂️' },
+  { path: '/dokkai-analyzer', label: 'Dokkai Analyzer', icon: '📘' },
+  { path: '/interview-coach', label: 'Interview Coach', icon: '💼' },
+  { path: '/grammar', label: 'Grammar', icon: '📝' },
+  { path: '/vocab', label: 'Vocabulary', icon: '📚' },
+  { path: '/kanji', label: 'Kanji', icon: '漢' },
+  { path: '/analytics', label: 'Analytics', icon: '📈' },
+  { path: '/learning-intelligence', label: 'Learning Intelligence', icon: '🎯' },
+  { path: '/settings', label: 'Settings', icon: '⚙️' },
+]

@@ -1,133 +1,40 @@
 import { useState } from 'react'
-import { Outlet, Link, useLocation } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-
-const navItems = [
-  { path: '/vocab', label: 'Vocabulary' },
-  { path: '/grammar', label: 'Grammar' },
-  { path: '/discovered', label: 'My Discovered' },
-  { path: '/any-idea', label: 'Any Idea!', highlight: true },
-]
+import { Outlet } from 'react-router-dom'
+import { Sidebar } from '../components/layout/Sidebar'
+import { Topbar } from '../components/layout/Topbar'
 
 export function MainLayout() {
-  const location = useLocation()
-  const { user, signOut, hasAuth } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const navLinkClass = (item) =>
-    location.pathname === item.path
-      ? 'bg-amber-100 text-amber-700'
-      : item.highlight
-        ? 'text-amber-700 hover:bg-amber-50'
-        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-slate-100'
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <a href="#main-content" className="skip-link">
-        Skip to main content
-      </a>
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-[var(--color-bg)]/95 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="text-xl font-semibold tracking-tight shrink-0">
-            MJJ Dashboard
-          </Link>
-
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${navLinkClass(item)}`}
-              >
-                {item.label}
-              </Link>
-            ))}
-            {hasAuth && (
-              user ? (
-                <button
-                  onClick={() => signOut()}
-                  className="px-3 py-2 rounded-lg text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-slate-100"
-                  aria-label="Sign out"
-                >
-                  Sign out
-                </button>
-              ) : (
-                <Link
-                  to="/login"
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-amber-700 hover:bg-amber-50"
-                >
-                  Log in
-                </Link>
-              )
-            )}
-          </nav>
-
-          {/* Mobile: hamburger */}
-          <div className="md:hidden flex items-center gap-2">
-            {hasAuth && user && (
-              <span className="text-sm text-[var(--color-text-muted)] truncate max-w-[100px]">
-                {user.email}
-              </span>
-            )}
-            <button
-              type="button"
-              onClick={() => setMobileOpen((o) => !o)}
-              className="p-2 rounded-lg hover:bg-slate-100"
-              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={mobileOpen}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {mobileOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+      <div className="flex min-h-screen">
+        <div className="hidden w-72 shrink-0 lg:block">
+          <Sidebar />
         </div>
 
-        {/* Mobile dropdown */}
-        {mobileOpen && (
-          <div className="md:hidden border-t border-slate-200 bg-[var(--color-bg)] py-2">
-            <nav className="px-4 flex flex-col gap-1" aria-label="Mobile navigation">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setMobileOpen(false)}
-                  className={`px-4 py-3 rounded-lg text-sm font-medium ${navLinkClass(item)}`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              {hasAuth && (
-                user ? (
-                  <button
-                    onClick={() => { signOut(); setMobileOpen(false) }}
-                    className="px-4 py-3 rounded-lg text-sm text-left text-[var(--color-text-muted)] hover:bg-slate-100"
-                  >
-                    Sign out
-                  </button>
-                ) : (
-                  <Link
-                    to="/login"
-                    onClick={() => setMobileOpen(false)}
-                    className="px-4 py-3 rounded-lg text-sm font-medium text-amber-700 hover:bg-amber-50"
-                  >
-                    Log in
-                  </Link>
-                )
-              )}
-            </nav>
+        {mobileOpen ? (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="absolute inset-0 bg-black/60"
+              aria-label="Close navigation menu"
+            />
+            <div className="relative z-10 h-full w-72">
+              <Sidebar onNavigate={() => setMobileOpen(false)} />
+            </div>
           </div>
-        )}
-      </header>
+        ) : null}
 
-      <main className="flex-1" id="main-content">
-        <Outlet />
-      </main>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Topbar onMenu={() => setMobileOpen((prev) => !prev)} />
+          <main className="flex-1 p-4 md:p-6 lg:p-8" id="main-content">
+            <Outlet />
+          </main>
+        </div>
+      </div>
     </div>
   )
 }
