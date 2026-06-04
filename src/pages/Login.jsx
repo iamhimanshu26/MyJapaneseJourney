@@ -120,7 +120,11 @@ export function Login() {
               >
                 <option value="student">Student</option>
                 <option value="employee">Employee</option>
+                <option value="admin">Admin</option>
               </select>
+              <p className="mt-1 text-xs text-slate-500">
+                Admin is reserved for existing admin IDs. New IDs cannot self-create as admin.
+              </p>
             </div>
 
             {error ? <p className="text-sm font-medium text-red-600">{error}</p> : null}
