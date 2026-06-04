@@ -6,9 +6,9 @@
   --color-bg-elevated: #f8fbff;
   --color-accent: #3b82f6;
   --color-accent-soft: #8b5cf6;
-  --color-text: #e2e8f0;
-  --color-text-muted: #94a3b8;
-  --color-border: rgba(148, 163, 184, 0.24);
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-border: rgba(100, 116, 139, 0.28);
   --font-sans: "DM Sans", system-ui, sans-serif;
   --font-jp: "Noto Sans JP", sans-serif;
 }
@@ -20,6 +20,14 @@
   --color-text: #e2e8f0;
   --color-text-muted: #94a3b8;
   --color-border: rgba(148, 163, 184, 0.3);
+}
+
+:root {
+  color-scheme: light;
+}
+
+:root.theme-dark {
+  color-scheme: dark;
 }
 
 @layer base {
@@ -72,4 +80,40 @@
   @apply rounded-2xl border p-5 shadow-[0_10px_26px_rgba(15,23,42,0.12)];
   border-color: var(--color-border);
   background: color-mix(in srgb, var(--color-bg-card) 92%, transparent);
+}
+
+/* Improve readability for pages still using dark utility classes in light mode. */
+:root:not(.theme-dark) .bg-slate-950,
+:root:not(.theme-dark) .bg-slate-950\/70,
+:root:not(.theme-dark) .bg-slate-950\/60,
+:root:not(.theme-dark) .bg-slate-900,
+:root:not(.theme-dark) .bg-slate-900\/80,
+:root:not(.theme-dark) .bg-slate-900\/75,
+:root:not(.theme-dark) .bg-slate-800,
+:root:not(.theme-dark) .bg-slate-800\/85,
+:root:not(.theme-dark) .bg-slate-800\/70,
+:root:not(.theme-dark) .bg-slate-700,
+:root:not(.theme-dark) .bg-slate-700\/80 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+:root:not(.theme-dark) .border-slate-900,
+:root:not(.theme-dark) .border-slate-800,
+:root:not(.theme-dark) .border-slate-700,
+:root:not(.theme-dark) .border-slate-600 {
+  border-color: rgba(100, 116, 139, 0.3) !important;
+}
+
+:root:not(.theme-dark) .text-slate-100,
+:root:not(.theme-dark) .text-slate-200 {
+  color: #0f172a !important;
+}
+
+:root:not(.theme-dark) .text-slate-300 {
+  color: #1e293b !important;
+}
+
+:root:not(.theme-dark) .text-slate-400,
+:root:not(.theme-dark) .text-slate-500 {
+  color: #475569 !important;
 }

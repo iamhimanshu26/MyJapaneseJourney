@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { PageMeta } from '../components/PageMeta'
 import { useDiscovered } from '../hooks/useDiscovered'
@@ -124,11 +123,7 @@ export function Dashboard() {
   return (
     <div className="mx-auto max-w-7xl">
       <PageMeta title="Dashboard" description="Your Japanese learning hub. Vocabulary, grammar, and AI-powered lookup." />
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
+      <div>
         <SectionHeader
           title={user
             ? (isJa ? `おかえりなさい、${user.loginId || '学習者'}さん` : `Welcome back, ${user.loginId || 'Learner'}`)
@@ -140,7 +135,7 @@ export function Dashboard() {
             <Link key="lookup" to="/lookup" className="rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white">
               {isJa ? 'AI検索を開始' : 'Start AI Lookup'}
             </Link>,
-            <Link key="review" to="/review-mode" className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-200">
+            <Link key="review" to="/review-mode" className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
               {isJa ? '復習モード' : 'Review Mode'}
             </Link>,
           ]}
@@ -160,7 +155,7 @@ export function Dashboard() {
         ) : (
           <div className="space-y-6">
             {intelligence?.demoWorkspace ? (
-              <div className="rounded-xl border border-amber-400/60 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+              <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 {intelligence.demoBanner || 'Using Demo Workspace – Sign In To Save Progress'}
               </div>
             ) : null}
@@ -182,22 +177,22 @@ export function Dashboard() {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-4">
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Weekly Progress</h3>
+              <div className="card-shell lg:col-span-2">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-600">Weekly Progress</h3>
                 {weekChart.length ? (
                   <div className="mt-4 h-72">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={weekChart}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                        <XAxis dataKey="day" stroke="#94a3b8" />
-                        <YAxis stroke="#94a3b8" />
-                        <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+                        <XAxis dataKey="day" stroke="#64748b" />
+                        <YAxis stroke="#64748b" />
+                        <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #cbd5e1' }} />
                         <Line type="monotone" dataKey="activity" stroke="#60a5fa" strokeWidth={2} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <p className="mt-4 text-sm text-slate-400">No activity trend yet. Start a lookup or review session.</p>
+                  <p className="mt-4 text-sm text-slate-500">No activity trend yet. Start a lookup or review session.</p>
                 )}
               </div>
               <div className="space-y-4 lg:col-span-2">
@@ -208,38 +203,38 @@ export function Dashboard() {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-3">
-              <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">{isJa ? '本日のAI学習プラン' : "Today's AI Study Plan"}</h3>
+              <section className="card-shell lg:col-span-2">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-600">{isJa ? '本日のAI学習プラン' : "Today's AI Study Plan"}</h3>
                 {studyPlan ? (
-                  <div className="mt-3 space-y-3 text-sm text-slate-200">
+                  <div className="mt-3 space-y-3 text-sm text-slate-700">
                     <p>
-                      <span className="font-medium text-slate-100">Review:</span>{' '}
+                      <span className="font-medium text-slate-900">Review:</span>{' '}
                       {(studyPlan.review || []).join(', ') || 'No review task'}
                     </p>
                     <p>
-                      <span className="font-medium text-slate-100">Learn:</span>{' '}
+                      <span className="font-medium text-slate-900">Learn:</span>{' '}
                       {(studyPlan.learn || []).join(', ') || 'No learning task'}
                     </p>
                     <p>
-                      <span className="font-medium text-slate-100">Practice:</span>{' '}
+                      <span className="font-medium text-slate-900">Practice:</span>{' '}
                       {(studyPlan.practice || []).join(', ') || 'No practice task'}
                     </p>
                     <p>
-                      <span className="font-medium text-slate-100">Estimated Time:</span>{' '}
+                      <span className="font-medium text-slate-900">Estimated Time:</span>{' '}
                       {studyPlan.estimatedMinutes || 25} minutes
                     </p>
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <Link to="/review-mode" className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:border-blue-400">
+                      <Link to="/review-mode" className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-400">
                         {isJa ? '復習を開始' : 'Start Review'}
                       </Link>
-                      <Link to="/dokkai-analyzer" className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:border-blue-400">
+                      <Link to="/dokkai-analyzer" className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-400">
                         {isJa ? '読解を開く' : 'Open Dokkai'}
                       </Link>
                       <button
                         type="button"
                         onClick={handleRegeneratePlan}
                         disabled={regeneratingPlan}
-                        className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:border-violet-400 disabled:opacity-60"
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-violet-400 disabled:opacity-60"
                       >
                         {regeneratingPlan ? (isJa ? '再生成中...' : 'Regenerating...') : (isJa ? 'プラン再生成' : 'Regenerate Plan')}
                       </button>
@@ -247,7 +242,7 @@ export function Dashboard() {
                         type="button"
                         onClick={handleCompletePlan}
                         disabled={completingPlan || studyPlan.status === 'completed'}
-                        className="rounded-lg border border-emerald-500/50 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-100 disabled:opacity-60"
+                        className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 disabled:opacity-60"
                       >
                         {studyPlan.status === 'completed'
                           ? (isJa ? '完了済み' : 'Completed')
@@ -256,21 +251,21 @@ export function Dashboard() {
                     </div>
                   </div>
                 ) : (
-                  <p className="mt-3 text-sm text-slate-400">{isJa ? 'まだプランがありません。再生成して作成してください。' : 'No plan generated yet. Use regenerate to create one.'}</p>
+                  <p className="mt-3 text-sm text-slate-500">{isJa ? 'まだプランがありません。再生成して作成してください。' : 'No plan generated yet. Use regenerate to create one.'}</p>
                 )}
               </section>
 
-              <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">{isJa ? 'AI推奨' : 'AI Recommendation'}</h3>
-                <p className="mt-3 text-sm text-slate-300">{recommendationText}</p>
-                <ul className="mt-3 space-y-2 text-sm text-slate-300">
+              <section className="card-shell">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-600">{isJa ? 'AI推奨' : 'AI Recommendation'}</h3>
+                <p className="mt-3 text-sm text-slate-700">{recommendationText}</p>
+                <ul className="mt-3 space-y-2 text-sm text-slate-700">
                   {(intelligence?.recommendations || []).slice(0, 3).map((entry) => {
                     const label = typeof entry === 'string' ? entry : entry.label
                     const action = typeof entry === 'string' ? null : entry.action
                     return (
                       <li key={label}>
                         {action ? (
-                          <Link to={action} className="text-blue-300 hover:underline">{label}</Link>
+                          <Link to={action} className="text-blue-600 hover:underline">{label}</Link>
                         ) : label}
                       </li>
                     )
@@ -284,22 +279,22 @@ export function Dashboard() {
               />
             </div>
 
-            <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">{isJa ? 'アクティビティフィード' : 'Activity Feed'}</h3>
+            <section className="card-shell">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-600">{isJa ? 'アクティビティフィード' : 'Activity Feed'}</h3>
               <div className="mt-3 space-y-3">
                 {(intelligence?.activityFeed || []).slice(0, 8).map((event, idx) => (
-                  <div key={`${event.title}-${event.occurred_at}-${idx}`} className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
-                    <p className="text-sm font-medium text-slate-100">{event.title || event.activity_type}</p>
-                    <p className="text-xs text-slate-400">{event.description || 'Learning activity recorded'}</p>
+                  <div key={`${event.title}-${event.occurred_at}-${idx}`} className="rounded-lg border border-slate-200 bg-white p-3">
+                    <p className="text-sm font-medium text-slate-900">{event.title || event.activity_type}</p>
+                    <p className="text-xs text-slate-600">{event.description || 'Learning activity recorded'}</p>
                     <p className="mt-1 text-[11px] text-slate-500">
                       {event.occurred_at ? new Date(event.occurred_at).toLocaleString() : ''}
                     </p>
                   </div>
                 ))}
-                {!intelligence?.activityFeed?.length ? <p className="text-sm text-slate-400">{isJa ? '最近の学習アクティビティがありません。' : 'No recent timeline activity.'}</p> : null}
+                {!intelligence?.activityFeed?.length ? <p className="text-sm text-slate-500">{isJa ? '最近の学習アクティビティがありません。' : 'No recent timeline activity.'}</p> : null}
               </div>
               <div className="mt-3">
-                <Link to="/learning-timeline" className="text-xs text-blue-300 hover:underline">{isJa ? '学習タイムラインを開く' : 'Open full learning timeline'}</Link>
+                <Link to="/learning-timeline" className="text-xs text-blue-600 hover:underline">{isJa ? '学習タイムラインを開く' : 'Open full learning timeline'}</Link>
               </div>
             </section>
 
@@ -319,11 +314,11 @@ export function Dashboard() {
                 <Link
                   key={card.path}
                   to={card.path}
-                  className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 transition hover:border-blue-400/50 hover:bg-slate-900"
+                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(15,23,42,0.06)] transition hover:border-blue-400/50"
                 >
                   <span className="text-xl" aria-hidden>{card.icon}</span>
-                  <h3 className="mt-2 text-base font-semibold text-slate-100">{card.title}</h3>
-                  <p className="mt-1 text-sm text-slate-400">{card.desc}</p>
+                  <h3 className="mt-2 text-base font-semibold text-slate-900">{card.title}</h3>
+                  <p className="mt-1 text-sm text-slate-600">{card.desc}</p>
                 </Link>
               ))}
             </div>
@@ -331,14 +326,14 @@ export function Dashboard() {
               <button
                 type="button"
                 onClick={() => setShowAllModules((prev) => !prev)}
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:border-blue-400"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-400"
               >
                 {showAllModules ? (isJa ? '簡易表示に戻す' : 'Show fewer modules') : (isJa ? 'すべて表示' : 'Show all modules')}
               </button>
             </div>
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   )
 }
