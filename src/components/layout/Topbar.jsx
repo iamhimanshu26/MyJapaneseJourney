@@ -102,20 +102,16 @@ export function Topbar({ onMenu }) {
             type="button"
             onClick={toggleLanguage}
             aria-label="Toggle language"
-            className={isDark
-              ? 'relative flex h-8 w-[118px] items-center rounded-full border border-slate-600 bg-slate-800 px-2 shadow-[0_4px_14px_rgba(2,6,23,0.3)]'
-              : 'relative flex h-8 w-[118px] items-center rounded-full border border-slate-300 bg-slate-50 px-2 shadow-[0_4px_14px_rgba(15,23,42,0.12)]'}
+            className="relative flex h-10 w-[138px] items-center rounded-full border border-slate-200 bg-white px-3 shadow-[0_8px_20px_rgba(15,23,42,0.14)]"
           >
-            <span className={`z-10 text-[11px] font-semibold transition-colors ${language === 'en' ? 'text-emerald-600' : 'text-slate-400'}`}>
+            <span className={`z-10 text-[13px] font-semibold transition-colors ${language === 'en' ? 'text-emerald-500' : 'text-slate-400'}`}>
               EN
             </span>
             <span
               aria-hidden
-              className={`absolute top-1/2 h-[18px] w-[18px] -translate-y-1/2 rounded-full bg-emerald-500 shadow-sm transition-all ${
-                language === 'en' ? 'left-[41px]' : 'left-[69px]'
-              }`}
+              className="absolute left-1/2 top-1/2 h-[20px] w-[20px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400 shadow-sm"
             />
-            <span className={`ml-auto z-10 text-[11px] font-semibold transition-colors ${language === 'ja' ? (isDark ? 'text-slate-100' : 'text-slate-700') : 'text-slate-400'}`}>
+            <span className={`ml-auto z-10 text-sm font-semibold transition-colors ${language === 'ja' ? 'text-emerald-500' : 'text-slate-700'}`}>
               日本語
             </span>
           </button>
@@ -125,11 +121,13 @@ export function Topbar({ onMenu }) {
             <button
               type="button"
               onClick={() => signOut()}
+              title={t.signOut}
+              aria-label={t.signOut}
               className={isDark
-                ? 'rounded-lg border border-slate-600 bg-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-100 hover:border-slate-400'
-                : 'rounded-lg border border-slate-300 bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-800 hover:border-slate-400'}
+                ? 'rounded-xl border border-slate-600 bg-slate-700 px-3 py-1.5 text-base text-slate-100 hover:border-slate-400'
+                : 'rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-base text-slate-800 hover:border-slate-400'}
             >
-              {t.signOut}
+              🚪
             </button>
           ) : null}
         </div>
