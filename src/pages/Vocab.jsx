@@ -134,6 +134,7 @@ export function Vocab() {
 
   const kanjiItems = useMemo(() => {
     if (!selectedLevel) return []
+    void refreshKey
     const seedKanji = (VOCAB_BY_LEVEL[selectedLevel] || [])
       .filter((v) => isSingleKanji(v.word))
       .map((v) => ({ char: v.word, reading: v.reading, meaning: v.meaning, level: v.level }))
@@ -179,7 +180,9 @@ export function Vocab() {
           done++
         }
         await new Promise((r) => setTimeout(r, 500))
-      } catch (_) {}
+      } catch {
+        // Ignore failed enrichment for individual kanji and continue batch.
+      }
     }
     setEnriching(false)
     if (done > 0) setRefreshKey((k) => k + 1)

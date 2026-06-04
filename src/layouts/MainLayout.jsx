@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from '../components/layout/Sidebar'
 import { Topbar } from '../components/layout/Topbar'
-import { useUiPreferences } from '../context/UiPreferencesContext'
+import { useUiPreferences } from '../hooks/useUiPreferences'
 
 export function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)

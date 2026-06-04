@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { useUiPreferences } from '../../context/UiPreferencesContext'
+import { useUiPreferences } from '../../hooks/useUiPreferences'
 
 const COPY = {
   en: {

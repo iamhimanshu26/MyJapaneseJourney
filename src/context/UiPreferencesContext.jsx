@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from './AuthContext'
-
-const UiPreferencesContext = createContext(null)
+import { UiPreferencesContext } from './uiPreferencesContextValue'
 
 const UI_THEME_KEY = 'mjj-ui-theme'
 const UI_LANG_KEY = 'mjj-ui-language'
@@ -50,14 +49,16 @@ export function UiPreferencesProvider({ children }) {
     if (!profile) return
     const nextTheme = normalizeTheme(profile.ui_theme || theme)
     const nextLanguage = normalizeLanguage(profile.ui_language || language)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeState(nextTheme)
     setLanguageState(nextLanguage)
     writeStorage(UI_THEME_KEY, nextTheme)
     writeStorage(UI_LANG_KEY, nextLanguage)
-  }, [profile])
+  }, [profile, theme, language])
 
   useEffect(() => {
     const nextResolved = getResolvedTheme(theme)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResolvedTheme(nextResolved)
     if (typeof document !== 'undefined') {
       document.documentElement.dataset.theme = nextResolved
@@ -93,17 +94,4 @@ export function UiPreferencesProvider({ children }) {
   }), [theme, resolvedTheme, language])
 
   return <UiPreferencesContext.Provider value={value}>{children}</UiPreferencesContext.Provider>
-}
-
-export function useUiPreferences() {
-  const ctx = useContext(UiPreferencesContext)
-  if (ctx) return ctx
-  return {
-    theme: 'system',
-    resolvedTheme: 'light',
-    language: 'en',
-    setTheme: () => {},
-    setLanguage: () => {},
-    isJapanese: false,
-  }
 }

@@ -463,9 +463,10 @@ async function buildKnowledgeGraph(userId) {
 
 function buildFallbackCopilot({ question, role, profile, intelligence }) {
   const focus = intelligence?.weakAreas?.slice(0, 3) || ['Grammar consistency', 'Reading speed', 'Weak vocabulary recall']
+  const shortQuestion = String(question || '').trim().slice(0, 80)
   return {
     fallback_used: true,
-    answer: `Based on your current profile (${profile?.current_level || 'N5'} to ${profile?.target_level || 'N3'}), focus this week on ${focus.join(', ')}.`,
+    answer: `Based on your question "${shortQuestion || 'today\'s study focus'}" and profile (${profile?.current_level || 'N5'} to ${profile?.target_level || 'N3'}), focus this week on ${focus.join(', ')}.`,
     recommendations: [
       { title: 'Run Review Mode', detail: 'Clear weak backlog with 10-15 cards.', action: '/review-mode' },
       { title: role === 'employee' ? 'Practice Interview Coach' : 'Practice Dokkai Analyzer', detail: 'Do one focused practice session today.', action: role === 'employee' ? '/interview-coach' : '/dokkai-analyzer' },

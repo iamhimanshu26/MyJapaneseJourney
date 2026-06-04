@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { NAV_ITEMS } from './navConfig'
-import { useUiPreferences } from '../../context/UiPreferencesContext'
+import { useUiPreferences } from '../../hooks/useUiPreferences'
 
 const JA_LABELS = {
   Dashboard: 'ダッシュボード',

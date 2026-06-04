@@ -5,7 +5,7 @@ import { SectionHeader } from '../components/shared/SectionHeader'
 import { useDiscovered } from '../hooks/useDiscovered'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
-import { useUiPreferences } from '../context/UiPreferencesContext'
+import { useUiPreferences } from '../hooks/useUiPreferences'
 
 export function Settings() {
   const { importLocalToNeon, identity } = useDiscovered()
