@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { LogOut } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useUiPreferences } from '../../hooks/useUiPreferences'
 import { ActionButton } from '../ui/ActionButton'
 import { SearchInput } from '../ui/SearchInput'
-import { ToggleSwitch } from '../ui/ToggleSwitch'
+import { cn } from '../../lib/cn'
 
 const COPY = {
   en: {
@@ -36,6 +37,10 @@ export function Topbar({ onMenu }) {
   const isDark = resolvedTheme === 'dark'
 
   const t = useMemo(() => COPY[language] || COPY.en, [language])
+  const languageOptions = [
+    { code: 'en', label: 'EN' },
+    { code: 'ja', label: '日本語' },
+  ]
 
   function onSearchSubmit(e) {
     e.preventDefault()
@@ -44,6 +49,11 @@ export function Topbar({ onMenu }) {
     navigate(`/lookup?q=${encodeURIComponent(query)}`)
     setSearch('')
     setMobileSearchOpen(false)
+  }
+
+  async function onSignOut() {
+    await signOut()
+    navigate('/login')
   }
 
   return (
@@ -92,16 +102,31 @@ export function Topbar({ onMenu }) {
             {t.searchButton}
           </ActionButton>
 
-          <div className="hidden sm:block">
-            <ToggleSwitch
-              ariaLabel="Language selector"
-              options={[
-                { label: 'EN', value: 'en' },
-                { label: '日本語', value: 'ja' },
-              ]}
-              value={language}
-              onChange={setLanguage}
-            />
+          <div
+            className={cn(
+              'hidden sm:flex items-center rounded-full border p-0.5 text-xs font-semibold',
+              isDark
+                ? 'border-slate-700 bg-slate-900'
+                : 'border-slate-200 bg-slate-100',
+            )}
+            role="group"
+            aria-label="Language"
+          >
+            {languageOptions.map(({ code, label }) => (
+              <button
+                key={code}
+                type="button"
+                onClick={() => setLanguage(code)}
+                className={cn(
+                  'rounded-full px-2.5 py-1 transition-colors',
+                  language === code
+                    ? 'bg-white text-indigo-700 shadow-sm dark:bg-slate-800 dark:text-indigo-300'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100',
+                )}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
           <ActionButton
@@ -116,19 +141,15 @@ export function Topbar({ onMenu }) {
             {user?.loginId || t.guest}
           </span>
           {hasAuth && user ? (
-            <ActionButton
+            <button
               type="button"
-              onClick={() => signOut()}
-              icon={(
-                <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth="2.2" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 8.25V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25v-3" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H9m0 0l3-3m-3 3l3 3" />
-                </svg>
-              )}
-              className={isDark ? 'border-slate-600 bg-slate-700 text-slate-100 hover:bg-slate-600' : ''}
+              onClick={onSignOut}
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-rose-600 dark:hover:bg-slate-900 dark:hover:text-rose-400"
+              title={t.signOut}
+              aria-label={t.signOut}
             >
-              {t.signOut}
-            </ActionButton>
+              <LogOut className="h-4 w-4" />
+            </button>
           ) : null}
         </div>
       </div>
