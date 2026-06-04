@@ -6,6 +6,7 @@ import { PageMeta } from '../components/PageMeta'
 import { useDiscovered } from '../hooks/useDiscovered'
 import { useAuth } from '../context/AuthContext'
 import { apiRequest } from '../lib/apiClient'
+import { useUiPreferences } from '../context/UiPreferencesContext'
 import { SectionHeader } from '../components/shared/SectionHeader'
 import { LoadingState } from '../components/shared/LoadingState'
 import { EmptyState } from '../components/shared/EmptyState'
@@ -16,6 +17,8 @@ import { RecommendationCard } from '../components/dashboard/RecommendationCard'
 export function Dashboard() {
   const { items, identity } = useDiscovered()
   const { user, profile, hasAuth } = useAuth()
+  const { language } = useUiPreferences()
+  const isJa = language === 'ja'
   const [analytics, setAnalytics] = useState(null)
   const [intelligence, setIntelligence] = useState(null)
   const [studyPlan, setStudyPlan] = useState(null)
@@ -23,6 +26,7 @@ export function Dashboard() {
   const [error, setError] = useState('')
   const [regeneratingPlan, setRegeneratingPlan] = useState(false)
   const [completingPlan, setCompletingPlan] = useState(false)
+  const [showAllModules, setShowAllModules] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -126,22 +130,26 @@ export function Dashboard() {
         transition={{ duration: 0.4 }}
       >
         <SectionHeader
-          title={user ? `Welcome back, ${user.loginId || 'Learner'}` : 'Welcome to Kotoba Seven'}
-          subtitle="AI-powered Japanese Learning Intelligence Dashboard for JLPT/NAT readiness."
+          title={user
+            ? (isJa ? `おかえりなさい、${user.loginId || '学習者'}さん` : `Welcome back, ${user.loginId || 'Learner'}`)
+            : (isJa ? 'Kotoba Seven へようこそ' : 'Welcome to Kotoba Seven')}
+          subtitle={isJa
+            ? 'JLPT / NAT 対策のためのAI学習インテリジェンスダッシュボード。'
+            : 'AI-powered Japanese Learning Intelligence Dashboard for JLPT/NAT readiness.'}
           actions={[
             <Link key="lookup" to="/lookup" className="rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white">
-              Start AI Lookup
+              {isJa ? 'AI検索を開始' : 'Start AI Lookup'}
             </Link>,
             <Link key="review" to="/review-mode" className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-semibold text-slate-200">
-              Review Mode
+              {isJa ? '復習モード' : 'Review Mode'}
             </Link>,
           ]}
         />
 
         {hasAuth && !user && (
           <p className="mb-4 text-sm text-slate-400">
-            <Link to="/login" className="font-medium text-blue-400 hover:underline">Log in</Link>
-            {' '}with your ID/password to sync your progress from Neon.
+            <Link to="/login" className="font-medium text-blue-400 hover:underline">{isJa ? 'ログイン' : 'Log in'}</Link>
+            {isJa ? 'してNeonの学習データを同期します。' : ' with your ID/password to sync your progress from Neon.'}
           </p>
         )}
 
@@ -201,7 +209,7 @@ export function Dashboard() {
 
             <div className="grid gap-4 lg:grid-cols-3">
               <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Today's AI Study Plan</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">{isJa ? '本日のAI学習プラン' : "Today's AI Study Plan"}</h3>
                 {studyPlan ? (
                   <div className="mt-3 space-y-3 text-sm text-slate-200">
                     <p>
@@ -222,10 +230,10 @@ export function Dashboard() {
                     </p>
                     <div className="flex flex-wrap gap-2 pt-1">
                       <Link to="/review-mode" className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:border-blue-400">
-                        Start Review
+                        {isJa ? '復習を開始' : 'Start Review'}
                       </Link>
                       <Link to="/dokkai-analyzer" className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:border-blue-400">
-                        Open Dokkai
+                        {isJa ? '読解を開く' : 'Open Dokkai'}
                       </Link>
                       <button
                         type="button"
@@ -233,7 +241,7 @@ export function Dashboard() {
                         disabled={regeneratingPlan}
                         className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:border-violet-400 disabled:opacity-60"
                       >
-                        {regeneratingPlan ? 'Regenerating...' : 'Regenerate Plan'}
+                        {regeneratingPlan ? (isJa ? '再生成中...' : 'Regenerating...') : (isJa ? 'プラン再生成' : 'Regenerate Plan')}
                       </button>
                       <button
                         type="button"
@@ -241,17 +249,19 @@ export function Dashboard() {
                         disabled={completingPlan || studyPlan.status === 'completed'}
                         className="rounded-lg border border-emerald-500/50 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-100 disabled:opacity-60"
                       >
-                        {studyPlan.status === 'completed' ? 'Completed' : completingPlan ? 'Saving...' : 'Mark Completed'}
+                        {studyPlan.status === 'completed'
+                          ? (isJa ? '完了済み' : 'Completed')
+                          : completingPlan ? (isJa ? '保存中...' : 'Saving...') : (isJa ? '完了として記録' : 'Mark Completed')}
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <p className="mt-3 text-sm text-slate-400">No plan generated yet. Use regenerate to create one.</p>
+                  <p className="mt-3 text-sm text-slate-400">{isJa ? 'まだプランがありません。再生成して作成してください。' : 'No plan generated yet. Use regenerate to create one.'}</p>
                 )}
               </section>
 
               <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">AI Recommendation</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">{isJa ? 'AI推奨' : 'AI Recommendation'}</h3>
                 <p className="mt-3 text-sm text-slate-300">{recommendationText}</p>
                 <ul className="mt-3 space-y-2 text-sm text-slate-300">
                   {(intelligence?.recommendations || []).slice(0, 3).map((entry) => {
@@ -275,7 +285,7 @@ export function Dashboard() {
             </div>
 
             <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Activity Feed</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">{isJa ? 'アクティビティフィード' : 'Activity Feed'}</h3>
               <div className="mt-3 space-y-3">
                 {(intelligence?.activityFeed || []).slice(0, 8).map((event, idx) => (
                   <div key={`${event.title}-${event.occurred_at}-${idx}`} className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
@@ -286,10 +296,10 @@ export function Dashboard() {
                     </p>
                   </div>
                 ))}
-                {!intelligence?.activityFeed?.length ? <p className="text-sm text-slate-400">No recent timeline activity.</p> : null}
+                {!intelligence?.activityFeed?.length ? <p className="text-sm text-slate-400">{isJa ? '最近の学習アクティビティがありません。' : 'No recent timeline activity.'}</p> : null}
               </div>
               <div className="mt-3">
-                <Link to="/learning-timeline" className="text-xs text-blue-300 hover:underline">Open full learning timeline</Link>
+                <Link to="/learning-timeline" className="text-xs text-blue-300 hover:underline">{isJa ? '学習タイムラインを開く' : 'Open full learning timeline'}</Link>
               </div>
             </section>
 
@@ -305,7 +315,7 @@ export function Dashboard() {
                 { title: 'Learning Timeline', desc: 'Chronological feed of your learning activity', path: '/learning-timeline', icon: '🕒' },
                 { title: 'Knowledge Graph', desc: 'Visual relationships across words, kanji, and grammar', path: '/knowledge-graph', icon: '🕸️' },
                 { title: 'Kotoba Sensei', desc: 'AI copilot for personalized daily guidance', path: '/kotoba-sensei', icon: '🧠' },
-              ].map((card) => (
+              ].slice(0, showAllModules ? 10 : 6).map((card) => (
                 <Link
                   key={card.path}
                   to={card.path}
@@ -316,6 +326,15 @@ export function Dashboard() {
                   <p className="mt-1 text-sm text-slate-400">{card.desc}</p>
                 </Link>
               ))}
+            </div>
+            <div className="mt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowAllModules((prev) => !prev)}
+                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:border-blue-400"
+              >
+                {showAllModules ? (isJa ? '簡易表示に戻す' : 'Show fewer modules') : (isJa ? 'すべて表示' : 'Show all modules')}
+              </button>
             </div>
           </div>
         )}

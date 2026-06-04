@@ -99,6 +99,7 @@ function fallbackRemove(id) {
 
 export function useDiscovered() {
   const { user } = useAuth()
+  const isGuest = !user || user.isGuest
   const identity = useMemo(() => getUserIdentity(user), [user])
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -121,11 +122,12 @@ export function useDiscovered() {
       setItems(data.items || [])
     } catch (err) {
       setError(err.message || 'Failed to load discovered items')
-      setItems(fallbackLoad())
+      if (isGuest) setItems(fallbackLoad())
+      else setItems([])
     } finally {
       setLoading(false)
     }
-  }, [identity])
+  }, [identity, isGuest])
 
   useEffect(() => {
     refresh()
@@ -145,18 +147,20 @@ export function useDiscovered() {
       }
       return created
     } catch (error) {
-      const local = fallbackSave(payload)
-      setItems((prev) => [{
-        id: local.id,
-        ...payload,
-        created_at: local.saved_at,
-        updated_at: local.saved_at,
-        review_count: 0,
-        last_reviewed_at: null,
-      }, ...prev])
+      if (isGuest) {
+        const local = fallbackSave(payload)
+        setItems((prev) => [{
+          id: local.id,
+          ...payload,
+          created_at: local.saved_at,
+          updated_at: local.saved_at,
+          review_count: 0,
+          last_reviewed_at: null,
+        }, ...prev])
+      }
       throw error
     }
-  }, [identity])
+  }, [identity, isGuest])
 
   const remove = useCallback(async (id) => {
     try {
@@ -165,10 +169,10 @@ export function useDiscovered() {
         identity,
       })
     } catch {
-      fallbackRemove(id)
+      if (isGuest) fallbackRemove(id)
     }
     setItems((prev) => prev.filter((item) => item.id !== id))
-  }, [identity])
+  }, [identity, isGuest])
 
   const update = useCallback(async (id, patch) => {
     try {
@@ -180,10 +184,10 @@ export function useDiscovered() {
       setItems((prev) => prev.map((item) => (item.id === id ? data.item : item)))
       return data.item
     } catch (error) {
-      setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)))
+      if (isGuest) setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)))
       throw error
     }
-  }, [identity])
+  }, [identity, isGuest])
 
   const checkSaved = useCallback((item) => {
     const payload = toPayload(item)

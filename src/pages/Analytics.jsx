@@ -161,13 +161,27 @@ export function Analytics() {
               </div>
               <div className="card-shell">
                 <h3 className="text-sm font-semibold text-slate-200">Monthly Reports</h3>
+                <div className="mt-4 h-44">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data.monthlyReports || []}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <XAxis dataKey="month" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" />
+                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
+                      <Line type="monotone" dataKey="readiness" stroke="#60a5fa" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
                 <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                  {(data.monthlyReports || []).map((report) => (
+                  {(data.monthlyReports || []).slice(-3).reverse().map((report) => (
                     <li key={report.month} className="rounded-lg border border-slate-700 bg-slate-950/70 p-3">
-                      <p className="font-medium text-slate-100">{report.month}</p>
-                      <p className="text-xs text-slate-400">
-                        Mastered: {report.mastered} • New: {report.newItems} • Reviewed: {report.reviewed} • Readiness: {report.readiness}%
+                      <p className="font-medium text-slate-100">
+                        {report.month} • {report.momentum}
                       </p>
+                      <p className="text-xs text-slate-400">
+                        Mastered: {report.mastered} • New: {report.newItems} • Reviewed: {report.reviewed} • AI: {report.aiLookups} • Readiness: {report.readiness}% ({report.readinessDelta >= 0 ? '+' : ''}{report.readinessDelta})
+                      </p>
+                      <p className="mt-1 text-[11px] text-slate-500">{report.narrative}</p>
                     </li>
                   ))}
                 </ul>

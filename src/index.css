@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #020617;
-  --color-bg-card: #0f172a;
-  --color-bg-elevated: #111827;
+  --color-bg: #e6edf8;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #f8fbff;
   --color-accent: #3b82f6;
   --color-accent-soft: #8b5cf6;
   --color-text: #e2e8f0;
@@ -11,6 +11,15 @@
   --color-border: rgba(148, 163, 184, 0.24);
   --font-sans: "DM Sans", system-ui, sans-serif;
   --font-jp: "Noto Sans JP", sans-serif;
+}
+
+:root.theme-dark {
+  --color-bg: #020617;
+  --color-bg-card: #0f172a;
+  --color-bg-elevated: #111827;
+  --color-text: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-border: rgba(148, 163, 184, 0.3);
 }
 
 @layer base {
@@ -60,5 +69,7 @@
 }
 
 .card-shell {
-  @apply rounded-2xl border border-slate-700/80 bg-slate-900/75 p-5 shadow-[0_12px_30px_rgba(2,6,23,0.25)];
+  @apply rounded-2xl border p-5 shadow-[0_10px_26px_rgba(15,23,42,0.12)];
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-bg-card) 92%, transparent);
 }

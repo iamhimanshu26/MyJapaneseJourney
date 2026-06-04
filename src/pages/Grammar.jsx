@@ -30,7 +30,7 @@ export function Grammar() {
   }, [selectedLevel])
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="mx-auto max-w-6xl">
       <PageMeta title="Grammar" description="Learn JLPT grammar patterns and explanations. N5 to N1." />
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -43,7 +43,7 @@ export function Grammar() {
 
         <HeardNewVocabCta compact />
 
-        <div className="flex flex-wrap gap-3 mb-6">
+        <div className="mb-6 flex flex-wrap gap-3">
           {LEVELS.map((level, i) => (
             <motion.button
               key={level}
@@ -51,10 +51,10 @@ export function Grammar() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 + i * 0.03 }}
               onClick={() => setSelectedLevel(level)}
-              className={`px-5 py-2.5 rounded-xl border font-medium transition-colors shadow-sm ${
+              className={`rounded-xl border px-5 py-2.5 font-medium transition-colors ${
                 selectedLevel === level
-                  ? 'border-amber-400 bg-amber-50 text-amber-800'
-                  : 'border-slate-200 bg-[var(--color-bg-card)] hover:border-amber-300 hover:bg-amber-50'
+                  ? 'border-blue-400 bg-blue-500/15 text-blue-100'
+                  : 'border-slate-700 bg-slate-900/80 text-slate-200 hover:border-blue-400'
               }`}
             >
               {level}
@@ -70,16 +70,16 @@ export function Grammar() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="rounded-xl border border-slate-200 bg-[var(--color-bg-card)] p-5 shadow-sm"
+                className="card-shell"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg font-bold" style={{ fontFamily: 'var(--font-jp)' }}>{g.name}</span>
-                  <span className="px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-xs font-medium">
+                  <span className="text-lg font-bold text-slate-100" style={{ fontFamily: 'var(--font-jp)' }}>{g.name}</span>
+                  <span className="rounded bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-200">
                     {g.level}
                   </span>
                 </div>
-                <p className="text-sm text-[var(--color-text-muted)] font-mono mb-2">{g.structure}</p>
-                <p className="text-[var(--color-text)] mb-2">{g.meaning}</p>
+                <p className="mb-2 font-mono text-sm text-slate-400">{g.structure}</p>
+                <p className="mb-2 text-slate-200">{g.meaning}</p>
                 <p className="text-sm examples-with-furigana" style={{ fontFamily: 'var(--font-jp)' }}>
                   <FuriganaText text={g.example} />
                 </p>

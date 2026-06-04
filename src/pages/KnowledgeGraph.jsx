@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Sankey, Tooltip, ResponsiveContainer } from 'recharts'
 import { PageMeta } from '../components/PageMeta'
 import { SectionHeader } from '../components/shared/SectionHeader'
 import { LoadingState } from '../components/shared/LoadingState'
@@ -9,32 +8,70 @@ import { useDiscovered } from '../hooks/useDiscovered'
 import { apiRequest } from '../lib/apiClient'
 import { useToast } from '../context/ToastContext'
 
-function buildSankeyData(graph) {
-  const nodeIndex = new Map()
-  const nodes = []
-  for (const node of graph.nodes || []) {
-    nodeIndex.set(node.id, nodes.length)
-    nodes.push({ name: node.label || node.id })
+const NODE_COLORS = {
+  business: '#60a5fa',
+  technology: '#a78bfa',
+  'daily-life': '#34d399',
+  'grammar-patterns': '#fbbf24',
+  'kanji-core': '#fb7185',
+  related: '#22d3ee',
+  general: '#94a3b8',
+}
+
+function buildNodeLinkLayout(graph) {
+  const nodes = Array.isArray(graph?.nodes) ? graph.nodes : []
+  const edges = Array.isArray(graph?.edges) ? graph.edges : []
+  if (!nodes.length) return { nodes: [], links: [], groups: [] }
+
+  const grouped = new Map()
+  for (const node of nodes) {
+    const group = String(node.group || 'general')
+    if (!grouped.has(group)) grouped.set(group, [])
+    grouped.get(group).push(node)
   }
 
-  const links = []
-  for (const edge of graph.edges || []) {
-    const source = nodeIndex.get(edge.source)
-    const target = nodeIndex.get(edge.target)
-    if (source == null || target == null) continue
-    links.push({
-      source,
-      target,
-      value: Number(edge.weight || 1),
+  const groups = [...grouped.keys()]
+  const groupGap = groups.length > 1 ? 860 / (groups.length - 1) : 0
+  const nodeMap = new Map()
+  const positionedNodes = []
+
+  groups.forEach((group, groupIdx) => {
+    const groupNodes = grouped.get(group) || []
+    const rowGap = groupNodes.length > 1 ? 360 / (groupNodes.length - 1) : 0
+    groupNodes.forEach((node, rowIdx) => {
+      const positioned = {
+        ...node,
+        x: 60 + (groupIdx * groupGap),
+        y: 50 + (rowIdx * rowGap),
+        color: NODE_COLORS[group] || NODE_COLORS.general,
+      }
+      positionedNodes.push(positioned)
+      nodeMap.set(node.id, positioned)
     })
-  }
-  return { nodes, links }
+  })
+
+  const links = edges
+    .map((edge) => {
+      const source = nodeMap.get(edge.source)
+      const target = nodeMap.get(edge.target)
+      if (!source || !target) return null
+      return {
+        ...edge,
+        source,
+        target,
+        weight: Number(edge.weight || 1),
+      }
+    })
+    .filter(Boolean)
+
+  return { nodes: positionedNodes, links, groups }
 }
 
 export function KnowledgeGraph() {
   const { identity } = useDiscovered()
   const toast = useToast()
   const [graph, setGraph] = useState({ nodes: [], edges: [] })
+  const [activeNodeId, setActiveNodeId] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [sourceTerm, setSourceTerm] = useState('')
@@ -61,7 +98,13 @@ export function KnowledgeGraph() {
     }
   }, [identity])
 
-  const sankeyData = useMemo(() => buildSankeyData(graph), [graph])
+  const nodeLinkData = useMemo(() => buildNodeLinkLayout(graph), [graph])
+  const activeNode = nodeLinkData.nodes.find((node) => node.id === activeNodeId) || null
+
+  const visibleLinks = useMemo(() => {
+    if (!activeNodeId) return nodeLinkData.links
+    return nodeLinkData.links.filter((link) => link.source.id === activeNodeId || link.target.id === activeNodeId)
+  }, [nodeLinkData.links, activeNodeId])
 
   async function handleAddRelation(e) {
     e.preventDefault()
@@ -130,19 +173,78 @@ export function KnowledgeGraph() {
 
         {loading ? <LoadingState title="Building graph..." subtitle="Linking your discovered terms." /> : null}
         {!loading && error ? <EmptyState title="Knowledge graph unavailable" message={error} /> : null}
-        {!loading && !error && !sankeyData.links.length ? (
+        {!loading && !error && !nodeLinkData.links.length ? (
           <EmptyState title="No graph links yet" message="Save more items or add term relations to start visualizing your knowledge graph." />
         ) : null}
 
-        {!loading && !error && sankeyData.links.length ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
-            <div className="h-[460px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <Sankey data={sankeyData} nodePadding={18} margin={{ left: 12, right: 12, top: 12, bottom: 12 }}>
-                  <Tooltip />
-                </Sankey>
-              </ResponsiveContainer>
+        {!loading && !error && nodeLinkData.links.length ? (
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
+              {nodeLinkData.groups.map((group) => (
+                <span key={group} className="rounded-full border border-slate-700 bg-slate-950/70 px-2 py-1">
+                  <span
+                    className="mr-1 inline-block h-2 w-2 rounded-full"
+                    style={{ backgroundColor: NODE_COLORS[group] || NODE_COLORS.general }}
+                  />
+                  {group}
+                </span>
+              ))}
+              {activeNode ? (
+                <button
+                  type="button"
+                  className="ml-auto rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-slate-300 hover:border-blue-400"
+                  onClick={() => setActiveNodeId('')}
+                >
+                  Clear focus
+                </button>
+              ) : null}
             </div>
+            <div className="overflow-x-auto">
+              <svg viewBox="0 0 980 460" className="h-[460px] min-w-[980px] w-full rounded-xl bg-slate-950/60">
+                {visibleLinks.map((link, idx) => (
+                  <line
+                    key={`${link.source.id}-${link.target.id}-${idx}`}
+                    x1={link.source.x}
+                    y1={link.source.y}
+                    x2={link.target.x}
+                    y2={link.target.y}
+                    stroke={activeNodeId ? '#60a5fa' : '#475569'}
+                    strokeOpacity={activeNodeId ? 0.65 : 0.45}
+                    strokeWidth={Math.max(1, Math.min(4, link.weight + 0.5))}
+                  />
+                ))}
+                {nodeLinkData.nodes.map((node) => {
+                  const focused = !activeNodeId || node.id === activeNodeId
+                  return (
+                    <g key={node.id} onClick={() => setActiveNodeId(node.id)} style={{ cursor: 'pointer' }}>
+                      <circle
+                        cx={node.x}
+                        cy={node.y}
+                        r={focused ? 10 : 7}
+                        fill={node.color}
+                        opacity={focused ? 1 : 0.55}
+                      />
+                      <text
+                        x={node.x + 12}
+                        y={node.y + 4}
+                        fontSize="11"
+                        fill={focused ? '#e2e8f0' : '#94a3b8'}
+                      >
+                        {node.label}
+                      </text>
+                    </g>
+                  )
+                })}
+              </svg>
+            </div>
+            {activeNode ? (
+              <div className="rounded-lg border border-slate-700 bg-slate-950/70 p-3 text-sm text-slate-300">
+                <p className="font-semibold text-slate-100">{activeNode.label}</p>
+                <p className="text-xs text-slate-400">Type: {activeNode.type || 'unknown'} • Group: {activeNode.group || 'general'}</p>
+                {activeNode.reading ? <p className="mt-1 text-xs text-slate-400">Reading: {activeNode.reading}</p> : null}
+                <p className="mt-1 text-xs text-slate-400">Connected links: {visibleLinks.length}</p>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </motion.div>
