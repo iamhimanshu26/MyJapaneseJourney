@@ -154,7 +154,7 @@ export function Dashboard() {
           <EmptyState title="Dashboard unavailable" message={error} />
         ) : (
           <div className="space-y-6">
-            {intelligence?.demoWorkspace ? (
+            {intelligence?.demoWorkspace && user?.isGuest ? (
               <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 {intelligence.demoBanner || 'Using Demo Workspace – Sign In To Save Progress'}
               </div>
@@ -192,7 +192,28 @@ export function Dashboard() {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <p className="mt-4 text-sm text-slate-500">No activity trend yet. Start a lookup or review session.</p>
+                  <div className="mt-4 flex h-72 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50">
+                    <div className="mx-auto max-w-sm text-center">
+                      <p className="text-base font-semibold text-slate-800">No activity recorded yet</p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        Start one quick action to populate your weekly progress chart.
+                      </p>
+                      <div className="mt-4 flex justify-center gap-2">
+                        <Link
+                          to="/lookup"
+                          className="rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-3 py-1.5 text-xs font-semibold text-white"
+                        >
+                          Start AI Lookup
+                        </Link>
+                        <Link
+                          to="/review-mode"
+                          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700"
+                        >
+                          Open Review Mode
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
               <div className="space-y-4 lg:col-span-2">

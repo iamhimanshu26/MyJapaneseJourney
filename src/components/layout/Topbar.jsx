@@ -33,8 +33,7 @@ export function Topbar({ onMenu }) {
   const isDark = resolvedTheme === 'dark'
 
   function toggleLanguage() {
-    const next = language === 'en' ? 'ja' : 'en'
-    setLanguage(next)
+    setLanguage(language === 'en' ? 'ja' : 'en')
   }
 
   const t = useMemo(() => COPY[language] || COPY.en, [language])
@@ -88,7 +87,7 @@ export function Topbar({ onMenu }) {
           </form>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setMobileSearchOpen((prev) => !prev)}
@@ -98,25 +97,41 @@ export function Topbar({ onMenu }) {
           >
             {t.searchButton}
           </button>
+          <div className="hidden sm:flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-[0_8px_18px_rgba(15,23,42,0.10)]">
+            <button
+              type="button"
+              onClick={() => setLanguage('en')}
+              aria-label="Switch language to English"
+              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+                language === 'en' ? 'bg-[#edf2ff] text-[#3b4bff]' : 'text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => setLanguage('ja')}
+              aria-label="Switch language to Japanese"
+              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+                language === 'ja' ? 'bg-[#edf2ff] text-[#3b4bff]' : 'text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              日本語
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={toggleLanguage}
             aria-label="Toggle language"
-            className="relative flex h-10 w-[138px] items-center rounded-full border border-slate-200 bg-white px-3 shadow-[0_8px_20px_rgba(15,23,42,0.14)]"
+            className="inline-flex h-9 items-center rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-[#3b4bff] shadow-[0_6px_14px_rgba(15,23,42,0.10)] sm:hidden"
           >
-            <span className={`z-10 text-[13px] font-semibold transition-colors ${language === 'en' ? 'text-emerald-500' : 'text-slate-400'}`}>
-              EN
-            </span>
-            <span
-              aria-hidden
-              className="absolute left-1/2 top-1/2 h-[20px] w-[20px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-400 shadow-sm"
-            />
-            <span className={`ml-auto z-10 text-sm font-semibold transition-colors ${language === 'ja' ? 'text-emerald-500' : 'text-slate-700'}`}>
-              日本語
-            </span>
+            {language === 'en' ? 'EN' : '日本語'}
           </button>
 
-          <span className={isDark ? 'hidden text-xs text-slate-200 sm:inline' : 'hidden text-xs text-slate-700 sm:inline'}>{user?.loginId || t.guest}</span>
+          <span className={isDark ? 'text-sm font-semibold text-slate-200' : 'text-sm font-semibold text-slate-800'}>
+            {user?.loginId || t.guest}
+          </span>
           {hasAuth && user ? (
             <button
               type="button"
@@ -124,10 +139,13 @@ export function Topbar({ onMenu }) {
               title={t.signOut}
               aria-label={t.signOut}
               className={isDark
-                ? 'rounded-xl border border-slate-600 bg-slate-700 px-3 py-1.5 text-base text-slate-100 hover:border-slate-400'
-                : 'rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-base text-slate-800 hover:border-slate-400'}
+                ? 'inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-200 hover:bg-slate-700'
+                : 'inline-flex h-10 w-10 items-center justify-center rounded-xl text-[#5d7398] hover:bg-slate-100'}
             >
-              🚪
+              <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 8.25V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25v-3" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H9m0 0l3-3m-3 3l3 3" />
+              </svg>
             </button>
           ) : null}
         </div>

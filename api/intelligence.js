@@ -35,11 +35,15 @@ async function buildSnapshot(userId) {
 }
 
 function buildDemoWorkspace(profile, role) {
+  const demoBanner = role === 'guest'
+    ? 'Using Demo Workspace – Sign In To Save Progress'
+    : 'Fresh workspace ready. Add your first items to start real progress tracking.'
+
   return {
     profile,
     role,
     demoWorkspace: true,
-    demoBanner: 'Using Demo Workspace – Sign In To Save Progress',
+    demoBanner,
     hero: {
       currentLevel: profile?.current_level || 'N5',
       targetExam: profile?.target_exam || 'JLPT',
