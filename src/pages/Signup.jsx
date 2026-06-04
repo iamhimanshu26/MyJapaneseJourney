@@ -39,10 +39,10 @@ export function Signup() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <h1 className="text-2xl font-bold mb-6">Create account</h1>
+        <h1 className="mb-6 text-3xl font-semibold">Create account</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">Login ID</label>
+            <label className="mb-1 block text-sm font-medium text-slate-600">Login ID</label>
             <input
               type="text"
               value={loginId}
@@ -50,26 +50,26 @@ export function Signup() {
               required
               minLength={3}
               maxLength={40}
-              className="w-full rounded-xl border border-slate-200 bg-[var(--color-bg-card)] px-4 py-3"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">Password (min 6 characters)</label>
+            <label className="mb-1 block text-sm font-medium text-slate-600">Password (min 6 characters)</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full rounded-xl border border-slate-200 bg-[var(--color-bg-card)] px-4 py-3"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1">Role</label>
+            <label className="mb-1 block text-sm font-medium text-slate-600">Role</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-[var(--color-bg-card)] px-4 py-3"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
             >
               <option value="student">Student</option>
               <option value="employee">Employee</option>
@@ -80,12 +80,12 @@ export function Signup() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 disabled:opacity-50"
+            className="h-10 w-full rounded-lg bg-amber-500 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
           >
             {loading ? 'Creating account…' : 'Sign up'}
           </button>
         </form>
-        <p className="mt-4 text-sm text-[var(--color-text-muted)]">
+        <p className="mt-4 text-sm text-slate-600">
           Already have an account? <Link to="/login" className="text-amber-600 hover:underline">Log in</Link>
         </p>
       </motion.div>

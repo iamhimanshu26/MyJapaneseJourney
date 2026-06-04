@@ -6,6 +6,7 @@ import { useDiscovered } from '../hooks/useDiscovered'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
 import { useUiPreferences } from '../hooks/useUiPreferences'
+import { ActionButton } from '../components/ui/ActionButton'
 
 export function Settings() {
   const { importLocalToNeon, identity } = useDiscovered()
@@ -159,12 +160,12 @@ export function Settings() {
         />
         <div className="space-y-4">
           <section className="card-shell">
-            <h2 className="text-sm font-semibold text-slate-100">Account & Access</h2>
-            <p className="mt-2 text-sm text-slate-400">
-              Login ID: <span className="font-medium text-slate-200">{user?.loginId || 'Guest session'}</span>
+            <h2 className="text-base font-medium text-slate-900">Account & Access</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Login ID: <span className="font-medium text-slate-900">{user?.loginId || 'Guest session'}</span>
             </p>
-            <p className="mt-1 text-sm text-slate-400">
-              Role: <span className="font-medium text-slate-200">{user?.role || 'guest'}</span>
+            <p className="mt-1 text-sm text-slate-600">
+              Role: <span className="font-medium text-slate-900">{user?.role || 'guest'}</span>
             </p>
             <p className="mt-2 text-xs text-slate-500">
               Your direct ID/password is stored in Neon auth tables. Use the same credentials next time to restore progress.
@@ -172,81 +173,71 @@ export function Settings() {
           </section>
 
           <section className="card-shell">
-            <h2 className="text-sm font-semibold text-slate-100">Profile & Learning Preferences</h2>
+            <h2 className="text-base font-medium text-slate-900">Profile & Learning Preferences</h2>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <label className="text-sm text-slate-300">Current Level
-                <select value={currentLevel} onChange={(e) => setCurrentLevel(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+              <label className="text-sm text-slate-700">Current Level
+                <select value={currentLevel} onChange={(e) => setCurrentLevel(e.target.value)} className="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800">
                   {['N5', 'N4', 'N3', 'N2', 'N1'].map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}
                 </select>
               </label>
-              <label className="text-sm text-slate-300">Target Level
-                <select value={targetLevel} onChange={(e) => setTargetLevel(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+              <label className="text-sm text-slate-700">Target Level
+                <select value={targetLevel} onChange={(e) => setTargetLevel(e.target.value)} className="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800">
                   {['N5', 'N4', 'N3', 'N2', 'N1'].map((lvl) => <option key={lvl} value={lvl}>{lvl}</option>)}
                 </select>
               </label>
-              <label className="text-sm text-slate-300">Target Exam
-                <select value={targetExam} onChange={(e) => setTargetExam(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+              <label className="text-sm text-slate-700">Target Exam
+                <select value={targetExam} onChange={(e) => setTargetExam(e.target.value)} className="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800">
                   {['JLPT', 'NAT'].map((exam) => <option key={exam} value={exam}>{exam}</option>)}
                 </select>
               </label>
-              <label className="text-sm text-slate-300">Target Exam Date
-                <input type="date" value={targetExamDate || ''} onChange={(e) => setTargetExamDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" />
+              <label className="text-sm text-slate-700">Target Exam Date
+                <input type="date" value={targetExamDate || ''} onChange={(e) => setTargetExamDate(e.target.value)} className="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800" />
               </label>
-              <label className="text-sm text-slate-300">Daily Study Goal (minutes)
-                <input type="number" min={5} max={300} value={dailyGoal} onChange={(e) => setDailyGoal(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100" />
+              <label className="text-sm text-slate-700">Daily Study Goal (minutes)
+                <input type="number" min={5} max={300} value={dailyGoal} onChange={(e) => setDailyGoal(e.target.value)} className="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800" />
               </label>
-              <label className="text-sm text-slate-300">Theme
-                <select value={theme} onChange={(e) => setTheme(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+              <label className="text-sm text-slate-700">Theme
+                <select value={theme} onChange={(e) => setTheme(e.target.value)} className="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800">
                   <option value="system">System</option>
                   <option value="dark">Dark</option>
                   <option value="light">Light</option>
                 </select>
               </label>
-              <label className="text-sm text-slate-300">Language
-                <select value={language} onChange={(e) => setLanguage(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100">
+              <label className="text-sm text-slate-700">Language
+                <select value={language} onChange={(e) => setLanguage(e.target.value)} className="mt-1 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800">
                   <option value="en">English</option>
                   <option value="ja">Japanese</option>
                 </select>
               </label>
             </div>
-            <button
-              type="button"
-              onClick={handleSaveProfile}
-              disabled={savingProfile || !canEdit}
-              className="mt-4 rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-            >
+            <ActionButton type="button" onClick={handleSaveProfile} disabled={savingProfile || !canEdit} variant="primary" className="mt-4">
               {savingProfile ? 'Saving...' : 'Save Profile Settings'}
-            </button>
+            </ActionButton>
           </section>
 
           <section className="card-shell">
-            <h2 className="text-sm font-semibold text-slate-100">Data Source</h2>
-            <p className="mt-2 text-sm text-slate-400">
+            <h2 className="text-base font-medium text-slate-900">Data Source</h2>
+            <p className="mt-2 text-sm text-slate-600">
               Primary source of truth is Neon PostgreSQL via secure API routes.
               Browser localStorage is only used as legacy import source or temporary guest fallback.
             </p>
           </section>
 
           <section className="card-shell">
-            <h2 className="text-sm font-semibold text-slate-100">Import Local Data to Neon</h2>
-            <p className="mt-2 text-sm text-slate-400">
+            <h2 className="text-base font-medium text-slate-900">Import Local Data to Neon</h2>
+            <p className="mt-2 text-sm text-slate-600">
               Use this once to migrate existing local vocabulary/grammar/kanji/discovered data.
               Local storage will not be deleted automatically.
             </p>
-            <button
-              type="button"
-              onClick={handleImport}
-              disabled={importing}
-              className="mt-4 rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-            >
+            <ActionButton type="button" onClick={handleImport} disabled={importing} variant="primary" className="mt-4">
               {importing ? 'Importing...' : 'Import Local Data to Neon'}
-            </button>
+            </ActionButton>
             <div className="mt-3 flex flex-wrap gap-2">
-              <button type="button" onClick={() => handleExport('csv')} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200">Export CSV</button>
-              <button type="button" onClick={() => handleExport('json')} className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200">Export JSON</button>
-              <button type="button" onClick={handleDemoReset} disabled={resettingDemo || !canEdit} className="rounded-lg border border-rose-500/50 bg-rose-500/10 px-3 py-2 text-xs text-rose-200 disabled:opacity-60">
+              <ActionButton type="button" onClick={() => handleExport('csv')} className="text-xs">Export CSV</ActionButton>
+              <ActionButton type="button" onClick={() => handleExport('json')} className="text-xs">Export JSON</ActionButton>
+              <ActionButton type="button" onClick={handleDemoReset} disabled={resettingDemo || !canEdit} variant="danger" className="text-xs">
                 {resettingDemo ? 'Resetting...' : 'Demo Data Reset'}
-              </button>
+              </ActionButton>
             </div>
           </section>
         </div>

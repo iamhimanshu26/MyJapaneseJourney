@@ -6,6 +6,7 @@ import { useDiscovered } from '../hooks/useDiscovered'
 import { apiRequest } from '../lib/apiClient'
 import { LoadingState } from '../components/shared/LoadingState'
 import { useToast } from '../context/ToastContext'
+import { ActionButton } from '../components/ui/ActionButton'
 
 const TOPICS = [
   'Self Introduction',
@@ -87,63 +88,58 @@ export function InterviewCoach() {
         />
 
         <div className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-1">
-            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">Topic</label>
+          <div className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-1">
+            <label className="mb-2 block text-xs text-slate-500">Topic</label>
             <select
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-blue-400 focus:outline-none"
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 focus:border-blue-400 focus:outline-none"
             >
               {TOPICS.map((item) => (
                 <option key={item} value={item}>{item}</option>
               ))}
             </select>
-            <label className="mt-4 mb-2 block text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">Your answer (optional)</label>
+            <label className="mb-2 mt-4 block text-xs text-slate-500">Your answer (optional)</label>
             <input
               value={customTopic}
               onChange={(e) => setCustomTopic(e.target.value)}
               placeholder="Optional custom interview topic"
-              className="mb-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-blue-400 focus:outline-none"
+              className="mb-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 focus:border-blue-400 focus:outline-none"
             />
             <textarea
               value={userAnswer}
               onChange={(e) => setUserAnswer(e.target.value)}
               placeholder="Write your current answer for AI feedback..."
-              className="h-40 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-blue-400 focus:outline-none"
+              className="h-40 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-blue-400 focus:outline-none"
             />
-            <button
-              type="button"
-              onClick={handleGenerate}
-              disabled={loading}
-              className="mt-4 w-full rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            >
+            <ActionButton type="button" onClick={handleGenerate} disabled={loading} variant="primary" className="mt-4 w-full">
               {loading ? 'Generating...' : 'Generate Interview Answer'}
-            </button>
+            </ActionButton>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-2">
             {loading ? <LoadingState title="Generating interview answer..." subtitle="Creating role-ready Japanese response with feedback." /> : null}
             {!loading && !result ? (
-              <p className="text-sm text-slate-400">Select a topic and generate your AI interview response.</p>
+              <p className="text-sm text-slate-600">Select a topic and generate your AI interview response.</p>
             ) : null}
             {!loading && result ? (
-              <div className="space-y-4 text-sm text-slate-200">
-                <p><span className="font-semibold text-slate-100">Topic:</span> {result.topic}</p>
-                <div className="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
-                  <p className="text-xs uppercase tracking-[0.1em] text-slate-500">Japanese answer</p>
-                  <p className="mt-1 text-base text-slate-100" style={{ fontFamily: 'var(--font-jp)' }}>{result.ai_answer_jp}</p>
+              <div className="space-y-4 text-sm text-slate-700">
+                <p><span className="font-medium text-slate-900">Topic:</span> {result.topic}</p>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500">Japanese answer</p>
+                  <p className="mt-1 text-sm text-slate-900" style={{ fontFamily: 'var(--font-jp)' }}>{result.ai_answer_jp}</p>
                 </div>
-                <p><span className="font-semibold text-slate-100">Romaji:</span> {result.romaji || '-'}</p>
-                <p><span className="font-semibold text-slate-100">English meaning:</span> {result.english_meaning || '-'}</p>
-                <p><span className="font-semibold text-slate-100">Simpler version:</span> {result.simpler_version_jp || '-'}</p>
-                <p><span className="font-semibold text-slate-100">Professional version:</span> {result.professional_version_jp || '-'}</p>
-                <p><span className="font-semibold text-slate-100">Feedback:</span> {result.feedback || '-'}</p>
-                <p><span className="font-semibold text-slate-100">Score:</span> {result.score ?? '-'}/100</p>
+                <p><span className="font-medium text-slate-900">Romaji:</span> {result.romaji || '-'}</p>
+                <p><span className="font-medium text-slate-900">English meaning:</span> {result.english_meaning || '-'}</p>
+                <p><span className="font-medium text-slate-900">Simpler version:</span> {result.simpler_version_jp || '-'}</p>
+                <p><span className="font-medium text-slate-900">Professional version:</span> {result.professional_version_jp || '-'}</p>
+                <p><span className="font-medium text-slate-900">Feedback:</span> {result.feedback || '-'}</p>
+                <p><span className="font-medium text-slate-900">Score:</span> {result.score ?? '-'}/100</p>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <p><span className="font-semibold text-slate-100">Vocabulary Score:</span> {result.vocabulary_score ?? '-'}/100</p>
-                  <p><span className="font-semibold text-slate-100">Grammar Score:</span> {result.grammar_score ?? '-'}/100</p>
-                  <p><span className="font-semibold text-slate-100">Fluency Score:</span> {result.fluency_score ?? '-'}/100</p>
-                  <p><span className="font-semibold text-slate-100">Business Japanese Score:</span> {result.business_score ?? '-'}/100</p>
+                  <p><span className="font-medium text-slate-900">Vocabulary Score:</span> {result.vocabulary_score ?? '-'}/100</p>
+                  <p><span className="font-medium text-slate-900">Grammar Score:</span> {result.grammar_score ?? '-'}/100</p>
+                  <p><span className="font-medium text-slate-900">Fluency Score:</span> {result.fluency_score ?? '-'}/100</p>
+                  <p><span className="font-medium text-slate-900">Business Japanese Score:</span> {result.business_score ?? '-'}/100</p>
                 </div>
               </div>
             ) : null}
@@ -151,9 +147,9 @@ export function InterviewCoach() {
         </div>
 
         {progress ? (
-          <section className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Interview Progress Tracking</h3>
-            <div className="mt-3 grid gap-3 text-sm text-slate-300 sm:grid-cols-5">
+          <section className="mt-5 rounded-xl border border-slate-200 bg-white p-5">
+            <h3 className="text-base font-medium text-slate-900">Interview Progress Tracking</h3>
+            <div className="mt-3 grid gap-3 text-sm text-slate-700 sm:grid-cols-5">
               <p>Overall: <strong>{progress.avg_score || 0}</strong></p>
               <p>Vocabulary: <strong>{progress.avg_vocab || 0}</strong></p>
               <p>Grammar: <strong>{progress.avg_grammar || 0}</strong></p>
@@ -164,19 +160,19 @@ export function InterviewCoach() {
         ) : null}
 
         {history.length ? (
-          <section className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Recent Interview Practice</h3>
+          <section className="mt-5 rounded-xl border border-slate-200 bg-white p-5">
+            <h3 className="text-base font-medium text-slate-900">Recent Interview Practice</h3>
             <div className="mt-3 grid gap-2 md:grid-cols-2">
               {history.slice(0, 8).map((item, idx) => (
                 <button
                   key={`${item.topic}-${item.created_at}-${idx}`}
                   type="button"
                   onClick={() => setResult(item)}
-                  className="rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-left text-sm text-slate-200 hover:border-blue-400"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-700 hover:border-blue-400"
                 >
-                  <p className="font-medium text-slate-100">{item.topic}</p>
-                  <p className="line-clamp-1 text-xs text-slate-400">{item.feedback || item.ai_answer_jp}</p>
-                  <p className="mt-1 text-[11px] text-slate-500">{item.created_at ? new Date(item.created_at).toLocaleString() : ''}</p>
+                  <p className="font-medium text-slate-900">{item.topic}</p>
+                  <p className="line-clamp-1 text-xs text-slate-500">{item.feedback || item.ai_answer_jp}</p>
+                  <p className="mt-1 text-xs text-slate-500">{item.created_at ? new Date(item.created_at).toLocaleString() : ''}</p>
                 </button>
               ))}
             </div>

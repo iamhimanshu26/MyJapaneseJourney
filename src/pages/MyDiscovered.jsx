@@ -309,10 +309,10 @@ export function MyDiscovered() {
                 <p className="mt-2 text-sm text-slate-700">{item.meaning_en || '-'}</p>
                 <div className="mt-3 flex flex-wrap gap-1">
                   {(item.tags || []).map((tag) => (
-                    <span key={tag} className="rounded bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">{tag}</span>
+                    <span key={tag} className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{tag}</span>
                   ))}
                   {(item.ai_tags || []).map((tag) => (
-                    <span key={`ai-${tag}`} className="rounded bg-blue-100 px-2 py-0.5 text-[11px] text-blue-700">#{tag}</span>
+                    <span key={`ai-${tag}`} className="rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">#{tag}</span>
                   ))}
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500">
@@ -325,12 +325,12 @@ export function MyDiscovered() {
                       key={value}
                       type="button"
                       onClick={() => handleStatus(item.id, value)}
-                      className="rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] text-slate-700 hover:border-blue-400"
+                      className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:border-blue-400"
                     >
                       {value}
                     </button>
                   ))}
-                  <button type="button" onClick={() => handleRemove(item.id)} className="rounded-md border border-rose-300 bg-rose-50 px-2 py-1 text-[11px] text-rose-700">
+                  <button type="button" onClick={() => handleRemove(item.id)} className="rounded-md border border-rose-300 bg-rose-50 px-2 py-1 text-xs text-rose-700">
                     Remove
                   </button>
                 </div>
@@ -342,7 +342,7 @@ export function MyDiscovered() {
         {!loading && filtered.length && view === 'table' ? (
           <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 text-xs uppercase tracking-[0.08em] text-slate-500">
+              <thead className="border-b border-slate-200 text-xs text-slate-500">
                 <tr>
                   <th className="px-3 py-3">Word</th>
                   <th className="px-3 py-3">Reading</th>

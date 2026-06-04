@@ -31,7 +31,7 @@ export function Kanji() {
           <button
             type="button"
             onClick={() => setLevel('ALL')}
-            className={`rounded-lg px-3 py-1.5 text-sm ${level === 'ALL' ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-200'}`}
+            className={`inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium ${level === 'ALL' ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white text-slate-700'}`}
           >
             ALL
           </button>
@@ -40,7 +40,7 @@ export function Kanji() {
               key={item}
               type="button"
               onClick={() => setLevel(item)}
-              className={`rounded-lg px-3 py-1.5 text-sm ${level === item ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-200'}`}
+              className={`inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium ${level === item ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white text-slate-700'}`}
             >
               {item}
             </button>
@@ -54,13 +54,13 @@ export function Kanji() {
         {!loading && kanji.length ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {kanji.map((item) => (
-              <article key={item.id} className="rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+              <article key={item.id} className="rounded-xl border border-slate-200 bg-white p-4">
                 <div className="mb-2 flex justify-between">
                   <JLPTBadge level={item.jlpt_level || 'N5'} />
                 </div>
-                <p className="text-4xl font-bold text-slate-100" style={{ fontFamily: 'var(--font-jp)' }}>{item.word}</p>
-                <p className="mt-1 text-xs text-slate-400">{item.reading || '-'}</p>
-                <p className="mt-2 text-xs text-slate-300">{item.meaning_en || '-'}</p>
+                <p className="text-3xl font-semibold text-slate-900" style={{ fontFamily: 'var(--font-jp)' }}>{item.word}</p>
+                <p className="mt-1 text-xs text-slate-500">{item.reading || '-'}</p>
+                <p className="mt-2 text-sm text-slate-700">{item.meaning_en || '-'}</p>
               </article>
             ))}
           </div>

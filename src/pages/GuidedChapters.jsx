@@ -38,7 +38,7 @@ export function GuidedChapters() {
       <main className="max-w-5xl mx-auto px-6 py-8">
         {/* Lesson grid - card-style, professional */}
         <section className="mb-10">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-4">
+          <h2 className="mb-4 text-xl font-semibold text-stone-700">
             Lessons
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -94,7 +94,7 @@ export function GuidedChapters() {
                 {/* 1. Kaiwa Renshuu - Conversation */}
                 {lesson.conversations && (
                   <section>
-                    <h4 className="text-sm font-semibold text-stone-700 uppercase tracking-wider mb-3">会話練習 — Conversation</h4>
+                    <h4 className="mb-3 text-base font-medium text-stone-700">会話練習 — Conversation</h4>
                     <KaiwaVideo conversations={lesson.conversations} />
                     <p className="text-xs text-stone-400 mt-2">Play to listen · Click dialogue to replay · Use speed control</p>
                   </section>
@@ -103,7 +103,7 @@ export function GuidedChapters() {
                 {/* 2. Vocabulary / Kotoba */}
                 {lesson.vocab && (
                   <section>
-                    <h4 className="text-sm font-semibold text-stone-700 uppercase tracking-wider mb-3">言葉 — Vocabulary</h4>
+                    <h4 className="mb-3 text-base font-medium text-stone-700">言葉 — Vocabulary</h4>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {lesson.vocab.map((v, i) => (
                         <motion.button
@@ -132,19 +132,19 @@ export function GuidedChapters() {
                     </div>
                     {lesson.hiragana && (
                       <div className="mt-6 pt-6 border-t border-stone-200/60">
-                        <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">Hiragana</p>
+                        <p className="mb-3 text-xs font-medium text-stone-500">Hiragana</p>
                         <p className="text-lg text-stone-700" style={{ fontFamily: 'var(--font-jp)' }}>{lesson.hiragana.join('　')}</p>
                       </div>
                     )}
                     {lesson.katakana && (
                       <div className="mt-4">
-                        <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">Katakana</p>
+                        <p className="mb-3 text-xs font-medium text-stone-500">Katakana</p>
                         <p className="text-lg text-stone-700" style={{ fontFamily: 'var(--font-jp)' }}>{lesson.katakana.join('　')}</p>
                       </div>
                     )}
                     {lesson.counters && (
                       <div className="mt-6 pt-6 border-t border-stone-200/60">
-                        <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">Counters (〜つ)</p>
+                        <p className="mb-3 text-xs font-medium text-stone-500">Counters (〜つ)</p>
                         <div className="flex flex-wrap gap-2">
                           {lesson.counters.map((c, i) => (
                             <span key={i} className="px-3 py-1.5 rounded-lg bg-stone-100 text-stone-700 text-sm font-medium">
@@ -160,7 +160,7 @@ export function GuidedChapters() {
                 {/* 3. Practice */}
                 {lesson.practice && (
                   <section>
-                    <h4 className="text-sm font-semibold text-stone-700 uppercase tracking-wider mb-3">練習 — Practice</h4>
+                    <h4 className="mb-3 text-base font-medium text-stone-700">練習 — Practice</h4>
                     <div className="space-y-3">
                     {lesson.practice.map((p, i) => (
                       <motion.div
@@ -183,7 +183,7 @@ export function GuidedChapters() {
                 {/* 4. Full Lesson Content (sections) - exact from source */}
                 {lesson.sections && lesson.sections.length > 0 && (
                   <section className="pt-8 border-t-2 border-stone-200">
-                    <h4 className="text-sm font-semibold text-stone-700 uppercase tracking-wider mb-4">Full Lesson Content</h4>
+                    <h4 className="mb-4 text-base font-medium text-stone-700">Full Lesson Content</h4>
                     <div className="space-y-8">
                       {lesson.sections.map((sec, si) => (
                         <div key={si} className="space-y-2">

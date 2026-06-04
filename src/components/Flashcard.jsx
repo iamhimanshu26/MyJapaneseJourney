@@ -20,8 +20,8 @@ export function Flashcard({ items, onKnow, onReview }) {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <p className="text-sm text-[var(--color-text-muted)] mb-2">
+    <div className="mx-auto w-full max-w-md">
+      <p className="mb-2 text-sm text-slate-600">
         Card {index + 1} of {items.length}
       </p>
       <AnimatePresence mode="wait">
@@ -39,10 +39,10 @@ export function Flashcard({ items, onKnow, onReview }) {
             <motion.div
               animate={{ rotateY: flipped ? 180 : 0 }}
               transition={{ duration: 0.4 }}
-              className="absolute inset-0 rounded-2xl border border-slate-200 bg-white shadow-lg flex items-center justify-center p-6"
+              className="absolute inset-0 flex items-center justify-center rounded-2xl border border-slate-200 bg-white p-6 shadow-lg"
               style={{ backfaceVisibility: 'hidden' }}
             >
-              <p className="text-3xl font-bold" style={{ fontFamily: 'var(--font-jp)' }}>
+              <p className="text-3xl font-semibold" style={{ fontFamily: 'var(--font-jp)' }}>
                 {current.reading ? (
                   <FuriganaText text={`${current.word}(${current.reading})`} />
                 ) : (
@@ -50,44 +50,44 @@ export function Flashcard({ items, onKnow, onReview }) {
                 )}
               </p>
               {!flipped && (
-                <p className="absolute bottom-3 text-sm text-[var(--color-text-muted)]">Click to flip</p>
+                <p className="absolute bottom-3 text-sm text-slate-500">Click to flip</p>
               )}
             </motion.div>
             <motion.div
               initial={{ rotateY: 180 }}
               animate={{ rotateY: flipped ? 0 : 180 }}
               transition={{ duration: 0.4 }}
-              className="absolute inset-0 rounded-2xl border border-slate-200 bg-amber-50 shadow-lg flex flex-col items-center justify-center p-6"
+              className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-amber-50 p-6 shadow-lg"
               style={{ backfaceVisibility: 'hidden' }}
             >
-              <p className="text-2xl font-bold mb-2" style={{ fontFamily: 'var(--font-jp)' }}>
+              <p className="mb-2 text-2xl font-semibold" style={{ fontFamily: 'var(--font-jp)' }}>
                 {current.reading ? (
                   <FuriganaText text={`${current.word}(${current.reading})`} />
                 ) : (
                   current.word
                 )}
               </p>
-              <p className="text-xl font-semibold text-[var(--color-text)]">{current.meaning}</p>
+              <p className="text-base font-medium text-slate-900">{current.meaning}</p>
             </motion.div>
           </div>
         </motion.div>
       </AnimatePresence>
-      <div className="flex gap-3 mt-6 justify-center">
+      <div className="mt-6 flex justify-center gap-3">
         <button
           onClick={() => handleNext(false)}
-          className="px-6 py-3 rounded-xl border border-slate-300 text-slate-600 font-medium hover:bg-slate-50"
+          className="h-10 rounded-lg border border-slate-300 px-6 text-sm font-medium text-slate-600 hover:bg-slate-50"
         >
           Review again
         </button>
         <button
           onClick={() => handleNext(true)}
-          className="px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600"
+          className="h-10 rounded-lg bg-amber-500 px-6 text-sm font-medium text-white hover:bg-amber-600"
         >
           I know it
         </button>
       </div>
       {isLast && (
-        <p className="mt-4 text-center text-sm text-[var(--color-text-muted)]">
+        <p className="mt-4 text-center text-sm text-slate-600">
           You've seen all {items.length} cards. Refresh to restart.
         </p>
       )}

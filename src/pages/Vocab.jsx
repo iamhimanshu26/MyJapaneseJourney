@@ -49,35 +49,35 @@ function VocabItem({ item, index, type, onKanjiClick }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: index * 0.03 }}
-      className="overflow-hidden rounded-xl border border-slate-700 bg-slate-900/80 transition-all hover:border-blue-400 hover:shadow-md"
+      className="overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:border-blue-300 hover:shadow-md"
     >
       <button
         type="button"
         onClick={handleClick}
-        className="w-full text-left flex items-center justify-between px-4 py-3 hover:bg-slate-800/70"
+        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-slate-50"
       >
         <div className="flex items-center gap-3">
           {type === 'kanji' ? (
             <KanjiThumbnail char={item.char} />
           ) : (
-            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg border border-blue-400/40 bg-blue-500/10">
-              <span style={{ fontFamily: 'var(--font-jp)' }} className="text-2xl font-bold text-slate-100">
+            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-blue-50">
+              <span style={{ fontFamily: 'var(--font-jp)' }} className="text-2xl font-bold text-slate-900">
                 {item.word}
               </span>
             </span>
           )}
           <div>
-            <span style={{ fontFamily: 'var(--font-jp)' }} className="block font-medium text-slate-100">
+            <span style={{ fontFamily: 'var(--font-jp)' }} className="block text-base font-medium text-slate-900">
               {type === 'kanji' ? (
                 item.reading ? <FuriganaText text={`${item.char}(${item.reading})`} /> : item.char
               ) : (
                 item.reading ? <FuriganaText text={`${item.word}(${item.reading})`} /> : item.word
               )}
             </span>
-            <span className="text-sm text-slate-400">{item.meaning}</span>
+            <span className="text-sm text-slate-600">{item.meaning}</span>
           </div>
         </div>
-        <span className="shrink-0 text-lg font-medium text-blue-300" title={type === 'kanji' ? 'Click for details' : 'Click to expand examples'}>
+        <span className="shrink-0 text-base font-medium text-blue-600" title={type === 'kanji' ? 'Click for details' : 'Click to expand examples'}>
           {type === 'kanji' && onKanjiClick ? '▶' : (expanded ? '▲' : '▼')}
         </span>
       </button>
@@ -88,12 +88,12 @@ function VocabItem({ item, index, type, onKanjiClick }) {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-slate-700"
+              className="overflow-hidden border-t border-slate-200"
             >
-              <div className="space-y-2 bg-slate-950/60 px-4 py-3 pl-16">
+              <div className="space-y-2 bg-slate-50 px-4 py-3 pl-16">
                 {allExamples.length > 0 ? (
                   allExamples.slice(0, 3).map((ex, i) => (
-                    <p key={i} className="text-sm text-[var(--color-text-muted)] examples-with-furigana" style={{ fontFamily: 'var(--font-jp)' }}>
+                    <p key={i} className="text-sm text-slate-600 examples-with-furigana" style={{ fontFamily: 'var(--font-jp)' }}>
                       {typeof ex === 'object' ? <><FuriganaText text={ex.jp || ''} />{ex.en ? ` (${ex.en})` : ''}</> : ex}
                     </p>
                   ))
@@ -194,14 +194,14 @@ export function Vocab() {
     <div className="mx-auto max-w-6xl">
       <PageMeta title="Vocabulary" description="Practice JLPT vocabulary with flashcards. N5 to N1." />
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="mb-2 text-3xl font-bold tracking-tight">Vocabulary</h1>
-        <p className="mb-8 text-slate-400">Practice flashcards by JLPT level.</p>
+        <h1 className="mb-2 text-3xl font-semibold">Vocabulary</h1>
+        <p className="mb-6 text-sm text-slate-600">Practice flashcards by JLPT level.</p>
 
         <HeardNewVocabCta compact />
 
         {mode === 'select' ? (
           <>
-            <div className="mb-6 flex flex-wrap gap-3">
+            <div className="mb-6 flex flex-wrap gap-2">
               {LEVELS.map((level, i) => (
                 <motion.button
                   key={level}
@@ -209,8 +209,8 @@ export function Vocab() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.1 + i * 0.03 }}
                   onClick={() => setSelectedLevel(level)}
-                  className={`rounded-xl border px-5 py-2.5 font-medium transition-colors ${
-                    selectedLevel === level ? 'border-blue-400 bg-blue-500/15 text-blue-100' : 'border-slate-700 bg-slate-900/80 text-slate-200 hover:border-blue-400'
+                  className={`inline-flex h-10 items-center rounded-lg border px-4 text-sm font-medium transition-colors ${
+                    selectedLevel === level ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-300 bg-white text-slate-700 hover:border-blue-400'
                   }`}
                 >
                   {level}
@@ -220,22 +220,22 @@ export function Vocab() {
 
             {selectedLevel ? (
               <>
-                <div className="flex gap-2 mb-4">
+                <div className="mb-4 flex gap-2">
                   <button
                     onClick={() => setActiveTab('kanji')}
-                    className={`rounded-lg px-4 py-2 font-medium transition-colors ${activeTab === 'kanji' ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
+                    className={`inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium transition-colors ${activeTab === 'kanji' ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}
                   >
                     Kanji
                   </button>
                   <button
                     onClick={() => setActiveTab('vocabs')}
-                    className={`rounded-lg px-4 py-2 font-medium transition-colors ${activeTab === 'vocabs' ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
+                    className={`inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium transition-colors ${activeTab === 'vocabs' ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}
                   >
                     Vocab
                   </button>
                   <button
                     onClick={() => setActiveTab('verbs')}
-                    className={`rounded-lg px-4 py-2 font-medium transition-colors ${activeTab === 'verbs' ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
+                    className={`inline-flex h-10 items-center rounded-lg px-4 text-sm font-medium transition-colors ${activeTab === 'verbs' ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'}`}
                   >
                     Verbs
                   </button>
@@ -244,45 +244,45 @@ export function Vocab() {
                 {activeTab === 'vocabs' ? (
                   vocabItems.length > 0 ? (
                     <div>
-                      <p className="mb-4 text-lg font-semibold text-slate-200">{vocabItems.length} words in {selectedLevel}</p>
+                      <p className="mb-4 text-base font-medium text-slate-900">{vocabItems.length} words in {selectedLevel}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
                         {vocabItems.map((v, i) => (
                           <VocabItem key={`${v.word}-${v.reading || ''}-${i}`} item={v} index={i} type="vocab" />
                         ))}
                       </div>
-                      <button onClick={() => { setMode('flashcards'); }} className="rounded-xl bg-blue-500 px-6 py-3 font-semibold text-white hover:bg-blue-600">
+                      <button onClick={() => { setMode('flashcards'); }} className="inline-flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">
                         Start flashcards
                       </button>
                     </div>
                   ) : (
-                    <p className="text-sm text-[var(--color-text-muted)]">No vocab for {selectedLevel} yet. Words (not single kanji) go here. Search or extract to add.</p>
+                    <p className="text-sm text-slate-600">No vocab for {selectedLevel} yet. Words (not single kanji) go here. Search or extract to add.</p>
                   )
                 ) : activeTab === 'verbs' ? (
                   verbItems.length > 0 ? (
                     <div>
-                      <p className="mb-4 text-lg font-semibold text-slate-200">{verbItems.length} verbs in {selectedLevel}</p>
+                      <p className="mb-4 text-base font-medium text-slate-900">{verbItems.length} verbs in {selectedLevel}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
                         {verbItems.map((v, i) => (
                           <VocabItem key={`${v.word}-${v.reading || ''}-${i}`} item={v} index={i} type="vocab" />
                         ))}
                       </div>
-                      <button onClick={() => { setMode('flashcards'); }} className="rounded-xl bg-blue-500 px-6 py-3 font-semibold text-white hover:bg-blue-600">
+                      <button onClick={() => { setMode('flashcards'); }} className="inline-flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">
                         Start flashcards
                       </button>
                     </div>
                   ) : (
-                    <p className="text-sm text-[var(--color-text-muted)]">No verbs for {selectedLevel} yet. Save verbs like 来る, する from Lookup.</p>
+                    <p className="text-sm text-slate-600">No verbs for {selectedLevel} yet. Save verbs like 来る, する from Lookup.</p>
                   )
                 ) : (
                   kanjiItems.length > 0 ? (
                     <div>
-                      <div className="flex flex-wrap items-center gap-3 mb-4">
-                        <p className="text-lg font-semibold text-slate-200">{kanjiItems.length} Kanji in {selectedLevel}</p>
+                      <div className="mb-4 flex flex-wrap items-center gap-3">
+                        <p className="text-base font-medium text-slate-900">{kanjiItems.length} Kanji in {selectedLevel}</p>
                         {kanjiNeedingEnrichment.length > 0 && (
                           <button
                             onClick={handleEnrichKanji}
                             disabled={enriching}
-                            className="text-sm px-3 py-1.5 rounded-lg bg-amber-100 text-amber-800 hover:bg-amber-200 disabled:opacity-50 transition-colors"
+                            className="inline-flex h-9 items-center rounded-lg bg-amber-100 px-3 text-sm font-medium text-amber-800 transition-colors hover:bg-amber-200 disabled:opacity-50"
                           >
                             {enriching ? 'Enriching…' : `Add readings to ${kanjiNeedingEnrichment.length} kanji`}
                           </button>
@@ -295,12 +295,12 @@ export function Vocab() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-[var(--color-text-muted)]">No kanji for {selectedLevel} yet. Extract from text to add kanji.</p>
+                    <p className="text-sm text-slate-600">No kanji for {selectedLevel} yet. Extract from text to add kanji.</p>
                   )
                 )}
               </>
             ) : (
-              <p className="text-sm text-[var(--color-text-muted)] py-4">Click a level above to see your vocab.</p>
+              <p className="py-4 text-sm text-slate-600">Click a level above to see your vocab.</p>
             )}
           </>
         ) : (

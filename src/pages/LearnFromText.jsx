@@ -205,14 +205,14 @@ export function LearnFromText() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Learn from your text</h1>
-        <p className="text-[var(--color-text-muted)] mb-8">
+        <h1 className="mb-2 text-3xl font-semibold">Learn from your text</h1>
+        <p className="mb-8 text-sm text-slate-600">
           Upload a .txt file or paste Japanese text. We&apos;ll extract vocabulary and grammar for you to save.
         </p>
 
         <div className="space-y-4">
           <label className="block">
-            <span className="text-sm font-medium text-[var(--color-text-muted)] mb-2 block">Upload file (.txt)</span>
+            <span className="mb-2 block text-sm font-medium text-slate-600">Upload file (.txt)</span>
             <input
               type="file"
               accept=".txt,text/plain"
@@ -221,12 +221,12 @@ export function LearnFromText() {
             />
           </label>
           <div>
-            <span className="text-sm font-medium text-[var(--color-text-muted)] mb-2 block">Or paste text</span>
+            <span className="mb-2 block text-sm font-medium text-slate-600">Or paste text</span>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Paste your Japanese lesson, notes, or any text here..."
-              className="w-full h-40 rounded-xl border border-slate-200 bg-[var(--color-bg-card)] px-4 py-3 text-[var(--color-text)] resize-none focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="h-40 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
               disabled={loading}
             />
           </div>
@@ -235,7 +235,7 @@ export function LearnFromText() {
         <button
           onClick={handleExtract}
           disabled={loading || !text.trim()}
-          className="mt-6 px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors min-h-[48px] flex items-center justify-center gap-2"
+          className="mt-6 flex min-h-[40px] items-center justify-center gap-2 rounded-lg bg-amber-500 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
         >
           {loading ? (
             <>
@@ -258,7 +258,7 @@ export function LearnFromText() {
             className="mt-8 rounded-2xl border border-slate-200 bg-[var(--color-bg-card)] p-6"
           >
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-              <h3 className="font-semibold">Found {vocabCount} words, {grammarCount} grammar, {kanjiCount} kanji</h3>
+              <h3 className="text-base font-medium text-slate-900">Found {vocabCount} words, {grammarCount} grammar, {kanjiCount} kanji</h3>
               <button
                 onClick={handleSaveAll}
                 className="text-sm font-medium text-amber-700 hover:text-amber-800"
@@ -269,52 +269,52 @@ export function LearnFromText() {
             <div className="space-y-4 max-h-[400px] overflow-y-auto">
               {vocabCount > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Vocabulary</h4>
+                  <h4 className="mb-2 text-sm font-medium text-slate-600">Vocabulary</h4>
                   <ul className="space-y-2">
                     {(result.vocab || []).slice(0, 20).map((v, i) => (
                       <li key={i} className="flex gap-2 text-sm">
                         <span style={{ fontFamily: 'var(--font-jp)' }}>
                           {v.reading ? <FuriganaText text={`${v.word}(${v.reading})`} /> : v.word}
                         </span>
-                        <span className="text-[var(--color-text-muted)]">— {v.meaning}</span>
+                        <span className="text-slate-600">— {v.meaning}</span>
                       </li>
                     ))}
                     {vocabCount > 20 && (
-                      <li className="text-[var(--color-text-muted)]">+ {vocabCount - 20} more</li>
+                      <li className="text-slate-600">+ {vocabCount - 20} more</li>
                     )}
                   </ul>
                 </div>
               )}
               {grammarCount > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Grammar</h4>
+                  <h4 className="mb-2 text-sm font-medium text-slate-600">Grammar</h4>
                   <ul className="space-y-2">
                     {(result.grammar || []).slice(0, 10).map((g, i) => (
                       <li key={i} className="text-sm">
                         <span className="font-medium">{g.name}</span>
-                        <span className="text-[var(--color-text-muted)]"> — {g.meaning}</span>
+                        <span className="text-slate-600"> — {g.meaning}</span>
                       </li>
                     ))}
                     {grammarCount > 10 && (
-                      <li className="text-[var(--color-text-muted)]">+ {grammarCount - 10} more</li>
+                      <li className="text-slate-600">+ {grammarCount - 10} more</li>
                     )}
                   </ul>
                 </div>
               )}
               {kanjiCount > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-[var(--color-text-muted)] mb-2">Kanji</h4>
+                  <h4 className="mb-2 text-sm font-medium text-slate-600">Kanji</h4>
                   <ul className="space-y-2">
                     {(result.kanji || []).slice(0, 15).map((k, i) => (
                       <li key={i} className="flex gap-2 text-sm">
                         <span style={{ fontFamily: 'var(--font-jp)' }}>
                           {k.reading ? <FuriganaText text={`${k.char}(${k.reading})`} /> : k.char}
                         </span>
-                        <span className="text-[var(--color-text-muted)]">— {k.meaning}</span>
+                        <span className="text-slate-600">— {k.meaning}</span>
                       </li>
                     ))}
                     {kanjiCount > 15 && (
-                      <li className="text-[var(--color-text-muted)]">+ {kanjiCount - 15} more</li>
+                      <li className="text-slate-600">+ {kanjiCount - 15} more</li>
                     )}
                   </ul>
                 </div>

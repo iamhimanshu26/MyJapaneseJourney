@@ -7,6 +7,7 @@ import { EmptyState } from '../components/shared/EmptyState'
 import { useDiscovered } from '../hooks/useDiscovered'
 import { apiRequest } from '../lib/apiClient'
 import { useToast } from '../context/ToastContext'
+import { ActionButton } from '../components/ui/ActionButton'
 
 const NODE_COLORS = {
   business: '#60a5fa',
@@ -140,35 +141,32 @@ export function KnowledgeGraph() {
           subtitle="Visualize relationships between vocabulary, kanji, and grammar clusters."
         />
 
-        <form onSubmit={handleAddRelation} className="mb-4 grid gap-2 rounded-xl border border-slate-800 bg-slate-900/80 p-3 md:grid-cols-4">
+        <form onSubmit={handleAddRelation} className="card-shell mb-4 grid gap-2 md:grid-cols-4">
           <input
             value={sourceTerm}
             onChange={(e) => setSourceTerm(e.target.value)}
             placeholder="Source term"
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+            className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
           />
           <input
             value={targetTerm}
             onChange={(e) => setTargetTerm(e.target.value)}
             placeholder="Target term"
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+            className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
           />
           <select
             value={relationType}
             onChange={(e) => setRelationType(e.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100"
+            className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
           >
             <option value="related">related</option>
             <option value="similar">similar</option>
             <option value="derived">derived</option>
             <option value="grammar-link">grammar-link</option>
           </select>
-          <button
-            type="submit"
-            className="rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-3 py-2 text-sm font-semibold text-white"
-          >
+          <ActionButton type="submit" variant="primary">
             Add Relation
-          </button>
+          </ActionButton>
         </form>
 
         {loading ? <LoadingState title="Building graph..." subtitle="Linking your discovered terms." /> : null}
@@ -178,10 +176,10 @@ export function KnowledgeGraph() {
         ) : null}
 
         {!loading && !error && nodeLinkData.links.length ? (
-          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-300">
+          <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
               {nodeLinkData.groups.map((group) => (
-                <span key={group} className="rounded-full border border-slate-700 bg-slate-950/70 px-2 py-1">
+                <span key={group} className="rounded-full border border-slate-300 bg-slate-50 px-2 py-1">
                   <span
                     className="mr-1 inline-block h-2 w-2 rounded-full"
                     style={{ backgroundColor: NODE_COLORS[group] || NODE_COLORS.general }}
@@ -192,7 +190,7 @@ export function KnowledgeGraph() {
               {activeNode ? (
                 <button
                   type="button"
-                  className="ml-auto rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-[11px] text-slate-300 hover:border-blue-400"
+                  className="ml-auto rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-600 hover:border-blue-400"
                   onClick={() => setActiveNodeId('')}
                 >
                   Clear focus
@@ -200,7 +198,7 @@ export function KnowledgeGraph() {
               ) : null}
             </div>
             <div className="overflow-x-auto">
-              <svg viewBox="0 0 980 460" className="h-[460px] min-w-[980px] w-full rounded-xl bg-slate-950/60">
+              <svg viewBox="0 0 980 460" className="h-[460px] min-w-[980px] w-full rounded-xl bg-slate-50">
                 {visibleLinks.map((link, idx) => (
                   <line
                     key={`${link.source.id}-${link.target.id}-${idx}`}
@@ -208,7 +206,7 @@ export function KnowledgeGraph() {
                     y1={link.source.y}
                     x2={link.target.x}
                     y2={link.target.y}
-                    stroke={activeNodeId ? '#60a5fa' : '#475569'}
+                    stroke={activeNodeId ? '#60a5fa' : '#94a3b8'}
                     strokeOpacity={activeNodeId ? 0.65 : 0.45}
                     strokeWidth={Math.max(1, Math.min(4, link.weight + 0.5))}
                   />
@@ -228,7 +226,7 @@ export function KnowledgeGraph() {
                         x={node.x + 12}
                         y={node.y + 4}
                         fontSize="11"
-                        fill={focused ? '#e2e8f0' : '#94a3b8'}
+                        fill={focused ? '#0f172a' : '#64748b'}
                       >
                         {node.label}
                       </text>
@@ -238,11 +236,11 @@ export function KnowledgeGraph() {
               </svg>
             </div>
             {activeNode ? (
-              <div className="rounded-lg border border-slate-700 bg-slate-950/70 p-3 text-sm text-slate-300">
-                <p className="font-semibold text-slate-100">{activeNode.label}</p>
-                <p className="text-xs text-slate-400">Type: {activeNode.type || 'unknown'} • Group: {activeNode.group || 'general'}</p>
-                {activeNode.reading ? <p className="mt-1 text-xs text-slate-400">Reading: {activeNode.reading}</p> : null}
-                <p className="mt-1 text-xs text-slate-400">Connected links: {visibleLinks.length}</p>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                <p className="font-medium text-slate-900">{activeNode.label}</p>
+                <p className="text-xs text-slate-500">Type: {activeNode.type || 'unknown'} • Group: {activeNode.group || 'general'}</p>
+                {activeNode.reading ? <p className="mt-1 text-xs text-slate-500">Reading: {activeNode.reading}</p> : null}
+                <p className="mt-1 text-xs text-slate-500">Connected links: {visibleLinks.length}</p>
               </div>
             ) : null}
           </div>

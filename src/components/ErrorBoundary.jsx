@@ -17,22 +17,22 @@ export class ErrorBoundary extends Component {
       return (
         <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[var(--color-bg)]">
           <div className="max-w-md text-center">
-            <h1 className="text-2xl font-bold text-[var(--color-text)] mb-2">
+            <h1 className="mb-2 text-3xl font-semibold text-slate-900">
               Something went wrong
             </h1>
-            <p className="text-[var(--color-text-muted)] mb-6">
+            <p className="mb-6 text-sm text-slate-600">
               We encountered an unexpected error. Please try refreshing the page.
             </p>
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => window.location.reload()}
-                className="px-6 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600"
+                className="h-10 rounded-lg bg-amber-500 px-6 text-sm font-medium text-white hover:bg-amber-600"
               >
                 Refresh page
               </button>
               <Link
                 to="/"
-                className="px-6 py-3 rounded-xl border border-slate-200 text-[var(--color-text)] font-medium hover:bg-slate-100"
+                className="inline-flex h-10 items-center rounded-lg border border-slate-200 px-6 text-sm font-medium text-slate-800 hover:bg-slate-100"
               >
                 Go home
               </Link>

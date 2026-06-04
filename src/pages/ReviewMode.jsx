@@ -96,7 +96,7 @@ export function ReviewMode() {
           subtitle="Weak and recent items are prioritized using a lightweight spaced repetition flow."
         />
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <label htmlFor="review-status-filter" className="text-xs uppercase tracking-[0.1em] text-slate-400">Filter</label>
+          <label htmlFor="review-status-filter" className="text-xs text-slate-500">Filter</label>
           <select
             id="review-status-filter"
             value={filterStatus}
@@ -104,7 +104,7 @@ export function ReviewMode() {
               setFilterStatus(e.target.value)
               setIndex(0)
             }}
-            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+            className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
           >
             <option value="all">all</option>
             <option value="weak">weak</option>
@@ -115,14 +115,14 @@ export function ReviewMode() {
         </div>
 
         <div className="mb-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-sm text-slate-300">
-            Success rate: <strong className="text-slate-100">{sessionStats.attempts ? Math.round((sessionStats.success / sessionStats.attempts) * 100) : 0}%</strong>
+          <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
+            Success rate: <strong className="text-slate-900">{sessionStats.attempts ? Math.round((sessionStats.success / sessionStats.attempts) * 100) : 0}%</strong>
           </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-sm text-slate-300">
-            Retention rate: <strong className="text-slate-100">{sessionStats.retentionScore}%</strong>
+          <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
+            Retention rate: <strong className="text-slate-900">{sessionStats.retentionScore}%</strong>
           </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-sm text-slate-300">
-            Review streak: <strong className="text-slate-100">{sessionStats.streak}</strong>
+          <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-700">
+            Review streak: <strong className="text-slate-900">{sessionStats.streak}</strong>
           </div>
         </div>
         {loading ? <LoadingState /> : null}

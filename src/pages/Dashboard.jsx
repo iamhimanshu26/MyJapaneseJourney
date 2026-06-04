@@ -178,7 +178,7 @@ export function Dashboard() {
 
             <div className="grid gap-3 lg:grid-cols-4">
               <div className="card-shell lg:col-span-2">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-600">Weekly Progress</h3>
+                <h3 className="text-base font-medium text-slate-900">Weekly Progress</h3>
                 {weekChart.length ? (
                   <div className="mt-3 h-64">
                     <ResponsiveContainer width="100%" height="100%">
@@ -225,7 +225,7 @@ export function Dashboard() {
 
             <div className="grid gap-3 lg:grid-cols-3">
               <section className="card-shell lg:col-span-2">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-600">{isJa ? '本日のAI学習プラン' : "Today's AI Study Plan"}</h3>
+                <h3 className="text-base font-medium text-slate-900">{isJa ? '本日のAI学習プラン' : "Today's AI Study Plan"}</h3>
                 {studyPlan ? (
                   <div className="mt-3 space-y-3 text-sm text-slate-700">
                     <p>
@@ -277,7 +277,7 @@ export function Dashboard() {
               </section>
 
               <section className="card-shell">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-600">{isJa ? 'AI推奨' : 'AI Recommendation'}</h3>
+                <h3 className="text-base font-medium text-slate-900">{isJa ? 'AI推奨' : 'AI Recommendation'}</h3>
                 <p className="mt-3 text-sm text-slate-700">{recommendationText}</p>
                 <ul className="mt-3 space-y-2 text-sm text-slate-700">
                   {(intelligence?.recommendations || []).slice(0, 3).map((entry) => {
@@ -301,13 +301,13 @@ export function Dashboard() {
             </div>
 
             <section className="card-shell">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-600">{isJa ? 'アクティビティフィード' : 'Activity Feed'}</h3>
+              <h3 className="text-base font-medium text-slate-900">{isJa ? 'アクティビティフィード' : 'Activity Feed'}</h3>
               <div className="mt-3 space-y-3">
                 {(intelligence?.activityFeed || []).slice(0, 8).map((event, idx) => (
                   <div key={`${event.title}-${event.occurred_at}-${idx}`} className="rounded-lg border border-slate-200 bg-white p-3">
                     <p className="text-sm font-medium text-slate-900">{event.title || event.activity_type}</p>
                     <p className="text-xs text-slate-600">{event.description || 'Learning activity recorded'}</p>
-                    <p className="mt-1 text-[11px] text-slate-500">
+                    <p className="mt-1 text-xs text-slate-500">
                       {event.occurred_at ? new Date(event.occurred_at).toLocaleString() : ''}
                     </p>
                   </div>

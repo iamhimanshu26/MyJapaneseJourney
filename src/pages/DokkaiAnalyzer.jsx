@@ -7,6 +7,7 @@ import { DokkaiResult } from '../components/ai/DokkaiResult'
 import { useDiscovered } from '../hooks/useDiscovered'
 import { apiRequest } from '../lib/apiClient'
 import { useToast } from '../context/ToastContext'
+import { ActionButton } from '../components/ui/ActionButton'
 
 export function DokkaiAnalyzer() {
   const { identity, save } = useDiscovered()
@@ -120,21 +121,16 @@ export function DokkaiAnalyzer() {
           subtitle="Paste Japanese text and get translation, extracted vocabulary/grammar, JLPT estimate, and practice questions."
         />
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Paste Japanese reading text here..."
-            className="h-48 w-full rounded-xl border border-slate-700 bg-slate-950/70 p-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+            className="h-48 w-full rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800 placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
           />
-          <button
-            type="button"
-            onClick={handleAnalyze}
-            disabled={loading || !text.trim()}
-            className="mt-4 rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          >
+          <ActionButton type="button" onClick={handleAnalyze} disabled={loading || !text.trim()} variant="primary" className="mt-4">
             {loading ? 'Analyzing...' : 'Analyze Dokkai Text'}
-          </button>
+          </ActionButton>
         </div>
 
         {loading ? <div className="mt-4"><LoadingState title="Analyzing text..." subtitle="Generating structured dokkai insights." /></div> : null}
@@ -153,16 +149,16 @@ export function DokkaiAnalyzer() {
         ) : null}
 
         {quizOpen && analysis?.practice_questions?.length ? (
-          <section className="mt-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
+          <section className="mt-4 rounded-xl border border-slate-200 bg-white p-5">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Generated Practice Quiz</h3>
-              <button type="button" onClick={() => setQuizOpen(false)} className="text-xs text-slate-400 hover:text-slate-200">Close</button>
+              <h3 className="text-base font-medium text-slate-900">Generated Practice Quiz</h3>
+              <button type="button" onClick={() => setQuizOpen(false)} className="text-xs text-slate-500 hover:text-slate-700">Close</button>
             </div>
-            <ol className="space-y-3 text-sm text-slate-200">
+            <ol className="space-y-3 text-sm text-slate-700">
               {analysis.practice_questions.map((item, idx) => (
-                <li key={`${item.question}-${idx}`} className="rounded-lg border border-slate-700 bg-slate-950/60 p-3">
+                <li key={`${item.question}-${idx}`} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <p>{idx + 1}. {item.question}</p>
-                  <p className="mt-1 text-xs text-slate-400">Answer: {item.answer}</p>
+                  <p className="mt-1 text-xs text-slate-500">Answer: {item.answer}</p>
                 </li>
               ))}
             </ol>
@@ -170,8 +166,8 @@ export function DokkaiAnalyzer() {
         ) : null}
 
         {history.length ? (
-          <section className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Recent Dokkai Analyses</h3>
+          <section className="mt-5 rounded-xl border border-slate-200 bg-white p-5">
+            <h3 className="text-base font-medium text-slate-900">Recent Dokkai Analyses</h3>
             <div className="mt-3 space-y-2">
               {history.slice(0, 6).map((item, idx) => (
                 <button
@@ -191,7 +187,7 @@ export function DokkaiAnalyzer() {
                     grammar_points: item.grammar_points || item.grammar_json || [],
                     practice_questions: item.practice_questions || item.questions_json || [],
                   })}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-left text-sm text-slate-200 hover:border-blue-400"
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-700 hover:border-blue-400"
                 >
                   <p className="line-clamp-1">{item.summary || item.input_text || 'Dokkai analysis'}</p>
                   <p className="text-xs text-slate-500">{(item.estimated_jlpt_level || 'N4')} • {item.created_at ? new Date(item.created_at).toLocaleString() : ''}</p>

@@ -55,10 +55,10 @@ export function Login() {
           animate={{ opacity: 1, y: 0 }}
           className="hidden rounded-3xl border border-blue-200/70 bg-gradient-to-br from-blue-600 to-indigo-600 p-8 text-white shadow-[0_24px_60px_rgba(37,99,235,0.28)] lg:block"
         >
-          <p className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]">
+          <p className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium">
             Kotoba Seven
           </p>
-          <h1 className="mt-6 text-4xl font-bold leading-tight">
+          <h1 className="mt-6 text-3xl font-semibold leading-tight">
             Enterprise AI
             <br />
             Japanese Learning Platform
@@ -78,14 +78,14 @@ export function Login() {
           animate={{ opacity: 1, y: 0 }}
           className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_20px_45px_rgba(15,23,42,0.12)] sm:p-8"
         >
-          <h2 className="text-2xl font-bold text-slate-900">Welcome back</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Welcome back</h2>
           <p className="mt-2 text-sm text-slate-600">
             Sign in with your Login ID and password. If the ID is new, your account will be created securely.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-semibold text-slate-700">Login ID</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Login ID</label>
               <input
                 type="text"
                 value={loginId}
@@ -100,7 +100,7 @@ export function Login() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-slate-700">Password</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
               <input
                 type="password"
                 value={password}
@@ -112,7 +112,7 @@ export function Login() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-slate-700">Role</label>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Role</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
@@ -132,7 +132,7 @@ export function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 font-semibold text-white shadow-sm transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
+              className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 text-sm font-medium text-white shadow-sm transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
             >
               {loading ? 'Signing in…' : 'Sign in / Create account'}
             </button>
@@ -141,14 +141,14 @@ export function Login() {
               type="button"
               onClick={handleGuestLogin}
               disabled={loading}
-              className="w-full rounded-xl border border-slate-300 bg-white py-3 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+              className="w-full rounded-xl border border-slate-300 bg-white py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
             >
               Continue as guest
             </button>
           </form>
 
           <p className="mt-5 text-sm text-slate-600">
-            Prefer separate sign-up flow? <Link to="/signup" className="font-semibold text-blue-600 hover:underline">Open sign-up page</Link>
+            Prefer separate sign-up flow? <Link to="/signup" className="font-medium text-blue-600 hover:underline">Open sign-up page</Link>
           </p>
         </motion.section>
       </div>

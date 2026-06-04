@@ -94,23 +94,23 @@ export function Analytics() {
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <div className="card-shell">
-                <p className="text-xs uppercase tracking-[0.1em] text-slate-500">Total Items</p>
+                <p className="text-xs text-slate-500">Total Items</p>
                 <p className="mt-2 text-2xl font-bold text-slate-900">{data.cards.totalItems}</p>
               </div>
               <div className="card-shell">
-                <p className="text-xs uppercase tracking-[0.1em] text-slate-500">Mastered</p>
+                <p className="text-xs text-slate-500">Mastered</p>
                 <p className="mt-2 text-2xl font-bold text-slate-900">{data.cards.mastered}</p>
               </div>
               <div className="card-shell">
-                <p className="text-xs uppercase tracking-[0.1em] text-slate-500">Weak Items</p>
+                <p className="text-xs text-slate-500">Weak Items</p>
                 <p className="mt-2 text-2xl font-bold text-slate-900">{data.cards.weak}</p>
               </div>
               <div className="card-shell">
-                <p className="text-xs uppercase tracking-[0.1em] text-slate-500">Mastery Rate</p>
+                <p className="text-xs text-slate-500">Mastery Rate</p>
                 <p className="mt-2 text-2xl font-bold text-slate-900">{data.cards.masteryRate}%</p>
               </div>
               <div className="card-shell">
-                <p className="text-xs uppercase tracking-[0.1em] text-slate-500">Favorites</p>
+                <p className="text-xs text-slate-500">Favorites</p>
                 <p className="mt-2 text-2xl font-bold text-slate-900">{data.cards.favorites}</p>
               </div>
             </div>
@@ -184,7 +184,7 @@ export function Analytics() {
                       <p className="text-xs text-slate-600">
                         Mastered: {report.mastered} • New: {report.newItems} • Reviewed: {report.reviewed} • AI: {report.aiLookups} • Readiness: {report.readiness}% ({report.readinessDelta >= 0 ? '+' : ''}{report.readinessDelta})
                       </p>
-                      <p className="mt-1 text-[11px] text-slate-500">{report.narrative}</p>
+                      <p className="mt-1 text-xs text-slate-500">{report.narrative}</p>
                     </li>
                   ))}
                 </ul>

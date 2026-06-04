@@ -54,12 +54,12 @@ export function LearningTimeline() {
         />
 
         <div className="mb-4 flex items-center gap-2">
-          <label htmlFor="timeline-filter" className="text-xs uppercase tracking-[0.1em] text-slate-400">Filter</label>
+          <label htmlFor="timeline-filter" className="text-xs text-slate-500">Filter</label>
           <select
             id="timeline-filter"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
+            className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800"
           >
             {activityTypes.map((type) => (
               <option key={type} value={type}>{type}</option>
@@ -76,15 +76,15 @@ export function LearningTimeline() {
         {!loading && !error && filtered.length ? (
           <section className="space-y-3">
             {filtered.map((item) => (
-              <article key={item.id} className="rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+              <article key={item.id} className="rounded-xl border border-slate-200 bg-white p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-100">{item.title || item.activity_type}</p>
-                  <span className="rounded-full border border-slate-700 bg-slate-800 px-2 py-1 text-[11px] text-slate-300">
+                  <p className="text-sm font-medium text-slate-900">{item.title || item.activity_type}</p>
+                  <span className="rounded-full border border-slate-300 bg-slate-100 px-2 py-1 text-xs text-slate-600">
                     {item.activity_type}
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-slate-300">{item.description || 'Learning event recorded.'}</p>
-                <p className="mt-2 text-[11px] text-slate-500">
+                <p className="mt-2 text-sm text-slate-700">{item.description || 'Learning event recorded.'}</p>
+                <p className="mt-2 text-xs text-slate-500">
                   {item.occurred_at ? new Date(item.occurred_at).toLocaleString() : ''}
                 </p>
               </article>

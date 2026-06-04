@@ -56,7 +56,7 @@ export function LearningIntelligence() {
           subtitle="AI-driven mastery analysis for JLPT/NAT preparation."
         />
         {!loading && !error && data ? (
-          <p className="mb-4 inline-flex rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs font-medium text-slate-300">
+          <p className="mb-4 inline-flex rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
             Role context: {data.role || 'guest'}
           </p>
         ) : null}
@@ -64,7 +64,7 @@ export function LearningIntelligence() {
         {loading ? <LoadingState /> : null}
         {!loading && error ? <EmptyState title="Unable to load insights" message={error} /> : null}
         {!loading && !error && data ? (
-          <div className="space-y-5">
+          <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               <ProgressCard title="Vocabulary Mastery" value={data.metrics.vocabularyMastery} subtitle="Current retention strength" />
               <ProgressCard title="Grammar Mastery" value={data.metrics.grammarMastery} subtitle="Pattern understanding" />
@@ -75,15 +75,15 @@ export function LearningIntelligence() {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-3">
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 lg:col-span-2">
-                <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Mastery Breakdown</h3>
+              <div className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-2">
+                <h3 className="text-base font-medium text-slate-900">Mastery Breakdown</h3>
                 <div className="mt-4 h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                      <XAxis dataKey="metric" stroke="#94a3b8" />
-                      <YAxis stroke="#94a3b8" />
-                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="metric" stroke="#64748b" />
+                      <YAxis stroke="#64748b" />
+                      <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 8 }} />
                       <Bar dataKey="score" fill="#60a5fa" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -100,8 +100,8 @@ export function LearningIntelligence() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="card-shell">
-                <h3 className="text-sm font-semibold text-slate-200">Learning Pattern Analysis</h3>
-                <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                <h3 className="text-base font-medium text-slate-900">Learning Pattern Analysis</h3>
+                <ul className="mt-3 space-y-2 text-sm text-slate-700">
                   <li>Most active mode: <strong>{data.learningPatternAnalysis?.mostActiveWindow || '-'}</strong></li>
                   <li>Consistency score: <strong>{data.learningPatternAnalysis?.consistencyScore || 0}%</strong></li>
                   <li>Weak pattern: <strong>{data.learningPatternAnalysis?.weakPattern || '-'}</strong></li>
@@ -109,8 +109,8 @@ export function LearningIntelligence() {
                 </ul>
               </div>
               <div className="card-shell">
-                <h3 className="text-sm font-semibold text-slate-200">Study Efficiency Metrics</h3>
-                <ul className="mt-3 space-y-2 text-sm text-slate-300">
+                <h3 className="text-base font-medium text-slate-900">Study Efficiency Metrics</h3>
+                <ul className="mt-3 space-y-2 text-sm text-slate-700">
                   <li>Avg session length: <strong>{data.studyEfficiencyMetrics?.averageSessionMinutes || 0} min</strong></li>
                   <li>Items/session: <strong>{data.studyEfficiencyMetrics?.itemsReviewedPerSession || 0}</strong></li>
                   <li>Retention rate: <strong>{data.studyEfficiencyMetrics?.retentionRate || 0}%</strong></li>

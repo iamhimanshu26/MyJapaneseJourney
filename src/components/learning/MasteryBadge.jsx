@@ -1,9 +1,9 @@
 const STATUS_STYLES = {
-  new: 'bg-slate-700 text-slate-200',
-  learning: 'bg-blue-500/20 text-blue-300',
-  weak: 'bg-rose-500/20 text-rose-300',
-  mastered: 'bg-emerald-500/20 text-emerald-300',
-  favorite: 'bg-amber-500/20 text-amber-300',
+  new: 'bg-slate-100 text-slate-700',
+  learning: 'bg-blue-100 text-blue-700',
+  weak: 'bg-rose-100 text-rose-700',
+  mastered: 'bg-emerald-100 text-emerald-700',
+  favorite: 'bg-amber-100 text-amber-700',
 }
 
 export function MasteryBadge({ status = 'new' }) {
