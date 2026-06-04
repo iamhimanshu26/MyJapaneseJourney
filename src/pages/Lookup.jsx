@@ -7,6 +7,8 @@ import { AIResultCard } from '../components/ai/AIResultCard'
 import { useDiscovered } from '../hooks/useDiscovered'
 import { useToast } from '../context/ToastContext'
 import { apiRequest } from '../lib/apiClient'
+import { ActionButton } from '../components/ui/ActionButton'
+import { SearchInput } from '../components/ui/SearchInput'
 
 export function Lookup() {
   const [searchParams] = useSearchParams()
@@ -131,25 +133,24 @@ export function Lookup() {
           subtitle="Search any Japanese word or phrase to get full learning intelligence: reading, romaji, bilingual meaning, usage guidance, and save controls."
         />
 
-        <form onSubmit={handleSearch} className="mb-6 rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-          <div className="flex flex-col gap-3 md:flex-row">
-            <input
-              type="text"
+        <form onSubmit={handleSearch} className="card-shell mb-6">
+          <div className="flex flex-col gap-2 md:flex-row">
+            <SearchInput
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="例: 進捗, お疲れ様です, tabun, 〜てしまう"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-blue-400 focus:outline-none"
+              className="h-10"
               disabled={loading}
             />
-            <button
+            <ActionButton
               type="submit"
+              variant="primary"
               disabled={loading || !query.trim()}
-              className="rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 px-6 py-3 text-sm font-semibold text-white disabled:opacity-50"
             >
               {loading ? 'Generating...' : 'Analyze with AI'}
-            </button>
+            </ActionButton>
           </div>
-          {error ? <p className="mt-3 text-sm text-rose-400">{error}</p> : null}
+          {error ? <p className="mt-2 text-sm text-rose-600">{error}</p> : null}
         </form>
 
         {result ? (
@@ -162,18 +163,18 @@ export function Lookup() {
         ) : null}
 
         {lookupHistory.length ? (
-          <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/80 p-5">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">Recent AI lookups</h3>
+          <section className="card-shell mt-6">
+            <h3 className="text-base font-medium text-slate-900">Recent AI lookups</h3>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {lookupHistory.map((item) => (
                 <button
                   key={`${item.query}-${item.at}`}
                   type="button"
                   onClick={() => { setQuery(item.query); setResult(item.result) }}
-                  className="rounded-lg border border-slate-700 bg-slate-950/70 px-3 py-2 text-left text-sm text-slate-200 hover:border-blue-400"
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-left text-sm text-slate-700 hover:border-blue-400"
                 >
                   <p style={{ fontFamily: 'var(--font-jp)' }}>{item.result.word || item.query}</p>
-                  <p className="mt-1 text-xs text-slate-400">{item.result.meaning_en}</p>
+                  <p className="mt-1 text-xs text-slate-500">{item.result.meaning_en}</p>
                 </button>
               ))}
             </div>

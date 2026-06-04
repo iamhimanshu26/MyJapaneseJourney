@@ -5,14 +5,14 @@ export function EmptyState({
   onAction,
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/60 p-8 text-center">
-      <p className="text-sm font-semibold text-slate-100">{title}</p>
-      <p className="mx-auto mt-2 max-w-lg text-sm text-slate-400">{message}</p>
+    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+      <p className="text-sm font-medium text-slate-800">{title}</p>
+      <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">{message}</p>
       {actionLabel && onAction && (
         <button
           type="button"
           onClick={onAction}
-          className="mt-4 rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          className="mt-4 inline-flex h-10 items-center rounded-lg border border-transparent bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700"
         >
           {actionLabel}
         </button>

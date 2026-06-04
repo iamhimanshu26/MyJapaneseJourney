@@ -2,6 +2,9 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useUiPreferences } from '../../hooks/useUiPreferences'
+import { ActionButton } from '../ui/ActionButton'
+import { SearchInput } from '../ui/SearchInput'
+import { ToggleSwitch } from '../ui/ToggleSwitch'
 
 const COPY = {
   en: {
@@ -31,10 +34,6 @@ export function Topbar({ onMenu }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const navigate = useNavigate()
   const isDark = resolvedTheme === 'dark'
-
-  function toggleLanguage() {
-    setLanguage(language === 'en' ? 'ja' : 'en')
-  }
 
   const t = useMemo(() => COPY[language] || COPY.en, [language])
 
@@ -75,99 +74,79 @@ export function Topbar({ onMenu }) {
 
         <div className="hidden w-full max-w-md px-4 md:block">
           <form onSubmit={onSearchSubmit}>
-            <input
-              type="search"
+            <SearchInput
               placeholder={t.search}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={isDark
-                ? 'w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none'
-                : 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-400 focus:outline-none'}
+              className={isDark ? 'border-slate-600 bg-slate-800 text-slate-100 placeholder:text-slate-400' : ''}
             />
           </form>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
+        <div className="flex items-center gap-2">
+          <ActionButton
             type="button"
             onClick={() => setMobileSearchOpen((prev) => !prev)}
-            className={isDark
-              ? 'rounded-lg border border-slate-600 bg-slate-700 px-2.5 py-1.5 text-xs text-slate-100 md:hidden'
-              : 'rounded-lg border border-slate-300 bg-slate-100 px-2.5 py-1.5 text-xs text-slate-700 md:hidden'}
+            className={`md:hidden ${isDark ? 'border-slate-600 bg-slate-700 text-slate-100 hover:bg-slate-600' : ''}`}
           >
             {t.searchButton}
-          </button>
-          <div className="hidden sm:flex items-center rounded-full border border-slate-200 bg-white p-1 shadow-[0_8px_18px_rgba(15,23,42,0.10)]">
-            <button
-              type="button"
-              onClick={() => setLanguage('en')}
-              aria-label="Switch language to English"
-              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
-                language === 'en' ? 'bg-[#edf2ff] text-[#3b4bff]' : 'text-slate-600 hover:text-slate-800'
-              }`}
-            >
-              EN
-            </button>
-            <button
-              type="button"
-              onClick={() => setLanguage('ja')}
-              aria-label="Switch language to Japanese"
-              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${
-                language === 'ja' ? 'bg-[#edf2ff] text-[#3b4bff]' : 'text-slate-600 hover:text-slate-800'
-              }`}
-            >
-              日本語
-            </button>
+          </ActionButton>
+
+          <div className="hidden sm:block">
+            <ToggleSwitch
+              ariaLabel="Language selector"
+              options={[
+                { label: 'EN', value: 'en' },
+                { label: '日本語', value: 'ja' },
+              ]}
+              value={language}
+              onChange={setLanguage}
+            />
           </div>
 
-          <button
+          <ActionButton
             type="button"
-            onClick={toggleLanguage}
-            aria-label="Toggle language"
-            className="inline-flex h-9 items-center rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-[#3b4bff] shadow-[0_6px_14px_rgba(15,23,42,0.10)] sm:hidden"
+            onClick={() => setLanguage(language === 'en' ? 'ja' : 'en')}
+            className="sm:hidden"
           >
             {language === 'en' ? 'EN' : '日本語'}
-          </button>
+          </ActionButton>
 
-          <span className={isDark ? 'text-sm font-semibold text-slate-200' : 'text-sm font-semibold text-slate-800'}>
+          <span className={isDark ? 'text-sm font-medium text-slate-200' : 'text-sm font-medium text-slate-800'}>
             {user?.loginId || t.guest}
           </span>
           {hasAuth && user ? (
-            <button
+            <ActionButton
               type="button"
               onClick={() => signOut()}
-              title={t.signOut}
-              aria-label={t.signOut}
-              className={isDark
-                ? 'inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-200 hover:bg-slate-700'
-                : 'inline-flex h-10 w-10 items-center justify-center rounded-xl text-[#5d7398] hover:bg-slate-100'}
+              icon={(
+                <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 8.25V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25v-3" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H9m0 0l3-3m-3 3l3 3" />
+                </svg>
+              )}
+              className={isDark ? 'border-slate-600 bg-slate-700 text-slate-100 hover:bg-slate-600' : ''}
             >
-              <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" stroke="currentColor" strokeWidth="2.2" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 8.25V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25v-3" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H9m0 0l3-3m-3 3l3 3" />
-              </svg>
-            </button>
+              {t.signOut}
+            </ActionButton>
           ) : null}
         </div>
       </div>
       {mobileSearchOpen ? (
         <div className={isDark ? 'border-t border-slate-700 px-3 pb-3 pt-2 md:hidden' : 'border-t border-slate-300/60 px-3 pb-3 pt-2 md:hidden'}>
           <form className="flex gap-2" onSubmit={onSearchSubmit}>
-            <input
-              type="search"
+            <SearchInput
               placeholder={t.search}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={isDark
-                ? 'w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none'
-                : 'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:border-blue-400 focus:outline-none'}
+              className={isDark ? 'border-slate-600 bg-slate-800 text-slate-100 placeholder:text-slate-400' : ''}
             />
-            <button
+            <ActionButton
               type="submit"
-              className="rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-3 py-2 text-xs font-semibold text-white"
+              variant="primary"
             >
               {t.searchButton}
-            </button>
+            </ActionButton>
           </form>
         </div>
       ) : null}

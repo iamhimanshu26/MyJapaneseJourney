@@ -47,14 +47,15 @@ export function UiPreferencesProvider({ children }) {
 
   useEffect(() => {
     if (!profile) return
-    const nextTheme = normalizeTheme(profile.ui_theme || theme)
-    const nextLanguage = normalizeLanguage(profile.ui_language || language)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setThemeState(nextTheme)
-    setLanguageState(nextLanguage)
-    writeStorage(UI_THEME_KEY, nextTheme)
-    writeStorage(UI_LANG_KEY, nextLanguage)
-  }, [profile, theme, language])
+    const profileTheme = profile.ui_theme ? normalizeTheme(profile.ui_theme) : null
+    const profileLanguage = profile.ui_language ? normalizeLanguage(profile.ui_language) : null
+
+    // Sync from profile only when values are explicitly present.
+    if (profileTheme && profileTheme !== theme) setThemeState(profileTheme)
+    if (profileLanguage && profileLanguage !== language) setLanguageState(profileLanguage)
+    if (profileTheme) writeStorage(UI_THEME_KEY, profileTheme)
+    if (profileLanguage) writeStorage(UI_LANG_KEY, profileLanguage)
+  }, [profile?.ui_theme, profile?.ui_language])
 
   useEffect(() => {
     const nextResolved = getResolvedTheme(theme)

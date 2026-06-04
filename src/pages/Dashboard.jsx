@@ -132,10 +132,10 @@ export function Dashboard() {
             ? 'JLPT / NAT 対策のためのAI学習インテリジェンスダッシュボード。'
             : 'AI-powered Japanese Learning Intelligence Dashboard for JLPT/NAT readiness.'}
           actions={[
-            <Link key="lookup" to="/lookup" className="rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white">
+            <Link key="lookup" to="/lookup" className="inline-flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white hover:bg-blue-700">
               {isJa ? 'AI検索を開始' : 'Start AI Lookup'}
             </Link>,
-            <Link key="review" to="/review-mode" className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700">
+            <Link key="review" to="/review-mode" className="inline-flex h-10 items-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50">
               {isJa ? '復習モード' : 'Review Mode'}
             </Link>,
           ]}
@@ -153,14 +153,14 @@ export function Dashboard() {
         ) : error ? (
           <EmptyState title="Dashboard unavailable" message={error} />
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {intelligence?.demoWorkspace && user?.isGuest ? (
               <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 {intelligence.demoBanner || 'Using Demo Workspace – Sign In To Save Progress'}
               </div>
             ) : null}
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
               <StatCard label="Current Level" value={intelligence?.hero?.currentLevel || profile?.current_level || analytics?.profile?.current_level || 'N5'} icon="🎌" />
               <StatCard label="Target Exam" value={`${intelligence?.hero?.targetExam || analytics?.profile?.target_exam || 'JLPT'} ${intelligence?.hero?.targetLevel || analytics?.profile?.target_level || 'N3'}`} icon="🎯" />
               <StatCard label="Readiness Score" value={`${intelligence?.hero?.readinessScore || intelligence?.metrics?.learningReadinessScore || 0}%`} icon="⚡" accent="from-emerald-500 to-cyan-500" />
@@ -169,18 +169,18 @@ export function Dashboard() {
               <StatCard label="AI Lookups" value={intelligence?.metrics?.aiLookups || 0} icon="🤖" />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               <StatCard label="Vocabulary" value={intelligence?.metrics?.totalVocabulary ?? items.filter((item) => item.type === 'vocabulary').length} icon="📘" />
               <StatCard label="Grammar" value={intelligence?.metrics?.totalGrammar ?? items.filter((item) => item.type === 'grammar').length} icon="🧩" />
               <StatCard label="Kanji" value={intelligence?.metrics?.totalKanji ?? items.filter((item) => item.type === 'kanji').length} icon="漢" />
               <StatCard label="Weak Backlog" value={analytics?.cards?.weak || 0} icon="🧪" />
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-4">
+            <div className="grid gap-3 lg:grid-cols-4">
               <div className="card-shell lg:col-span-2">
                 <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-600">Weekly Progress</h3>
                 {weekChart.length ? (
-                  <div className="mt-4 h-72">
+                  <div className="mt-3 h-64">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={weekChart}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
@@ -192,22 +192,22 @@ export function Dashboard() {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div className="mt-4 flex h-72 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50">
+                  <div className="mt-3 flex h-64 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50">
                     <div className="mx-auto max-w-sm text-center">
                       <p className="text-base font-semibold text-slate-800">No activity recorded yet</p>
                       <p className="mt-1 text-sm text-slate-600">
                         Start one quick action to populate your weekly progress chart.
                       </p>
-                      <div className="mt-4 flex justify-center gap-2">
+                      <div className="mt-3 flex justify-center gap-2">
                         <Link
                           to="/lookup"
-                          className="rounded-lg bg-gradient-to-r from-blue-500 to-violet-500 px-3 py-1.5 text-xs font-semibold text-white"
+                          className="inline-flex h-9 items-center rounded-lg bg-blue-600 px-3 text-xs font-medium text-white hover:bg-blue-700"
                         >
                           Start AI Lookup
                         </Link>
                         <Link
                           to="/review-mode"
-                          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700"
+                          className="inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-100"
                         >
                           Open Review Mode
                         </Link>
@@ -223,7 +223,7 @@ export function Dashboard() {
               </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-3">
+            <div className="grid gap-3 lg:grid-cols-3">
               <section className="card-shell lg:col-span-2">
                 <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-600">{isJa ? '本日のAI学習プラン' : "Today's AI Study Plan"}</h3>
                 {studyPlan ? (
@@ -245,17 +245,17 @@ export function Dashboard() {
                       {studyPlan.estimatedMinutes || 25} minutes
                     </p>
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <Link to="/review-mode" className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-400">
+                      <Link to="/review-mode" className="inline-flex h-8 items-center rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:border-blue-400">
                         {isJa ? '復習を開始' : 'Start Review'}
                       </Link>
-                      <Link to="/dokkai-analyzer" className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-400">
+                      <Link to="/dokkai-analyzer" className="inline-flex h-8 items-center rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:border-blue-400">
                         {isJa ? '読解を開く' : 'Open Dokkai'}
                       </Link>
                       <button
                         type="button"
                         onClick={handleRegeneratePlan}
                         disabled={regeneratingPlan}
-                        className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-violet-400 disabled:opacity-60"
+                        className="inline-flex h-8 items-center rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:border-violet-400 disabled:opacity-60"
                       >
                         {regeneratingPlan ? (isJa ? '再生成中...' : 'Regenerating...') : (isJa ? 'プラン再生成' : 'Regenerate Plan')}
                       </button>
@@ -263,7 +263,7 @@ export function Dashboard() {
                         type="button"
                         onClick={handleCompletePlan}
                         disabled={completingPlan || studyPlan.status === 'completed'}
-                        className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 disabled:opacity-60"
+                        className="inline-flex h-8 items-center rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-medium text-emerald-700 disabled:opacity-60"
                       >
                         {studyPlan.status === 'completed'
                           ? (isJa ? '完了済み' : 'Completed')
@@ -319,7 +319,7 @@ export function Dashboard() {
               </div>
             </section>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 { title: 'AI Word Intelligence', desc: 'Lookup with deep bilingual insights', path: '/lookup', icon: '🤖' },
                 { title: 'My Discovered Knowledge Base', desc: 'Search, filter, and manage saved learning data', path: '/discovered', icon: '🧠' },
@@ -335,7 +335,7 @@ export function Dashboard() {
                 <Link
                   key={card.path}
                   to={card.path}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_24px_rgba(15,23,42,0.06)] transition hover:border-blue-400/50"
+                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition hover:border-blue-400/50"
                 >
                   <span className="text-xl" aria-hidden>{card.icon}</span>
                   <h3 className="mt-2 text-base font-semibold text-slate-900">{card.title}</h3>
@@ -347,7 +347,7 @@ export function Dashboard() {
               <button
                 type="button"
                 onClick={() => setShowAllModules((prev) => !prev)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-400"
+                className="inline-flex h-9 items-center rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:border-blue-400"
               >
                 {showAllModules ? (isJa ? '簡易表示に戻す' : 'Show fewer modules') : (isJa ? 'すべて表示' : 'Show all modules')}
               </button>

@@ -9,6 +9,8 @@ import { LoadingState } from '../components/shared/LoadingState'
 import { EmptyState } from '../components/shared/EmptyState'
 import { MasteryBadge } from '../components/learning/MasteryBadge'
 import { JLPTBadge } from '../components/learning/JLPTBadge'
+import { ActionButton } from '../components/ui/ActionButton'
+import { SearchInput } from '../components/ui/SearchInput'
 
 const LEVELS = ['ALL', 'N5', 'N4', 'N3', 'N2', 'N1']
 const CATEGORIES = ['all', 'vocabulary', 'grammar', 'kanji', 'phrase']
@@ -193,66 +195,66 @@ export function MyDiscovered() {
           ]}
         />
 
-        <section className="mb-5 grid gap-3 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 lg:grid-cols-6">
-          <input
+        <section className="card-shell mb-4 grid gap-2 lg:grid-cols-6">
+          <SearchInput
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search word, reading, meaning..."
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 lg:col-span-2"
+            className="lg:col-span-2"
           />
-          <select value={level} onChange={(e) => setLevel(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+          <select value={level} onChange={(e) => setLevel(e.target.value)} className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800">
             {LEVELS.map((value) => <option key={value} value={value}>{value}</option>)}
           </select>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800">
             {CATEGORIES.map((value) => <option key={value} value={value}>{value}</option>)}
           </select>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800">
             {STATUSES.map((value) => <option key={value} value={value}>{value}</option>)}
           </select>
-          <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100">
+          <select value={sort} onChange={(e) => setSort(e.target.value)} className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800">
             {SORT_OPTIONS.map((value) => <option key={value} value={value}>{value}</option>)}
           </select>
         </section>
 
-        <section className="mb-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+        <section className="card-shell mb-4">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs text-slate-400">Selected: <strong className="text-slate-200">{selectedIds.length}</strong></p>
-            <select value={bulkStatus} onChange={(e) => setBulkStatus(e.target.value)} className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-100">
+            <p className="text-xs text-slate-600">Selected: <strong className="text-slate-900">{selectedIds.length}</strong></p>
+            <select value={bulkStatus} onChange={(e) => setBulkStatus(e.target.value)} className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-800">
               {STATUSES.filter((s) => s !== 'all').map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <button type="button" onClick={() => runBulkAction('bulk-status', { status: bulkStatus })} disabled={busy} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100 disabled:opacity-60">
+            <ActionButton type="button" onClick={() => runBulkAction('bulk-status', { status: bulkStatus })} disabled={busy} className="h-10 text-xs">
               Batch Status Update
-            </button>
-            <button type="button" onClick={() => runBulkAction('bulk-review')} disabled={busy} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100 disabled:opacity-60">
+            </ActionButton>
+            <ActionButton type="button" onClick={() => runBulkAction('bulk-review')} disabled={busy} className="h-10 text-xs">
               Batch Review
-            </button>
-            <button type="button" onClick={() => runBulkAction('ai-tag')} disabled={busy} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100 disabled:opacity-60">
+            </ActionButton>
+            <ActionButton type="button" onClick={() => runBulkAction('ai-tag')} disabled={busy} className="h-10 text-xs">
               AI Generate Tags
-            </button>
-            <button type="button" onClick={() => exportData('csv')} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100">
+            </ActionButton>
+            <ActionButton type="button" onClick={() => exportData('csv')} className="h-10 text-xs">
               Export CSV
-            </button>
-            <button type="button" onClick={() => exportData('json')} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100">
+            </ActionButton>
+            <ActionButton type="button" onClick={() => exportData('json')} className="h-10 text-xs">
               Export JSON
-            </button>
-            <button type="button" onClick={loadClusters} className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-100">
+            </ActionButton>
+            <ActionButton type="button" onClick={loadClusters} className="h-10 text-xs">
               AI Clusters
-            </button>
+            </ActionButton>
           </div>
         </section>
 
         {showClusters ? (
-          <section className="mb-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+          <section className="card-shell mb-4">
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-100">AI Vocabulary Clustering</h3>
-              <button type="button" onClick={() => setShowClusters(false)} className="text-xs text-slate-400 hover:text-slate-200">Hide</button>
+              <h3 className="text-base font-medium text-slate-900">AI Vocabulary Clustering</h3>
+              <button type="button" onClick={() => setShowClusters(false)} className="text-xs text-slate-600 hover:text-slate-800">Hide</button>
             </div>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {clusters.map((cluster) => (
-                <article key={cluster.cluster} className="rounded-xl border border-slate-700 bg-slate-950/60 p-3">
-                  <p className="text-sm font-semibold text-slate-100">{cluster.cluster}</p>
-                  <p className="text-xs text-slate-400">{cluster.count} items</p>
-                  <p className="mt-1 text-xs text-slate-300">
+                <article key={cluster.cluster} className="rounded-lg border border-slate-200 bg-white p-3">
+                  <p className="text-sm font-medium text-slate-900">{cluster.cluster}</p>
+                  <p className="text-xs text-slate-500">{cluster.count} items</p>
+                  <p className="mt-1 text-xs text-slate-600">
                     {(cluster.sample || []).slice(0, 3).map((item) => item.word).join(', ') || 'No sample'}
                   </p>
                 </article>
@@ -265,14 +267,14 @@ export function MyDiscovered() {
           <button
             type="button"
             onClick={() => setView('card')}
-            className={`rounded-lg px-3 py-1.5 text-sm ${view === 'card' ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-200'}`}
+            className={`inline-flex h-10 items-center rounded-lg px-3 text-sm ${view === 'card' ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white text-slate-700'}`}
           >
             Card View
           </button>
           <button
             type="button"
             onClick={() => setView('table')}
-            className={`rounded-lg px-3 py-1.5 text-sm ${view === 'table' ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-200'}`}
+            className={`inline-flex h-10 items-center rounded-lg px-3 text-sm ${view === 'table' ? 'bg-blue-600 text-white' : 'border border-slate-300 bg-white text-slate-700'}`}
           >
             Table View
           </button>
@@ -291,29 +293,29 @@ export function MyDiscovered() {
         {!loading && filtered.length && view === 'card' ? (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {filtered.map((item) => (
-              <article key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+              <article key={item.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.05)]">
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} />
                     <JLPTBadge level={item.jlpt_level || 'N5'} />
                     <MasteryBadge status={item.status} />
                   </div>
-                  <button type="button" onClick={() => toggleFavorite(item)} className="text-sm text-amber-300">
+                  <button type="button" onClick={() => toggleFavorite(item)} className="text-sm text-amber-500">
                     {item.is_favorite ? '★' : '☆'}
                   </button>
                 </div>
-                <p className="text-xl font-bold text-slate-100" style={{ fontFamily: 'var(--font-jp)' }}>{item.word}</p>
-                <p className="text-xs text-slate-400">{item.reading || '-'}</p>
-                <p className="mt-2 text-sm text-slate-200">{item.meaning_en || '-'}</p>
+                <p className="text-xl font-bold text-slate-900" style={{ fontFamily: 'var(--font-jp)' }}>{item.word}</p>
+                <p className="text-xs text-slate-500">{item.reading || '-'}</p>
+                <p className="mt-2 text-sm text-slate-700">{item.meaning_en || '-'}</p>
                 <div className="mt-3 flex flex-wrap gap-1">
                   {(item.tags || []).map((tag) => (
-                    <span key={tag} className="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300">{tag}</span>
+                    <span key={tag} className="rounded bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">{tag}</span>
                   ))}
                   {(item.ai_tags || []).map((tag) => (
-                    <span key={`ai-${tag}`} className="rounded bg-blue-500/20 px-2 py-0.5 text-[11px] text-blue-200">#{tag}</span>
+                    <span key={`ai-${tag}`} className="rounded bg-blue-100 px-2 py-0.5 text-[11px] text-blue-700">#{tag}</span>
                   ))}
                 </div>
-                <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-400">
+                <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500">
                   <p>Review count: {item.review_count || 0}</p>
                   <p>Last reviewed: {item.last_reviewed_at ? new Date(item.last_reviewed_at).toLocaleDateString() : '-'}</p>
                 </div>
@@ -323,12 +325,12 @@ export function MyDiscovered() {
                       key={value}
                       type="button"
                       onClick={() => handleStatus(item.id, value)}
-                      className="rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-[11px] text-slate-200 hover:border-blue-400"
+                      className="rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] text-slate-700 hover:border-blue-400"
                     >
                       {value}
                     </button>
                   ))}
-                  <button type="button" onClick={() => handleRemove(item.id)} className="rounded-md border border-rose-500/50 bg-rose-500/10 px-2 py-1 text-[11px] text-rose-300">
+                  <button type="button" onClick={() => handleRemove(item.id)} className="rounded-md border border-rose-300 bg-rose-50 px-2 py-1 text-[11px] text-rose-700">
                     Remove
                   </button>
                 </div>
@@ -338,9 +340,9 @@ export function MyDiscovered() {
         ) : null}
 
         {!loading && filtered.length && view === 'table' ? (
-          <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/80">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-800 text-xs uppercase tracking-[0.08em] text-slate-400">
+              <thead className="border-b border-slate-200 text-xs uppercase tracking-[0.08em] text-slate-500">
                 <tr>
                   <th className="px-3 py-3">Word</th>
                   <th className="px-3 py-3">Reading</th>
@@ -353,7 +355,7 @@ export function MyDiscovered() {
               </thead>
               <tbody>
                 {filtered.map((item) => (
-                  <tr key={item.id} className="border-b border-slate-800/60 text-slate-200">
+                  <tr key={item.id} className="border-b border-slate-200 text-slate-700">
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
                         <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} />
@@ -367,8 +369,8 @@ export function MyDiscovered() {
                     <td className="px-3 py-3">{item.review_count || 0}</td>
                     <td className="px-3 py-3">
                       <div className="flex gap-2">
-                        <button type="button" onClick={() => handleStatus(item.id, 'learning')} className="text-xs text-blue-300 hover:underline">Review</button>
-                        <button type="button" onClick={() => handleRemove(item.id)} className="text-xs text-rose-300 hover:underline">Delete</button>
+                        <button type="button" onClick={() => handleStatus(item.id, 'learning')} className="text-xs text-blue-600 hover:underline">Review</button>
+                        <button type="button" onClick={() => handleRemove(item.id)} className="text-xs text-rose-600 hover:underline">Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -379,12 +381,12 @@ export function MyDiscovered() {
         ) : null}
 
         {!loading && groupedByLevel.length ? (
-          <section className="mt-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-300">JLPT Level Sections</h3>
+          <section className="card-shell mt-4">
+            <h3 className="text-base font-medium text-slate-900">JLPT Level Sections</h3>
             <div className="mt-3 space-y-2">
               {groupedByLevel.map(([lvl, list]) => (
-                <p key={lvl} className="text-sm text-slate-300">
-                  <span className="font-semibold text-slate-100">{lvl}:</span> {list.length} items
+                <p key={lvl} className="text-sm text-slate-700">
+                  <span className="font-medium text-slate-900">{lvl}:</span> {list.length} items
                 </p>
               ))}
             </div>
