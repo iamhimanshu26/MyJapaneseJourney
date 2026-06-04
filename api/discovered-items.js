@@ -1,5 +1,6 @@
 import { appendTimelineEvent, ensureUserProfile, query } from '../server/lib/db.js'
-import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
+import { requireAuthorizedContext } from '../server/lib/authSession.js'
+import { generateJson } from '../server/lib/gemini.js'
 import { handleOptions, methodNotAllowed, parseJsonBody, setCors, toArray } from '../server/lib/http.js'
 
 const VALID_TYPES = new Set(['vocabulary', 'grammar', 'kanji', 'phrase'])
@@ -26,8 +27,6 @@ const UPDATABLE_FIELDS = new Set([
   'is_favorite',
   'review_count',
   'last_reviewed_at',
-  'next_review_at',
-  'ease_factor',
 ])
 
 const CLUSTER_RULES = [
@@ -69,6 +68,63 @@ function inferAiTags(item) {
   if (lower.includes('business') || lower.includes('会社') || lower.includes('会議')) tags.push('business')
   if (lower.includes('technology') || lower.includes('技術') || lower.includes('system')) tags.push('technology')
   return mergeUniqueTags(tags)
+}
+
+function normalizeAiTagResponse(response = {}, item) {
+  const tags = mergeUniqueTags(
+    item.tags || [],
+    item.ai_tags || [],
+    toArray(response.tags),
+    inferAiTags(item)
+  )
+  const cluster = String(response.cluster_category || response.clusterCategory || '').trim()
+  return {
+    tags,
+    aiTags: tags,
+    clusterCategory: cluster || detectClusterCategory({ ...item, tags, ai_tags: tags }),
+  }
+}
+
+async function generateSemanticTags(item) {
+  const systemPrompt = `You are a Japanese learning taxonomy assistant.
+Return strict JSON only:
+{
+  "tags": ["short-tag-1", "short-tag-2", "short-tag-3"],
+  "cluster_category": "one concise category"
+}
+Rules:
+- Tags should be lower-case snake-case, max 6 tags.
+- Focus on semantic meaning, usage context, and JLPT difficulty.
+- If uncertain, infer from meaning and type.
+- JSON only.`
+
+  const prompt = JSON.stringify({
+    word: item.word,
+    reading: item.reading,
+    meaning_en: item.meaning_en,
+    type: item.type,
+    jlpt_level: item.jlpt_level,
+    business_usage: item.business_usage,
+    existing_tags: item.tags || [],
+    existing_ai_tags: item.ai_tags || [],
+  })
+
+  try {
+    const response = await generateJson({
+      systemPrompt,
+      prompt,
+      maxOutputTokens: 600,
+      temperature: 0.2,
+    })
+    return normalizeAiTagResponse(response, item)
+  } catch {
+    const fallbackTags = mergeUniqueTags(item.tags || [], item.ai_tags || [], inferAiTags(item))
+    return {
+      tags: fallbackTags,
+      aiTags: fallbackTags,
+      clusterCategory: detectClusterCategory({ ...item, tags: fallbackTags, ai_tags: fallbackTags }),
+    }
+  }
 }
 
 function normalizeType(type) {
@@ -162,11 +218,11 @@ export default async function handler(req, res) {
     }
   }
 
-  const auth = getAuthContext(req, body)
-  if (!ensureAuthUserId(auth, res)) return
+  const auth = await requireAuthorizedContext(req, res, { allowGuest: true })
+  if (!auth) return
 
   try {
-    const profile = await ensureUserProfile(auth)
+    const profile = auth.profile || await ensureUserProfile(auth)
 
     if (req.method === 'GET') {
       const { search = '', type = '', jlpt = '', status = '', sort = 'recent', mode = '', format = 'json', limit = '500', offset = '0' } = req.query || {}
@@ -259,6 +315,8 @@ export default async function handler(req, res) {
            set status = case when status = 'mastered' then status else 'learning' end,
                review_count = review_count + 1,
                last_reviewed_at = now(),
+               next_review_at = now() + interval '2 day',
+               ease_factor = greatest(1.5, coalesce(ease_factor, 2.5)),
                updated_at = now()
            where user_id = $1 and id = any($2::uuid[])
            returning *`,
@@ -284,10 +342,7 @@ export default async function handler(req, res) {
         )
         const updated = []
         for (const item of current.rows) {
-          const inferred = inferAiTags(item)
-          const tags = mergeUniqueTags(item.tags || [], inferred)
-          const aiTags = mergeUniqueTags(item.ai_tags || [], inferred)
-          const clusterCategory = detectClusterCategory({ ...item, tags, ai_tags: aiTags })
+          const semantic = await generateSemanticTags(item)
           const result = await query(
             `update discovered_items
              set tags = $1,
@@ -296,7 +351,7 @@ export default async function handler(req, res) {
                  updated_at = now()
              where id = $4 and user_id = $5
              returning *`,
-            [tags, aiTags, clusterCategory, item.id, profile.id]
+            [semantic.tags, semantic.aiTags, semantic.clusterCategory, item.id, profile.id]
           )
           if (result.rows[0]) updated.push(result.rows[0])
         }

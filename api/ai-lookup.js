@@ -1,5 +1,5 @@
 import { appendTimelineEvent, ensureUserProfile, query } from '../server/lib/db.js'
-import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
+import { requireAuthorizedContext } from '../server/lib/authSession.js'
 import { checkRateLimit, generateJson } from '../server/lib/gemini.js'
 import { handleOptions, methodNotAllowed, parseJsonBody, setCors } from '../server/lib/http.js'
 
@@ -71,11 +71,11 @@ export default async function handler(req, res) {
   if (req.method === 'POST' && !body) return res.status(400).json({ error: 'Invalid JSON body' })
   if (!['GET', 'POST'].includes(req.method)) return methodNotAllowed(req, res, ['GET', 'POST', 'OPTIONS'])
 
-  const auth = getAuthContext(req, body || {})
-  if (!ensureAuthUserId(auth, res)) return
+  const auth = await requireAuthorizedContext(req, res, { allowGuest: true })
+  if (!auth) return
 
   try {
-    const profile = await ensureUserProfile(auth)
+    const profile = auth.profile || await ensureUserProfile(auth)
 
     if (req.method === 'GET') {
       const history = await query(

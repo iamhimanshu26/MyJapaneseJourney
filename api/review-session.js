@@ -1,5 +1,5 @@
 import { appendTimelineEvent, ensureUserProfile, query } from '../server/lib/db.js'
-import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
+import { requireAuthorizedContext } from '../server/lib/authSession.js'
 import { handleOptions, methodNotAllowed, parseJsonBody, setCors } from '../server/lib/http.js'
 
 const VALID_RESULTS = new Set(['again', 'hard', 'good', 'easy'])
@@ -31,8 +31,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid JSON body' })
   }
 
-  const auth = getAuthContext(req, body)
-  if (!ensureAuthUserId(auth, res)) return
+  const auth = await requireAuthorizedContext(req, res, { allowGuest: true })
+  if (!auth) return
   const itemId = String(body.itemId || '').trim()
   const result = String(body.result || '').toLowerCase()
   if (!itemId || !VALID_RESULTS.has(result)) {
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const profile = await ensureUserProfile(auth)
+    const profile = auth.profile || await ensureUserProfile(auth)
     const itemRes = await query(
       `select id, word, status, review_count, ease_factor
        from discovered_items

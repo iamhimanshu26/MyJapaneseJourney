@@ -1,5 +1,5 @@
-import { ensureUserProfile, query } from '../server/lib/db.js'
-import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
+import { query } from '../server/lib/db.js'
+import { requireAuthorizedContext } from '../server/lib/authSession.js'
 import { handleOptions, methodNotAllowed, setCors } from '../server/lib/http.js'
 
 function resolveRange(queryParams = {}) {
@@ -19,11 +19,11 @@ export default async function handler(req, res) {
   setCors(res, 'GET, OPTIONS')
   if (req.method !== 'GET') return methodNotAllowed(req, res, ['GET', 'OPTIONS'])
 
-  const auth = getAuthContext(req)
-  if (!ensureAuthUserId(auth, res)) return
+  const auth = await requireAuthorizedContext(req, res, { allowGuest: true })
+  if (!auth) return
 
   try {
-    const profile = await ensureUserProfile(auth)
+    const profile = auth.profile
     const userId = profile.id
     const { start, end, label } = resolveRange(req.query || {})
     const view = String(req.query?.view || 'weekly').toLowerCase()
@@ -42,6 +42,7 @@ export default async function handler(req, res) {
       readinessTrend,
       interviewImprovement,
       dokkaiImprovement,
+      monthlyTrend,
     ] = await Promise.all([
       query(
         `select
@@ -169,10 +170,93 @@ export default async function handler(req, res) {
          order by week`,
         [userId, start.toISOString(), end.toISOString()]
       ),
+      query(
+        `with months as (
+           select date_trunc('month', now()) - (interval '1 month' * gs) as month_start
+           from generate_series(5, 0, -1) as gs
+         ),
+         discovered as (
+           select date_trunc('month', created_at) as month_start, count(*)::int as new_items
+           from discovered_items
+           where user_id = $1
+           group by 1
+         ),
+         reviewed as (
+           select date_trunc('month', created_at) as month_start, count(*)::int as reviewed
+           from review_sessions
+           where user_id = $1
+           group by 1
+         ),
+         lookups as (
+           select date_trunc('month', created_at) as month_start, count(*)::int as ai_lookups
+           from ai_lookups
+           where user_id = $1
+           group by 1
+         ),
+         readiness as (
+           select date_trunc('month', plan_date::timestamp) as month_start,
+                  coalesce(round(avg(nullif(plan_payload->>'readinessScore', '')::numeric), 0)::int, 0) as readiness
+           from study_plans
+           where user_id = $1
+           group by 1
+         ),
+         mastered as (
+           select date_trunc('month', updated_at) as month_start, count(*)::int as mastered
+           from discovered_items
+           where user_id = $1 and status = 'mastered'
+           group by 1
+         )
+         select
+           to_char(months.month_start, 'YYYY-MM') as month,
+           coalesce(discovered.new_items, 0) as new_items,
+           coalesce(reviewed.reviewed, 0) as reviewed,
+           coalesce(lookups.ai_lookups, 0) as ai_lookups,
+           coalesce(readiness.readiness, 0) as readiness,
+           coalesce(mastered.mastered, 0) as mastered
+         from months
+         left join discovered on discovered.month_start = months.month_start
+         left join reviewed on reviewed.month_start = months.month_start
+         left join lookups on lookups.month_start = months.month_start
+         left join readiness on readiness.month_start = months.month_start
+         left join mastered on mastered.month_start = months.month_start
+         order by months.month_start`,
+        [userId]
+      ),
     ])
 
     const totalItems = totals.rows[0]?.total_items || 0
     const mastered = totals.rows[0]?.mastered || 0
+
+    const monthlyReports = (monthlyTrend.rows || []).map((row, index, arr) => {
+      const prev = arr[index - 1]
+      const readinessDelta = prev ? Number(row.readiness || 0) - Number(prev.readiness || 0) : 0
+      const activityIndex = Number(row.reviewed || 0) + Number(row.new_items || 0) + Number(row.ai_lookups || 0)
+      const momentum = readinessDelta >= 4
+        ? 'accelerating'
+        : readinessDelta <= -4
+          ? 'declining'
+          : activityIndex >= 30
+            ? 'stable-high'
+            : 'stable'
+      const narrative = momentum === 'accelerating'
+        ? 'Readiness is improving with strong monthly execution.'
+        : momentum === 'declining'
+          ? 'Readiness dipped; prioritize weak-item review and daily consistency.'
+          : momentum === 'stable-high'
+            ? 'High activity is sustaining progress; focus on quality and retention.'
+            : 'Progress is steady but could improve with more review sessions.'
+      return {
+        month: row.month,
+        mastered: Number(row.mastered || 0),
+        newItems: Number(row.new_items || 0),
+        reviewed: Number(row.reviewed || 0),
+        aiLookups: Number(row.ai_lookups || 0),
+        readiness: Number(row.readiness || 0),
+        readinessDelta,
+        momentum,
+        narrative,
+      }
+    })
 
     return res.status(200).json({
       profile,
@@ -203,15 +287,7 @@ export default async function handler(req, res) {
       readinessTrend: readinessTrend.rows,
       interviewImprovement: interviewImprovement.rows,
       dokkaiImprovement: dokkaiImprovement.rows,
-      monthlyReports: [
-        {
-          month: new Date().toISOString().slice(0, 7),
-          mastered: mastered,
-          newItems: monthly.rows[0]?.new_this_month || 0,
-          reviewed: monthly.rows[0]?.reviewed_this_month || 0,
-          readiness: readinessTrend.rows.at(-1)?.readiness_score || 0,
-        },
-      ],
+      monthlyReports,
     })
   } catch (error) {
     console.error('analytics error', error)

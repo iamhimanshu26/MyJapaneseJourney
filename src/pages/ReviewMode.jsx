@@ -18,8 +18,17 @@ function scoreItem(item) {
     mastered: 10,
   }
   const reviewPenalty = Math.max(0, 12 - Number(item.review_count || 0))
+  const dueAt = item.next_review_at ? new Date(item.next_review_at).getTime() : null
+  const overdueBoost = dueAt && dueAt < Date.now() ? 28 : 0
   const recentBoost = item.created_at && (Date.now() - new Date(item.created_at).getTime()) < 3 * 86_400_000 ? 25 : 0
-  return (statusWeight[item.status] || 40) + reviewPenalty + recentBoost
+  return (statusWeight[item.status] || 40) + reviewPenalty + recentBoost + overdueBoost
+}
+
+function isDueForReview(item) {
+  if (!item?.next_review_at) return true
+  const dueTs = new Date(item.next_review_at).getTime()
+  if (Number.isNaN(dueTs)) return true
+  return dueTs <= Date.now()
 }
 
 export function ReviewMode() {
@@ -38,6 +47,7 @@ export function ReviewMode() {
   const queue = useMemo(
     () => [...items]
       .filter((item) => (filterStatus === 'all' ? true : item.status === filterStatus))
+      .filter((item) => isDueForReview(item))
       .sort((a, b) => scoreItem(b) - scoreItem(a)),
     [items, filterStatus]
   )
@@ -117,7 +127,7 @@ export function ReviewMode() {
         </div>
         {loading ? <LoadingState /> : null}
         {!loading && !queue.length ? (
-          <EmptyState title="No items to review" message="Save words or grammar from AI Lookup and return here to review." />
+          <EmptyState title="No due items to review" message="Your review queue is clear for now. Come back when next_review_at becomes due, or add more items." />
         ) : null}
         {!loading && current ? (
           <div className="space-y-3">

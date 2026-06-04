@@ -1,5 +1,5 @@
-import { appendTimelineEvent, ensureUserProfile, query } from '../server/lib/db.js'
-import { getAuthContext, ensureAuthUserId } from '../server/lib/auth.js'
+import { appendTimelineEvent, query } from '../server/lib/db.js'
+import { requireAuthorizedContext } from '../server/lib/authSession.js'
 import { checkRateLimit, generateJson } from '../server/lib/gemini.js'
 import { handleOptions, methodNotAllowed, parseJsonBody, setCors } from '../server/lib/http.js'
 
@@ -92,7 +92,18 @@ function buildDemoWorkspace(profile, role) {
   }
 }
 
-async function buildStudyPlan(userId, role, payload) {
+function mapPlanRow(planRow) {
+  if (!planRow) return null
+  return {
+    id: planRow.id,
+    status: planRow.status,
+    estimatedMinutes: planRow.estimated_minutes,
+    ...planRow.plan_payload,
+  }
+}
+
+async function buildStudyPlan(userId, role, payload, options = {}) {
+  const { forceReset = false } = options
   const weakItems = Number(payload?.weakItems || 0)
   const grammarGap = Math.max(3, Math.ceil((100 - Number(payload?.grammarMastery || 0)) / 18))
   const reviewCount = Math.max(6, Math.min(20, weakItems || 12))
@@ -111,35 +122,45 @@ async function buildStudyPlan(userId, role, payload) {
      on conflict (user_id, plan_date)
      do update set estimated_minutes = excluded.estimated_minutes,
                    plan_payload = excluded.plan_payload,
-                   status = 'pending',
+                   status = case
+                     when study_plans.status = 'completed' and $4::boolean = false then 'completed'
+                     else 'pending'
+                   end,
                    generated_by = excluded.generated_by,
                    updated_at = now()
      returning *`,
-    [userId, estimate, JSON.stringify(planPayload)]
+    [userId, estimate, JSON.stringify(planPayload), forceReset]
   )
 
-  return {
-    id: persisted.rows[0]?.id,
-    status: persisted.rows[0]?.status || 'pending',
+  return mapPlanRow(persisted.rows[0]) || {
+    id: null,
+    status: 'pending',
     estimatedMinutes: estimate,
     ...planPayload,
   }
 }
 
-async function getLatestPlan(userId) {
+async function getTodayPlan(userId) {
   const result = await query(
     `select *
      from study_plans
      where user_id = $1
-     order by plan_date desc
+       and plan_date = current_date
      limit 1`,
     [userId]
   )
   return result.rows[0] || null
 }
 
+async function getOrCreateTodayPlan(userId, role, payload, options = {}) {
+  const { regenerate = false } = options
+  const existing = await getTodayPlan(userId)
+  if (existing && !regenerate) return mapPlanRow(existing)
+  return buildStudyPlan(userId, role, payload, { forceReset: regenerate })
+}
+
 async function buildLearningIntelligence(userId, profile, role) {
-  const [summary, lookups, activities, streak, planResult, timeline] = await Promise.all([
+  const [summary, lookups, activities, streak, timeline] = await Promise.all([
     buildSnapshot(userId),
     query(
       `select count(*)::int as lookup_count
@@ -165,14 +186,6 @@ async function buildLearningIntelligence(userId, profile, role) {
        ) recent_days`,
       [userId]
     ),
-    query(
-      `select id, status, estimated_minutes, plan_payload, plan_date
-       from study_plans
-       where user_id = $1
-       order by plan_date desc
-       limit 1`,
-      [userId]
-    ),
     buildTimeline(userId, 10),
   ])
 
@@ -180,7 +193,7 @@ async function buildLearningIntelligence(userId, profile, role) {
   const isDemo = Number(s.total_items || 0) === 0 && Number(lookups.rows[0]?.lookup_count || 0) === 0
   if (isDemo) {
     const demoPayload = buildDemoWorkspace(profile, role)
-    demoPayload.studyPlan = await buildStudyPlan(userId, role, demoPayload.metrics)
+    demoPayload.studyPlan = await getOrCreateTodayPlan(userId, role, demoPayload.metrics, { regenerate: false })
     return demoPayload
   }
 
@@ -212,20 +225,12 @@ async function buildLearningIntelligence(userId, profile, role) {
   }
 
   const retentionRate = Math.max(20, Math.min(100, Math.round((vocabMastery * 0.45) + (grammarMastery * 0.35) + (kanjiProgress * 0.2))))
-  const studyPlanRow = planResult.rows[0]
-  const studyPlan = studyPlanRow
-    ? {
-        id: studyPlanRow.id,
-        status: studyPlanRow.status,
-        estimatedMinutes: studyPlanRow.estimated_minutes,
-        ...studyPlanRow.plan_payload,
-      }
-    : await buildStudyPlan(userId, role, {
+  const studyPlan = await getOrCreateTodayPlan(userId, role, {
         weakItems: s.weak_count,
         grammarMastery,
         recommendations: recommendations.map((x) => x.label),
         learningReadinessScore,
-      })
+      }, { regenerate: false })
 
   return {
     profile,
@@ -274,7 +279,7 @@ async function buildLearningIntelligence(userId, profile, role) {
 
 async function buildLearningPlan(userId, profile, role, options = {}) {
   const { regenerate = false } = options
-  const [counts, weeklyReview, weeklyLookup, planRow] = await Promise.all([
+  const [counts, weeklyReview, weeklyLookup] = await Promise.all([
     query(
       `select
         count(*) filter (where status = 'weak')::int as weak_items,
@@ -299,7 +304,6 @@ async function buildLearningPlan(userId, profile, role, options = {}) {
        where user_id = $1 and created_at >= now() - interval '7 day'`,
       [userId]
     ),
-    getLatestPlan(userId),
   ])
 
   const snapshot = counts.rows[0] || {}
@@ -351,15 +355,13 @@ async function buildLearningPlan(userId, profile, role, options = {}) {
     { label: 'Kanji touchpoints', current: kanjiItems, target: Math.max(10, kanjiItems + 5) },
   ]
 
-  const isTodayPlan = planRow ? String(planRow.plan_date) === new Date().toISOString().slice(0, 10) : false
-  const generatedPlan = regenerate || !planRow || !isTodayPlan
-    ? await buildStudyPlan(userId, role, {
-        weakItems,
-        grammarMastery: Math.round((Math.max(1, grammarItems - weakItems) / Math.max(1, grammarItems)) * 100),
-        recommendations: nextActions.map((action) => action.title),
-        readinessScore: Math.round((Math.max(1, grammarItems - weakItems) / Math.max(1, grammarItems)) * 100),
-      })
-    : null
+  const readinessScore = Math.round((Math.max(1, grammarItems - weakItems) / Math.max(1, grammarItems)) * 100)
+  const generatedPlan = await getOrCreateTodayPlan(userId, role, {
+    weakItems,
+    grammarMastery: readinessScore,
+    recommendations: nextActions.map((action) => action.title),
+    readinessScore,
+  }, { regenerate })
 
   return {
     profile,
@@ -374,14 +376,7 @@ async function buildLearningPlan(userId, profile, role, options = {}) {
     },
     weeklyTargets,
     nextActions,
-    persistedPlan: generatedPlan || (planRow
-      ? {
-          id: planRow.id,
-          status: planRow.status,
-          estimatedMinutes: planRow.estimated_minutes,
-          ...planRow.plan_payload,
-        }
-      : null),
+    persistedPlan: generatedPlan,
   }
 }
 
@@ -566,11 +561,11 @@ export default async function handler(req, res) {
     }
   }
 
-  const auth = getAuthContext(req, body)
-  if (!ensureAuthUserId(auth, res)) return
+  const auth = await requireAuthorizedContext(req, res, { allowGuest: true })
+  if (!auth) return
 
   try {
-    const profile = await ensureUserProfile(auth)
+    const profile = auth.profile
     const role = await resolveRole(auth.authUserId)
 
     if (req.method === 'POST') {
@@ -613,6 +608,13 @@ export default async function handler(req, res) {
         return res.status(200).json({ relation: result.rows[0] })
       }
       if (action === 'demo-reset') {
+        if (auth.user?.isGuest) {
+          return res.status(403).json({ error: 'Guest workspace cannot run demo-reset on server data' })
+        }
+        const confirmation = String(body.confirm || '').trim()
+        if (confirmation !== 'RESET MY DATA') {
+          return res.status(400).json({ error: 'confirm must be exactly "RESET MY DATA"' })
+        }
         await query('delete from knowledge_graph_relations where user_id = $1', [profile.id])
         await query('delete from study_plans where user_id = $1', [profile.id])
         await query('delete from activity_timeline where user_id = $1', [profile.id])

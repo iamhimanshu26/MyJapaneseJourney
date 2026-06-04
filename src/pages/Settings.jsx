@@ -5,17 +5,19 @@ import { SectionHeader } from '../components/shared/SectionHeader'
 import { useDiscovered } from '../hooks/useDiscovered'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
+import { useUiPreferences } from '../context/UiPreferencesContext'
 
 export function Settings() {
   const { importLocalToNeon, identity } = useDiscovered()
   const { user, profile, updateProfile } = useAuth()
+  const { theme: activeTheme, language: activeLanguage, setTheme: applyTheme, setLanguage: applyLanguage } = useUiPreferences()
   const [currentLevel, setCurrentLevel] = useState(profile?.current_level || 'N5')
   const [targetLevel, setTargetLevel] = useState(profile?.target_level || 'N3')
   const [targetExam, setTargetExam] = useState(profile?.target_exam || 'JLPT')
   const [targetExamDate, setTargetExamDate] = useState(profile?.target_exam_date || '')
   const [dailyGoal, setDailyGoal] = useState(profile?.daily_goal_minutes || 25)
-  const [theme, setTheme] = useState(profile?.ui_theme || 'system')
-  const [language, setLanguage] = useState(profile?.ui_language || 'en')
+  const [theme, setTheme] = useState(profile?.ui_theme || activeTheme || 'system')
+  const [language, setLanguage] = useState(profile?.ui_language || activeLanguage || 'en')
   const [savingProfile, setSavingProfile] = useState(false)
   const [importing, setImporting] = useState(false)
   const [resettingDemo, setResettingDemo] = useState(false)
@@ -24,15 +26,19 @@ export function Settings() {
   const canEdit = useMemo(() => Boolean(user && !user.isGuest), [user])
 
   useEffect(() => {
-    if (!profile) return
+    if (!profile) {
+      setTheme(activeTheme || 'system')
+      setLanguage(activeLanguage || 'en')
+      return
+    }
     setCurrentLevel(profile.current_level || 'N5')
     setTargetLevel(profile.target_level || 'N3')
     setTargetExam(profile.target_exam || 'JLPT')
     setTargetExamDate(profile.target_exam_date || '')
     setDailyGoal(profile.daily_goal_minutes || 25)
-    setTheme(profile.ui_theme || 'system')
-    setLanguage(profile.ui_language || 'en')
-  }, [profile])
+    setTheme(profile.ui_theme || activeTheme || 'system')
+    setLanguage(profile.ui_language || activeLanguage || 'en')
+  }, [profile, activeTheme, activeLanguage])
 
   async function handleImport() {
     setImporting(true)
@@ -48,7 +54,9 @@ export function Settings() {
 
   async function handleSaveProfile() {
     if (!canEdit) {
-      toast.info('Guest mode cannot persist profile settings')
+      applyTheme(theme)
+      applyLanguage(language)
+      toast.success('Applied theme and language for guest session')
       return
     }
     setSavingProfile(true)
@@ -62,9 +70,8 @@ export function Settings() {
         ui_theme: theme,
         ui_language: language,
       })
-      try {
-        localStorage.setItem('mjj-ui-language', language)
-      } catch {}
+      applyTheme(theme)
+      applyLanguage(language)
       toast.success('Profile settings updated')
     } catch (err) {
       toast.error(err.message || 'Failed to save profile settings')
@@ -115,6 +122,9 @@ export function Settings() {
       toast.info('Guest mode does not support demo reset')
       return
     }
+    if (!window.confirm('This will permanently delete your saved learning data from Neon. Continue?')) {
+      return
+    }
     setResettingDemo(true)
     try {
       await fetch('/api/intelligence', {
@@ -124,7 +134,7 @@ export function Settings() {
           'X-Auth-User-Id': identity.authUserId,
           ...(identity.sessionToken ? { 'X-Session-Token': identity.sessionToken } : {}),
         },
-        body: JSON.stringify({ action: 'demo-reset' }),
+        body: JSON.stringify({ action: 'demo-reset', confirm: 'RESET MY DATA' }),
       }).then(async (res) => {
         if (!res.ok) {
           const data = await res.json()

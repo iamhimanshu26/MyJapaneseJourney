@@ -41,7 +41,7 @@ async function handleLogin(req, res, body) {
 
   const loginId = String(body.loginId || '').trim()
   const password = String(body.password || '')
-  const role = normalizeRole(body.role)
+  const requestedRole = normalizeRole(body.role)
 
   if (!LOGIN_ID_PATTERN.test(loginId)) {
     return res.status(400).json({ error: 'Login ID must be 3-40 chars (letters, numbers, _ or -)' })
@@ -55,6 +55,7 @@ async function handleLogin(req, res, body) {
   let created = false
 
   if (!user) {
+    const role = requestedRole === 'employee' ? 'employee' : 'student'
     const inserted = await query(
       `insert into auth_users (login_id, password_hash, role, updated_at)
        values ($1, $2, $3, now())
