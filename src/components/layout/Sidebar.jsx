@@ -11,7 +11,7 @@ export function Sidebar({ onNavigate }) {
       </Link>
       <nav className="space-y-1" aria-label="Sidebar navigation">
         {NAV_ITEMS.map((item) => {
-          const active = location.pathname === item.path
+          const active = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(`${item.path}/`))
           return (
             <Link
               key={item.path}

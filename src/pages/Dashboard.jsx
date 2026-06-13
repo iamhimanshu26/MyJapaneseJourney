@@ -171,6 +171,10 @@ export function Dashboard() {
               <StatCard label="Grammar" value={intelligence?.metrics?.totalGrammar ?? items.filter((item) => item.type === 'grammar').length} icon="🧩" />
               <StatCard label="Kanji" value={intelligence?.metrics?.totalKanji ?? items.filter((item) => item.type === 'kanji').length} icon="漢" />
               <StatCard label="Weak Backlog" value={analytics?.cards?.weak || 0} icon="🧪" />
+              <StatCard label="Total Lessons" value={intelligence?.metrics?.totalLessons ?? analytics?.cards?.totalLessons ?? 0} icon="🗃️" />
+              <StatCard label="Completed Lessons" value={intelligence?.metrics?.completedLessons ?? analytics?.cards?.completedLessons ?? 0} icon="✅" />
+              <StatCard label="Lesson Completion" value={`${intelligence?.metrics?.lessonCompletion ?? analytics?.cards?.lessonCompletionRate ?? 0}%`} icon="📊" />
+              <StatCard label="Latest Lesson" value={intelligence?.metrics?.recentLessonTitle || 'No lessons yet'} icon="📝" />
             </div>
 
             <div className="grid gap-4 lg:grid-cols-4">
@@ -305,6 +309,7 @@ export function Dashboard() {
                 { title: 'Learning Timeline', desc: 'Chronological feed of your learning activity', path: '/learning-timeline', icon: '🕒' },
                 { title: 'Knowledge Graph', desc: 'Visual relationships across words, kanji, and grammar', path: '/knowledge-graph', icon: '🕸️' },
                 { title: 'Kotoba Sensei', desc: 'AI copilot for personalized daily guidance', path: '/kotoba-sensei', icon: '🧠' },
+                { title: 'Lesson Library', desc: 'Upload and manage lessons from text, TXT, or PDF', path: '/lessons', icon: '🗃️' },
               ].map((card) => (
                 <Link
                   key={card.path}

@@ -110,6 +110,18 @@ export function Analytics() {
                 <p className="text-xs uppercase tracking-[0.1em] text-slate-400">Favorites</p>
                 <p className="mt-2 text-2xl font-bold text-slate-100">{data.cards.favorites}</p>
               </div>
+              <div className="card-shell">
+                <p className="text-xs uppercase tracking-[0.1em] text-slate-400">Total Lessons</p>
+                <p className="mt-2 text-2xl font-bold text-slate-100">{data.cards.totalLessons}</p>
+              </div>
+              <div className="card-shell">
+                <p className="text-xs uppercase tracking-[0.1em] text-slate-400">Completed Lessons</p>
+                <p className="mt-2 text-2xl font-bold text-slate-100">{data.cards.completedLessons}</p>
+              </div>
+              <div className="card-shell">
+                <p className="text-xs uppercase tracking-[0.1em] text-slate-400">Lesson Completion</p>
+                <p className="mt-2 text-2xl font-bold text-slate-100">{data.cards.lessonCompletionRate}%</p>
+              </div>
             </div>
 
             <div className="grid gap-4 lg:grid-cols-3">
@@ -201,6 +213,38 @@ export function Analytics() {
                       <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
                       <Line type="monotone" dataKey="discovered_count" stroke="#818cf8" strokeWidth={2} />
                     </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="card-shell">
+                <h3 className="text-sm font-semibold text-slate-200">Lesson Completion Trend</h3>
+                <div className="mt-4 h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data.lessonCompletionTrend || []}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <XAxis dataKey="week" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" />
+                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
+                      <Line type="monotone" dataKey="completed_count" stroke="#34d399" strokeWidth={2} />
+                      <Line type="monotone" dataKey="touched_count" stroke="#60a5fa" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div className="card-shell">
+                <h3 className="text-sm font-semibold text-slate-200">Vocabulary Extracted From Lessons</h3>
+                <div className="mt-4 h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data.lessonVocabularyTrend || []}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <XAxis dataKey="week" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" />
+                      <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155' }} />
+                      <Bar dataKey="vocabulary_count" fill="#818cf8" />
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>

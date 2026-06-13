@@ -42,6 +42,9 @@ export default async function handler(req, res) {
       readinessTrend,
       interviewImprovement,
       dokkaiImprovement,
+      lessonSummary,
+      lessonCompletionTrend,
+      lessonVocabularyTrend,
     ] = await Promise.all([
       query(
         `select
@@ -169,6 +172,39 @@ export default async function handler(req, res) {
          order by week`,
         [userId, start.toISOString(), end.toISOString()]
       ),
+      query(
+        `select
+          count(*)::int as total_lessons,
+          count(*) filter (where status = 'completed')::int as completed_lessons,
+          coalesce(round(avg(completion_percentage), 0)::int, 0) as avg_completion,
+          max(created_at) as last_uploaded_at
+         from lessons
+         where user_id = $1`,
+        [userId]
+      ),
+      query(
+        `select to_char(date_trunc('week', coalesce(last_studied_at, created_at)), 'YYYY-MM-DD') as week,
+                count(*) filter (where status = 'completed')::int as completed_count,
+                count(*)::int as touched_count
+         from lessons
+         where user_id = $1
+           and coalesce(last_studied_at, created_at) >= $2
+           and coalesce(last_studied_at, created_at) <= $3
+         group by date_trunc('week', coalesce(last_studied_at, created_at))
+         order by week`,
+        [userId, start.toISOString(), end.toISOString()]
+      ),
+      query(
+        `select to_char(date_trunc('week', lv.created_at), 'YYYY-MM-DD') as week,
+                count(*)::int as vocabulary_count
+         from lesson_vocabulary lv
+         where lv.user_id = $1
+           and lv.created_at >= $2
+           and lv.created_at <= $3
+         group by date_trunc('week', lv.created_at)
+         order by week`,
+        [userId, start.toISOString(), end.toISOString()]
+      ),
     ])
 
     const totalItems = totals.rows[0]?.total_items || 0
@@ -183,6 +219,9 @@ export default async function handler(req, res) {
         weak: totals.rows[0]?.weak || 0,
         favorites: totals.rows[0]?.favorites || 0,
         masteryRate: totalItems > 0 ? Math.round((mastered / totalItems) * 100) : 0,
+        totalLessons: lessonSummary.rows[0]?.total_lessons || 0,
+        completedLessons: lessonSummary.rows[0]?.completed_lessons || 0,
+        lessonCompletionRate: lessonSummary.rows[0]?.avg_completion || 0,
       },
       studyActivity: studyActivity.rows,
       vocabularyByJlpt: byJlpt.rows,
@@ -203,6 +242,14 @@ export default async function handler(req, res) {
       readinessTrend: readinessTrend.rows,
       interviewImprovement: interviewImprovement.rows,
       dokkaiImprovement: dokkaiImprovement.rows,
+      lessonSummary: lessonSummary.rows[0] || {
+        total_lessons: 0,
+        completed_lessons: 0,
+        avg_completion: 0,
+        last_uploaded_at: null,
+      },
+      lessonCompletionTrend: lessonCompletionTrend.rows,
+      lessonVocabularyTrend: lessonVocabularyTrend.rows,
       monthlyReports: [
         {
           month: new Date().toISOString().slice(0, 7),
