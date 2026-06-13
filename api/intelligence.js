@@ -31,7 +31,28 @@ async function buildSnapshot(userId) {
      where user_id = $1`,
     [userId]
   )
-  return summary.rows[0] || {}
+  const lessons = await query(
+    `select
+      count(*)::int as total_lessons,
+      count(*) filter (where status = 'completed')::int as completed_lessons,
+      coalesce(round(avg(completion_percentage), 0)::int, 0) as avg_lesson_completion
+     from lessons
+     where user_id = $1`,
+    [userId]
+  )
+  const latestLesson = await query(
+    `select id, title, status, completion_percentage, created_at, updated_at, last_studied_at
+     from lessons
+     where user_id = $1
+     order by created_at desc
+     limit 1`,
+    [userId]
+  )
+  return {
+    ...(summary.rows[0] || {}),
+    ...(lessons.rows[0] || {}),
+    latest_lesson: latestLesson.rows[0] || null,
+  }
 }
 
 function buildDemoWorkspace(profile, role) {
@@ -64,6 +85,10 @@ function buildDemoWorkspace(profile, role) {
       totalVocabulary: 124,
       totalGrammar: 42,
       totalKanji: 38,
+      totalLessons: 6,
+      completedLessons: 2,
+      lessonCompletion: 44,
+      recentLessonTitle: 'Self-introduction and daily routine',
     },
     weakAreas: ['Passive form usage consistency', 'Business expression precision', 'Long sentence parsing speed'],
     recommendations: [
@@ -206,8 +231,9 @@ async function buildLearningIntelligence(userId, profile, role) {
   const kanjiProgress = pct(s.kanji_mastered || 0, s.kanji_total || 0)
   const readingReadiness = Math.round((vocabMastery * 0.4) + (grammarMastery * 0.4) + (kanjiProgress * 0.2))
   const interviewReadiness = Math.min(100, Math.round((grammarMastery * 0.35) + (vocabMastery * 0.25) + ((lookups.rows[0]?.lookup_count || 0) * 2)))
-  const n3Readiness = Math.round((readingReadiness * 0.55) + (interviewReadiness * 0.2) + (grammarMastery * 0.25))
-  const learningReadinessScore = Math.round((n3Readiness * 0.7) + (Math.min(100, (s.reviewed_total || 0) * 4) * 0.3))
+  const lessonCompletion = Number(s.avg_lesson_completion || 0)
+  const n3Readiness = Math.round((readingReadiness * 0.5) + (interviewReadiness * 0.2) + (grammarMastery * 0.2) + (lessonCompletion * 0.1))
+  const learningReadinessScore = Math.round((n3Readiness * 0.65) + (Math.min(100, (s.reviewed_total || 0) * 4) * 0.25) + (lessonCompletion * 0.1))
 
   const weakAreas = []
   if (vocabMastery < 55) weakAreas.push('Vocabulary retention below target')
@@ -220,6 +246,7 @@ async function buildLearningIntelligence(userId, profile, role) {
     { label: 'Review 10 N3 grammar points', action: '/review-mode' },
     { label: 'Practice 15 weak vocabulary words', action: '/discovered?status=weak' },
     { label: 'Complete one reading passage', action: '/dokkai-analyzer' },
+    { label: 'Upload or review one lesson in Lesson Library', action: '/lessons' },
     { label: 'Recheck recently discovered words', action: '/discovered?sort=recent' },
   ]
   if (role === 'employee' || role === 'admin') {
@@ -259,6 +286,10 @@ async function buildLearningIntelligence(userId, profile, role) {
       totalVocabulary: Number(s.vocab_total || 0),
       totalGrammar: Number(s.grammar_total || 0),
       totalKanji: Number(s.kanji_total || 0),
+      totalLessons: Number(s.total_lessons || 0),
+      completedLessons: Number(s.completed_lessons || 0),
+      lessonCompletion: lessonCompletion,
+      recentLessonTitle: s.latest_lesson?.title || null,
     },
     weakAreas,
     recommendations,
@@ -309,6 +340,14 @@ async function buildLearningPlan(userId, profile, role, options = {}) {
       [userId]
     ),
   ])
+  const lessonSnapshot = await query(
+    `select
+      count(*)::int as total_lessons,
+      count(*) filter (where status = 'completed')::int as completed_lessons
+     from lessons
+     where user_id = $1`,
+    [userId]
+  )
 
   const snapshot = counts.rows[0] || {}
   const weeklyReviewCount = weeklyReview.rows[0]?.total || 0
@@ -320,6 +359,8 @@ async function buildLearningPlan(userId, profile, role, options = {}) {
   const vocabItems = Number(snapshot.vocab_items || 0)
   const grammarItems = Number(snapshot.grammar_items || 0)
   const kanjiItems = Number(snapshot.kanji_items || 0)
+  const totalLessons = Number(lessonSnapshot.rows[0]?.total_lessons || 0)
+  const completedLessons = Number(lessonSnapshot.rows[0]?.completed_lessons || 0)
 
   nextActions.push({
     title: 'Weak-item recovery sprint',
@@ -353,6 +394,14 @@ async function buildLearningPlan(userId, profile, role, options = {}) {
     })
   }
 
+  nextActions.push({
+    title: 'Lesson library cadence',
+    description: totalLessons > 0
+      ? `Complete ${Math.max(1, Math.ceil((totalLessons - completedLessons) * 0.4))} pending lessons this cycle.`
+      : 'Upload your first lesson to activate lesson-based recommendations.',
+    priority: totalLessons === 0 ? 'high' : 'medium',
+  })
+
   const weeklyTargets = [
     { label: 'Review sessions', current: weeklyReviewCount, target: 18 },
     { label: 'AI lookups', current: weeklyLookupCount, target: 12 },
@@ -377,6 +426,8 @@ async function buildLearningPlan(userId, profile, role, options = {}) {
       vocabItems,
       grammarItems,
       kanjiItems,
+      totalLessons,
+      completedLessons,
     },
     weeklyTargets,
     nextActions,

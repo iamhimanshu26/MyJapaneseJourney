@@ -44,6 +44,7 @@ export function LearningIntelligence() {
       { metric: 'Reading', score: data.metrics.readingReadiness },
       { metric: 'Interview', score: data.metrics.interviewReadiness },
       { metric: 'N3 Ready', score: data.metrics.estimatedN3Readiness },
+      { metric: 'Lessons', score: data.metrics.lessonCompletion || 0 },
     ]
     : []
 
@@ -72,6 +73,7 @@ export function LearningIntelligence() {
               <ProgressCard title="Reading Readiness" value={data.metrics.readingReadiness} subtitle="Comprehension preparedness" />
               <ProgressCard title="Interview Readiness" value={data.metrics.interviewReadiness} subtitle="Professional communication level" />
               <ProgressCard title="Estimated N3 Readiness" value={data.metrics.estimatedN3Readiness} subtitle="Projected exam readiness" />
+              <ProgressCard title="Lesson Completion" value={data.metrics.lessonCompletion || 0} subtitle={`${data.metrics.completedLessons || 0}/${data.metrics.totalLessons || 0} lessons completed`} />
             </div>
 
             <div className="grid gap-4 lg:grid-cols-3">

@@ -8,6 +8,7 @@ export const NAV_ITEMS = [
   { path: '/grammar', label: 'Grammar', icon: '📝' },
   { path: '/vocab', label: 'Vocabulary', icon: '📚' },
   { path: '/kanji', label: 'Kanji', icon: '漢' },
+  { path: '/lessons', label: 'Lesson Library', icon: '🗃️' },
   { path: '/analytics', label: 'Analytics', icon: '📈' },
   { path: '/learning-intelligence', label: 'Learning Intelligence', icon: '🎯' },
   { path: '/learning-plan', label: 'Learning Plan', icon: '🧭' },

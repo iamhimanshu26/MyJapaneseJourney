@@ -22,6 +22,8 @@ const Kanji = lazy(() => import('./pages/Kanji').then((m) => ({ default: m.Kanji
 const AnyIdea = lazy(() => import('./pages/AnyIdea').then((m) => ({ default: m.AnyIdea })))
 const GuidedChapters = lazy(() => import('./pages/GuidedChapters').then((m) => ({ default: m.GuidedChapters })))
 const LearnFromText = lazy(() => import('./pages/LearnFromText').then((m) => ({ default: m.LearnFromText })))
+const Lessons = lazy(() => import('./pages/Lessons').then((m) => ({ default: m.Lessons })))
+const LessonDetail = lazy(() => import('./pages/LessonDetail').then((m) => ({ default: m.LessonDetail })))
 const Login = lazy(() => import('./pages/Login').then((m) => ({ default: m.Login })))
 const Signup = lazy(() => import('./pages/Signup').then((m) => ({ default: m.Signup })))
 const Onboarding = lazy(() => import('./pages/Onboarding').then((m) => ({ default: m.Onboarding })))
@@ -102,6 +104,8 @@ function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="kanji" element={<Kanji />} />
           <Route path="any-idea" element={<AnyIdea />} />
+          <Route path="lessons" element={<Lessons />} />
+          <Route path="lessons/:id" element={<LessonDetail />} />
           <Route path="chapters" element={<GuidedChapters />} />
           <Route path="learn-from-text" element={<LearnFromText />} />
           <Route path="*" element={<Navigate to="/" replace />} />
