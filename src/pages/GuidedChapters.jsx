@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { FuriganaText } from '../components/FuriganaText'
 import { KaiwaVideo } from '../components/KaiwaVideo'
 import { PageMeta } from '../components/PageMeta'
@@ -26,6 +27,20 @@ export function GuidedChapters() {
       {/* Header - refined, editorial */}
       <header className="border-b border-stone-200/80 bg-white/80 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-6 py-6">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <Link
+              to="/lessons"
+              className="inline-flex h-9 items-center rounded-lg border border-stone-300 bg-white px-3 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            >
+              ← Back to Lesson Library
+            </Link>
+            <Link
+              to="/"
+              className="inline-flex h-9 items-center rounded-lg border border-stone-200 bg-stone-50 px-3 text-sm font-medium text-stone-700 hover:bg-stone-100"
+            >
+              Go to Dashboard
+            </Link>
+          </div>
           <h1 className="text-2xl font-semibold tracking-tight text-stone-800">
             Guided Chapters
           </h1>
