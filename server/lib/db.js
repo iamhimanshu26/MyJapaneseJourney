@@ -170,6 +170,96 @@ const BOOTSTRAP_STATEMENTS = [
     created_at timestamptz not null default now()
   )`,
   'create index if not exists idx_review_sessions_user_created on review_sessions(user_id, created_at desc)',
+  `create table if not exists lessons (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null references user_profiles(id) on delete cascade,
+    title text not null,
+    source_type text not null default 'text' check (source_type in ('text', 'txt', 'pdf')),
+    source_file_name text,
+    jlpt_level text,
+    category text,
+    tags text[] not null default '{}'::text[],
+    notes text,
+    raw_text text not null,
+    cleaned_text text,
+    corrected_text text,
+    rewritten_text text,
+    romaji text,
+    english_translation text,
+    summary text,
+    estimated_level text,
+    status text not null default 'draft' check (status in ('draft', 'processing', 'ready', 'completed', 'archived')),
+    completion_percentage integer not null default 0,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    last_studied_at timestamptz
+  )`,
+  'create index if not exists idx_lessons_user_created on lessons(user_id, created_at desc)',
+  'create index if not exists idx_lessons_user_status on lessons(user_id, status, source_type)',
+  `create table if not exists lesson_vocabulary (
+    id uuid primary key default gen_random_uuid(),
+    lesson_id uuid not null references lessons(id) on delete cascade,
+    user_id uuid not null references user_profiles(id) on delete cascade,
+    word text not null,
+    reading text,
+    romaji text,
+    meaning_en text,
+    jlpt_level text,
+    part_of_speech text,
+    example_jp text,
+    example_en text,
+    created_at timestamptz not null default now()
+  )`,
+  'create index if not exists idx_lesson_vocab_lesson on lesson_vocabulary(lesson_id, created_at)',
+  'create index if not exists idx_lesson_vocab_user on lesson_vocabulary(user_id, created_at desc)',
+  `create table if not exists lesson_grammar (
+    id uuid primary key default gen_random_uuid(),
+    lesson_id uuid not null references lessons(id) on delete cascade,
+    user_id uuid not null references user_profiles(id) on delete cascade,
+    grammar_point text not null,
+    meaning_en text,
+    explanation text,
+    jlpt_level text,
+    example_jp text,
+    example_en text,
+    created_at timestamptz not null default now()
+  )`,
+  'create index if not exists idx_lesson_grammar_lesson on lesson_grammar(lesson_id, created_at)',
+  'create index if not exists idx_lesson_grammar_user on lesson_grammar(user_id, created_at desc)',
+  `create table if not exists lesson_kanji (
+    id uuid primary key default gen_random_uuid(),
+    lesson_id uuid not null references lessons(id) on delete cascade,
+    user_id uuid not null references user_profiles(id) on delete cascade,
+    kanji text not null,
+    reading text,
+    meaning_en text,
+    example_word text,
+    jlpt_level text,
+    created_at timestamptz not null default now()
+  )`,
+  'create index if not exists idx_lesson_kanji_lesson on lesson_kanji(lesson_id, created_at)',
+  'create index if not exists idx_lesson_kanji_user on lesson_kanji(user_id, created_at desc)',
+  `create table if not exists lesson_practice_questions (
+    id uuid primary key default gen_random_uuid(),
+    lesson_id uuid not null references lessons(id) on delete cascade,
+    user_id uuid not null references user_profiles(id) on delete cascade,
+    question text not null,
+    options_json jsonb not null default '[]'::jsonb,
+    answer text,
+    explanation text,
+    created_at timestamptz not null default now()
+  )`,
+  'create index if not exists idx_lesson_questions_lesson on lesson_practice_questions(lesson_id, created_at)',
+  `create table if not exists lesson_activity (
+    id uuid primary key default gen_random_uuid(),
+    lesson_id uuid not null references lessons(id) on delete cascade,
+    user_id uuid not null references user_profiles(id) on delete cascade,
+    activity_type text not null,
+    metadata jsonb not null default '{}'::jsonb,
+    created_at timestamptz not null default now()
+  )`,
+  'create index if not exists idx_lesson_activity_lesson on lesson_activity(lesson_id, created_at desc)',
+  'create index if not exists idx_lesson_activity_user on lesson_activity(user_id, created_at desc)',
   `alter table user_profiles add column if not exists target_exam_date date`,
   `alter table user_profiles add column if not exists daily_goal_minutes integer not null default 25`,
   `alter table user_profiles add column if not exists ui_theme text not null default 'system'`,
@@ -187,6 +277,12 @@ const BOOTSTRAP_STATEMENTS = [
   `alter table interview_practice add column if not exists grammar_score integer`,
   `alter table interview_practice add column if not exists fluency_score integer`,
   `alter table interview_practice add column if not exists business_score integer`,
+  `alter table lessons add column if not exists source_file_name text`,
+  `alter table lessons add column if not exists notes text`,
+  `alter table lessons add column if not exists rewritten_text text`,
+  `alter table lessons add column if not exists status text not null default 'draft'`,
+  `alter table lessons add column if not exists completion_percentage integer not null default 0`,
+  `alter table lessons add column if not exists last_studied_at timestamptz`,
 ]
 
 function getPool() {
@@ -228,6 +324,25 @@ export async function query(text, values = []) {
   const client = await getPool().connect()
   try {
     return await client.query(text, values)
+  } finally {
+    client.release()
+  }
+}
+
+export async function withTransaction(callback) {
+  if (typeof callback !== 'function') {
+    throw new Error('withTransaction callback is required')
+  }
+  await ensureSchema()
+  const client = await getPool().connect()
+  try {
+    await client.query('begin')
+    const result = await callback(client)
+    await client.query('commit')
+    return result
+  } catch (error) {
+    await client.query('rollback')
+    throw error
   } finally {
     client.release()
   }
